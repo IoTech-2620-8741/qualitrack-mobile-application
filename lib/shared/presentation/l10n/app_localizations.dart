@@ -75,9 +75,9 @@ class AppLocalizations {
   String get endDate => _t('endDate');
   String get generalInformation => _t('generalInformation');
   String updatedAt(String time) => _t('updatedAt')
-      .replaceAll('{time}', '$time');
+      .replaceAll('{time}', time);
   String calculatedAt(String date) => _t('calculatedAt')
-      .replaceAll('{date}', '$date');
+      .replaceAll('{date}', date);
   String get errorTitle => _t('errorTitle');
   String get errorNetwork => _t('errorNetwork');
   String get errorTimeout => _t('errorTimeout');
@@ -128,12 +128,12 @@ class AppLocalizations {
   String get profile => _t('profile');
   String get about => _t('about');
   String versionLabel(String version) => _t('versionLabel')
-      .replaceAll('{version}', '$version');
+      .replaceAll('{version}', version);
   String get aboutDescription => _t('aboutDescription');
   String get aboutWebScope => _t('aboutWebScope');
   String get laboratory => _t('laboratory');
   String laboratoryNumber(String id) => _t('laboratoryNumber')
-      .replaceAll('{id}', '$id');
+      .replaceAll('{id}', id);
   String get ruc => _t('ruc');
   String get phone => _t('phone');
   String get address => _t('address');
@@ -141,7 +141,7 @@ class AppLocalizations {
   String get commandCenterTitle => _t('commandCenterTitle');
   String get commandCenterSubtitle => _t('commandCenterSubtitle');
   String welcomeUser(String name) => _t('welcomeUser')
-      .replaceAll('{name}', '$name');
+      .replaceAll('{name}', name);
   String get keyOperationalMetrics => _t('keyOperationalMetrics');
   String get openAlerts => _t('openAlerts');
   String get rawMaterials => _t('rawMaterials');
@@ -230,13 +230,13 @@ class AppLocalizations {
   String get noHistoryInRange => _t('noHistoryInRange');
   String chartSemantics(int count, String unit) => _t('chartSemantics')
       .replaceAll('{count}', '$count')
-      .replaceAll('{unit}', '$unit');
+      .replaceAll('{unit}', unit);
   String get currentReadings => _t('currentReadings');
   String get noMeasurements => _t('noMeasurements');
   String targetRange(String min, String max, String unit) => _t('targetRange')
-      .replaceAll('{min}', '$min')
-      .replaceAll('{max}', '$max')
-      .replaceAll('{unit}', '$unit');
+      .replaceAll('{min}', min)
+      .replaceAll('{max}', max)
+      .replaceAll('{unit}', unit);
   String get withinLimits => _t('withinLimits');
   String get outOfLimits => _t('outOfLimits');
   String get activeTelemetryEvents => _t('activeTelemetryEvents');
@@ -313,9 +313,9 @@ class AppLocalizations {
   String get rejectionReasonHint => _t('rejectionReasonHint');
   String get rejectionReasonRequired => _t('rejectionReasonRequired');
   String releaseConfirm(String batch) => _t('releaseConfirm')
-      .replaceAll('{batch}', '$batch');
+      .replaceAll('{batch}', batch);
   String rejectConfirm(String batch) => _t('rejectConfirm')
-      .replaceAll('{batch}', '$batch');
+      .replaceAll('{batch}', batch);
   String get batchReleasedMessage => _t('batchReleasedMessage');
   String get batchRejectedMessage => _t('batchRejectedMessage');
   String get rawMaterialUsageHistory => _t('rawMaterialUsageHistory');
@@ -323,8 +323,8 @@ class AppLocalizations {
   String materialNumber(int id) => _t('materialNumber')
       .replaceAll('{id}', '$id');
   String stockBeforeAfter(String before, String after) => _t('stockBeforeAfter')
-      .replaceAll('{before}', '$before')
-      .replaceAll('{after}', '$after');
+      .replaceAll('{before}', before)
+      .replaceAll('{after}', after);
   String receiptNumber(int id) => _t('receiptNumber')
       .replaceAll('{id}', '$id');
   String get batchNoAlerts => _t('batchNoAlerts');
@@ -371,7 +371,7 @@ class AppLocalizations {
   String get kpiOnTrack => _t('kpiOnTrack');
   String get kpiAtRisk => _t('kpiAtRisk');
   String targetValue(String value) => _t('targetValue')
-      .replaceAll('{value}', '$value');
+      .replaceAll('{value}', value);
   String get reportHistory => _t('reportHistory');
   String get reportHistoryEmpty => _t('reportHistoryEmpty');
   String get billingTitle => _t('billingTitle');

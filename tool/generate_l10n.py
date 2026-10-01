@@ -79,8 +79,9 @@ def main() -> None:
         if params:
             sig = ', '.join(f'{t} {n}' for n, t in params)
             out.append(f'  String {key}({sig}) => _t(\'{key}\')')
-            for n, _ in params:
-                out.append(f"      .replaceAll('{{{n}}}', '${n}')")
+            for n, t in params:
+                value = n if t == 'String' else f"'${n}'"
+                out.append(f"      .replaceAll('{{{n}}}', {value})")
             out[-1] = out[-1] + ';'
         else:
             out.append(f"  String get {key} => _t('{key}');")
