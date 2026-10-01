@@ -80,7 +80,7 @@ class _Filters extends StatelessWidget {
         children: [
           DropdownButtonFormField<int>(
             key: ValueKey(state.selectedEquipmentId),
-            value: state.selectedEquipmentId,
+            initialValue: state.selectedEquipmentId,
             isExpanded: true,
             decoration: InputDecoration(labelText: l10n.selectEquipment),
             items: [

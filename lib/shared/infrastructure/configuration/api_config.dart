@@ -6,7 +6,7 @@ class ApiConfig {
 
   factory ApiConfig.fromEnvironment() {
     const raw = String.fromEnvironment('API_BASE_URL');
-    return ApiConfig(baseUrl: raw);
+    return const ApiConfig(baseUrl: raw);
   }
 
   /// Host root, e.g. `http://10.0.2.2:8080` (without `/api/v1`).

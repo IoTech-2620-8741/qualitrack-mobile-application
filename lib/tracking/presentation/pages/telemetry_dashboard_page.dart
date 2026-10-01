@@ -121,7 +121,7 @@ class _EquipmentSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<int>(
       key: ValueKey(selectedId),
-      value: selectedId,
+      initialValue: selectedId,
       isExpanded: true,
       decoration: InputDecoration(
         labelText: context.l10n.selectEquipment,
