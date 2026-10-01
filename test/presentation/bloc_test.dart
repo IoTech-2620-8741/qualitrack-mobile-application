@@ -12,7 +12,6 @@ import 'package:qualitrack_mobile/equipment/application/equipment_queries.dart';
 import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
 import 'package:qualitrack_mobile/iam/application/session_controller.dart';
 import 'package:qualitrack_mobile/iam/domain/onboarding_state.dart';
-import 'package:qualitrack_mobile/iam/domain/user_session.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
 import 'package:qualitrack_mobile/shared/domain/failure.dart';
 import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
@@ -25,7 +24,7 @@ import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
 
 void main() {
-  setUpAll(() => registerFallbackValue<UserSession>(sessionFixture()));
+  setUpAll(() => registerFallbackValue(sessionFixture()));
 
   group('SessionController', () {
     late MockAuthRepository auth;

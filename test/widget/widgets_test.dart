@@ -27,9 +27,9 @@ class MockAlertDetailBloc extends MockBloc<AlertDetailEvent, AlertDetailState>
 
 void main() {
   setUpAll(() {
-    registerFallbackValue<SignInEvent>(const SignInSubmitted(username: '', password: ''));
-    registerFallbackValue<AlertsEvent>(const AlertsRequested());
-    registerFallbackValue<AlertDetailEvent>(const AlertDetailRequested());
+    registerFallbackValue(const SignInSubmitted(username: '', password: ''));
+    registerFallbackValue(const AlertsRequested());
+    registerFallbackValue(const AlertDetailRequested());
   });
 
   group('Sign In', () {
