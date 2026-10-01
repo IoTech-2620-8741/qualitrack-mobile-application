@@ -1,0 +1,314 @@
+# key	english	spanish	placeholders (name:type,...)
+appTitle	QualiTrack Mobile	QualiTrack Mobile
+loading	Loading…	Cargando…
+refresh	Refresh	Actualizar
+refreshing	Refreshing…	Actualizando…
+retry	Retry	Reintentar
+cancel	Cancel	Cancelar
+search	Search	Buscar
+yes	Yes	Sí
+no	No	No
+unknown	Unknown	Desconocido
+noInformation	No information available	Sin información disponible
+noResults	No results match the current filters	No hay resultados para los filtros actuales
+filterAll	All	Todos
+clearFilters	Clear filters	Limpiar filtros
+previous	Previous	Anterior
+next	Next	Siguiente
+pageOf	Page {page} of {total}	Página {page} de {total}	page:int,total:int
+total	Total	Total
+status	Status	Estado
+code	Code	Código
+name	Name	Nombre
+description	Description	Descripción
+type	Type	Tipo
+model	Model	Modelo
+unit	Unit	Unidad
+quantity	Quantity	Cantidad
+timestamp	Timestamp	Fecha y hora
+parameter	Parameter	Parámetro
+active	Active	Activo
+inactive	Inactive	Inactivo
+normal	Normal	Normal
+startDate	Start date	Fecha de inicio
+endDate	End date	Fecha de fin
+generalInformation	General information	Información general
+updatedAt	Updated at {time}	Actualizado a las {time}	time:String
+calculatedAt	Calculated: {date}	Calculado: {date}	date:String
+errorTitle	Something went wrong	Algo salió mal
+errorNetwork	No connection to QualiTrack. Check your internet connection or the API address.	Sin conexión con QualiTrack. Verifica tu conexión a internet o la dirección de la API.
+errorTimeout	The server took too long to respond. Try again.	El servidor tardó demasiado en responder. Inténtalo de nuevo.
+errorBadRequest	The request was rejected by QualiTrack.	QualiTrack rechazó la solicitud.
+errorCredentialsRequired	Enter your username and password.	Ingresa tu usuario y contraseña.
+errorUnauthorized	Your session is no longer valid. Sign in again.	Tu sesión ya no es válida. Inicia sesión nuevamente.
+errorForbidden	You do not have access to this information.	No tienes acceso a esta información.
+errorOnboarding	Your account setup is incomplete. Complete it in QualiTrack Web.	La configuración de tu cuenta está incompleta. Complétala en QualiTrack Web.
+errorNotFound	The requested information was not found.	No se encontró la información solicitada.
+errorConflict	The operation conflicts with the current state.	La operación entra en conflicto con el estado actual.
+errorServer	QualiTrack is not available right now. Try again later.	QualiTrack no está disponible en este momento. Inténtalo más tarde.
+errorParsing	The server response could not be read.	No se pudo interpretar la respuesta del servidor.
+errorMissingLaboratory	Your account has no laboratory assigned. Complete the setup in QualiTrack Web.	Tu cuenta no tiene un laboratorio asignado. Completa la configuración en QualiTrack Web.
+errorUnexpected	An unexpected error occurred.	Ocurrió un error inesperado.
+checkingSession	Checking session	Verificando sesión
+signInTitle	Sign In	Iniciar sesión
+signInSubtitle	Welcome back to QualiTrack.	Bienvenido de nuevo a QualiTrack.
+username	Username	Usuario
+usernameHint	name@company.com	nombre@empresa.com
+usernameRequired	Username is required	El usuario es obligatorio
+password	Password	Contraseña
+passwordHint	Your password	Tu contraseña
+passwordRequired	Password is required	La contraseña es obligatoria
+showPassword	Show password	Mostrar contraseña
+hidePassword	Hide password	Ocultar contraseña
+signIn	Sign In	Iniciar sesión
+signingIn	Signing in	Iniciando sesión
+invalidCredentials	Invalid username or password.	Usuario o contraseña incorrectos.
+sessionExpired	Your session has expired. Please sign in again.	Tu sesión expiró. Inicia sesión nuevamente.
+accountsManagedOnWeb	Accounts are created and managed in QualiTrack Web.	Las cuentas se crean y administran en QualiTrack Web.
+signOut	Sign out	Cerrar sesión
+signOutConfirm	Do you want to sign out of QualiTrack?	¿Deseas cerrar sesión en QualiTrack?
+setupRequiredTitle	Complete your setup in QualiTrack Web	Completa tu configuración en QualiTrack Web
+setupSubscriptionMissing	Your laboratory does not have an active subscription yet.	Tu laboratorio aún no tiene una suscripción activa.
+setupLaboratoryMissing	Your account is not linked to a laboratory yet.	Tu cuenta aún no está vinculada a un laboratorio.
+setupGeneric	Your account setup is not complete.	La configuración de tu cuenta no está completa.
+setupRequiredHint	Subscriptions, laboratories and users are configured from the web application. Come back once it is done.	Las suscripciones, laboratorios y usuarios se configuran desde la aplicación web. Vuelve cuando esté listo.
+checkAgain	Check again	Verificar de nuevo
+roleAdmin	Administrator	Administrador
+roleQaManager	QA Manager	QA Manager
+roleLabOperator	Lab Operator	Operador de laboratorio
+navHome	Home	Inicio
+navTelemetry	Telemetry	Telemetría
+navAlerts	Alerts	Alertas
+navBatches	Batches	Lotes
+navMore	More	Más
+more	More	Más
+profile	Profile	Perfil
+about	About	Acerca de
+versionLabel	Version {version}	Versión {version}	version:String
+aboutDescription	QualiTrack Mobile is the monitoring and review companion of the QualiTrack pharmaceutical quality management platform: telemetry, deviation alerts, production batches, inventory and billing at a glance.	QualiTrack Mobile es la app de monitoreo y revisión de la plataforma de gestión de calidad farmacéutica QualiTrack: telemetría, alertas de desviación, lotes de producción, inventario y facturación de un vistazo.
+aboutWebScope	Configuration and data registration (laboratories, products, materials, equipment, sensors, limits, batches, users and subscriptions) are performed in QualiTrack Web.	La configuración y el registro de datos (laboratorios, productos, materiales, equipos, sensores, límites, lotes, usuarios y suscripciones) se realizan en QualiTrack Web.
+laboratory	Laboratory	Laboratorio
+laboratoryNumber	Laboratory {id}	Laboratorio {id}	id:String
+ruc	RUC	RUC
+phone	Phone	Teléfono
+address	Address	Dirección
+regulations	Applicable regulations	Normativas aplicables
+commandCenterTitle	Command Center	Centro de Comando
+commandCenterSubtitle	Operational overview across laboratory, equipment, batches, reports and telemetry.	Vista operativa del laboratorio, equipos, lotes, reportes y telemetría.
+welcomeUser	Hello, {name}	Hola, {name}	name:String
+keyOperationalMetrics	Key operational metrics	Métricas operativas clave
+openAlerts	Open alerts	Alertas abiertas
+rawMaterials	Raw materials	Materias primas
+operationalCount	{count} operational	{count} operativos	count:int
+pendingInProgress	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en progreso	pending:int,inProgress:int
+criticalCount	{count} critical	{count} críticas	count:int
+lowStockCount	{count} low stock	{count} con stock bajo	count:int
+criticalAlertsCount	{count} critical alerts open	{count} alertas críticas abiertas	count:int
+noCriticalAlerts	No critical alerts open	Sin alertas críticas abiertas
+liveTelemetry	Live telemetry	Telemetría en vivo
+liveTelemetryHint	Latest equipment monitoring signal	Última señal de monitoreo de equipos
+onlineOfTotal	{online} of {total} equipment online	{online} de {total} equipos en línea	online:int,total:int
+onlineDevices	Online	En línea
+telemetryAttention	Telemetry warnings	Alertas de telemetría
+withoutStatus	No status	Sin estado
+riskOverview	Risk overview	Resumen de riesgos
+riskOverviewHint	Items that may require operational attention	Elementos que pueden requerir atención operativa
+lowStock	Low stock	Stock bajo
+kpisAtRisk	KPIs at risk	KPIs en riesgo
+itemsCount	{count} items	{count} elementos	count:int
+overallHealth	Overall health	Salud general
+equipmentTitle	Equipment	Equipos
+equipmentDetail	Equipment detail	Detalle del equipo
+equipmentEmpty	No equipment has been registered in QualiTrack Web yet.	Aún no se han registrado equipos en QualiTrack Web.
+equipmentSummary	{total} registered · {attention} need attention	{total} registrados · {attention} requieren atención	total:int,attention:int
+searchEquipment	Search by name, model or serial	Buscar por nombre, modelo o serie
+needsAttention	Needs attention	Requiere atención
+equipmentOperational	Operational	Operativo
+equipmentMaintenance	Maintenance	Mantenimiento
+equipmentOutOfService	Out of service	Fuera de servicio
+equipment	Equipment	Equipo
+equipmentNumber	Equipment #{id}	Equipo #{id}	id:int
+serialNumber	Serial number	N.° de serie
+linkedSensor	Linked sensor	Sensor vinculado
+sensorLinked	Sensor linked	Sensor vinculado
+noSensor	No sensor	Sin sensor
+telemetryStatus	Telemetry status	Estado de telemetría
+lastHeartbeat	Last heartbeat	Última señal
+viewTelemetry	View telemetry	Ver telemetría
+bpmLimits	BPM limits	Límites BPM
+bpmLimitsEmpty	No BPM limits configured.	No hay límites BPM configurados.
+maintenanceHistory	Maintenance history	Historial de mantenimiento
+maintenanceEmpty	No maintenance records.	Sin registros de mantenimiento.
+deviationTrends	Deviation trends	Tendencias de desviación
+dataPointsCount	{count} data points	{count} puntos de datos	count:int
+trendIncreasing	Increasing	En aumento
+trendDecreasing	Decreasing	En descenso
+trendStable	Stable	Estable
+complianceEvents	Compliance events	Eventos de cumplimiento
+auditLog	Audit log	Registro de auditoría
+telemetryTitle	Telemetry Dashboard	Panel de Telemetría
+telemetrySubtitle	Real-time sensory data and parameter monitoring	Datos sensoriales y monitoreo de parámetros en tiempo real
+liveUpdates	Live · 15 s	En vivo · 15 s
+selectEquipment	Select equipment	Seleccionar equipo
+telemetryOperational	Operational	Operativo
+telemetryWarning	Warning	Advertencia
+telemetryCritical	Critical	Crítico
+telemetryOffline	Offline	Fuera de línea
+telemetryUnavailable	Telemetry unavailable	Telemetría no disponible
+online	Online	En línea
+offline	Offline	Fuera de línea
+connectionStatus	Connection status	Estado de conexión
+detectedAnomalies	Detected anomalies	Anomalías detectadas
+eventsCount	{count} events	{count} eventos	count:int
+anomaliesLast24h	Anomalies in the last 24 h	Anomalías en las últimas 24 h
+liveTelemetryStream	Live telemetry stream	Flujo de telemetría en vivo
+window15m	15 min	15 min
+window1h	1 h	1 h
+window6h	6 h	6 h
+window24h	24 h	24 h
+anomaly	Anomaly	Anomalía
+noHistoryInRange	No telemetry history for this range	Sin historial de telemetría para este rango
+chartSemantics	Telemetry chart with {count} readings {unit}	Gráfico de telemetría con {count} lecturas {unit}	count:int,unit:String
+currentReadings	Current sensor readings	Lecturas actuales de sensores
+noMeasurements	This equipment has not reported measurements yet.	Este equipo aún no ha reportado mediciones.
+targetRange	Target: {min} – {max} {unit}	Objetivo: {min} – {max} {unit}	min:String,max:String,unit:String
+withinLimits	Within limits	Dentro de límites
+outOfLimits	Out of limits	Fuera de límites
+activeTelemetryEvents	Active telemetry events	Eventos de telemetría activos
+noAnomalies	No anomalies detected.	No se detectaron anomalías.
+bpmDeviation	BPM deviation	Desviación BPM
+rawTelemetryLog	Raw telemetry data log	Registro de telemetría
+rawTelemetrySubtitle	Sensory logs and BPM deviation records	Registros sensoriales y desviaciones BPM
+dateRangeAll	Date range: all	Rango de fechas: todo
+onlyAnomalies	Only anomalies	Solo anomalías
+liveEntries	Entries ({count})	Registros ({count})	count:int
+recordedValue	Recorded value	Valor registrado
+alertsTitle	Compliance Alerts	Alertas de Cumplimiento
+alertsSubtitle	Deviation alerts generated by QualiTrack	Alertas de desviación generadas por QualiTrack
+alertsEmptyTitle	No deviation alerts	Sin alertas de desviación
+alertsEmptyMessage	All monitored parameters are within limits.	Todos los parámetros monitoreados están dentro de los límites.
+totalAlerts	Total alerts	Total de alertas
+criticalOpen	Critical open	Críticas abiertas
+alertUnresolved	Unresolved	Sin resolver
+alertAcknowledged	Acknowledged	Reconocida
+alertResolved	Resolved	Resuelta
+severity	Severity	Severidad
+severityLow	Low	Baja
+severityWarning	Warning	Advertencia
+severityCritical	Critical	Crítica
+alertNumber	Alert #{id}	Alerta #{id}	id:int
+batch	Batch	Lote
+batchNumberShort	Batch #{id}	Lote #{id}	id:int
+userNumber	User #{id}	Usuario #{id}	id:int
+deviationDetails	Deviation details	Detalle de desviación
+technicalInspection	Technical inspection	Inspección técnica
+thresholdValue	Threshold value	Valor umbral
+acknowledgedBy	Acknowledged by	Reconocida por
+resolvedBy	Resolved by	Resuelta por
+resolutionNotes	Resolution notes	Notas de resolución
+resolutionNotesHint	Describe the corrective action and verification	Describe la acción correctiva y su verificación
+resolutionNotesRequired	Resolution notes are required	Las notas de resolución son obligatorias
+reviewActions	Review actions	Acciones de revisión
+reviewRestricted	Review actions are available to QA Managers and Administrators.	Las acciones de revisión están disponibles para QA Managers y Administradores.
+acknowledge	Acknowledge	Reconocer
+acknowledgeAlert	Acknowledge alert	Reconocer alerta
+acknowledgeConfirm	Confirm that you have reviewed this deviation.	Confirma que revisaste esta desviación.
+markAsResolved	Mark as resolved	Marcar como resuelta
+resolveConfirm	The alert will be closed with your resolution notes.	La alerta se cerrará con tus notas de resolución.
+alertAcknowledgedMessage	Alert acknowledged	Alerta reconocida
+alertResolvedMessage	Alert resolved	Alerta resuelta
+batchesTitle	Production Batches	Lotes de Producción
+batchesSubtitle	Traceability and quality control of production cycles	Trazabilidad y control de calidad de los ciclos de producción
+batchesEmpty	No production batches have been registered in QualiTrack Web yet.	Aún no se han registrado lotes de producción en QualiTrack Web.
+searchBatches	Search by batch number or product	Buscar por número de lote o producto
+batchPending	Pending	Pendiente
+batchInProgress	In progress	En progreso
+batchReleased	Released	Liberado
+batchRejected	Rejected	Rechazado
+product	Product	Producto
+awaitingQaRelease	Awaiting QA release	En espera de liberación QA
+batchDetail	Batch detail	Detalle del lote
+rawMaterialsUsed	Raw materials used	Materias primas usadas
+traceability	Traceability	Trazabilidad
+bpmNotes	BPM notes	Notas BPM
+qaReview	QA review	Revisión QA
+qaReviewHint	Release or reject this existing batch. QualiTrack validates the transition.	Libera o rechaza este lote existente. QualiTrack valida la transición.
+releaseBatch	Release batch	Liberar lote
+rejectBatch	Reject batch	Rechazar lote
+releaseDate	Release date	Fecha de liberación
+rejectionDate	Rejection date	Fecha de rechazo
+qualityReleaseNotes	Quality release notes	Notas de liberación de calidad
+releaseNotesHint	Compliance release notes and verification observations	Notas de liberación y observaciones de verificación
+releaseNotesRequired	Release notes are required	Las notas de liberación son obligatorias
+rejectionReason	Rejection reason	Motivo de rechazo
+rejectionReasonHint	Regulatory cause or BPM non-conformity	Causa regulatoria o no conformidad BPM
+rejectionReasonRequired	A rejection reason is required	El motivo de rechazo es obligatorio
+releaseConfirm	Release batch {batch}? This action cannot be undone from the app.	¿Liberar el lote {batch}? Esta acción no se puede deshacer desde la app.	batch:String
+rejectConfirm	Reject batch {batch}? This action cannot be undone from the app.	¿Rechazar el lote {batch}? Esta acción no se puede deshacer desde la app.	batch:String
+batchReleasedMessage	Batch released	Lote liberado
+batchRejectedMessage	Batch rejected	Lote rechazado
+rawMaterialUsageHistory	Raw material usage history	Historial de uso de materias primas
+rawMaterialsUsedEmpty	No raw materials were consumed by this batch.	Este lote no registra consumo de materias primas.
+materialNumber	Material #{id}	Material #{id}	id:int
+stockBeforeAfter	Stock {before} → {after}	Stock {before} → {after}	before:String,after:String
+receiptNumber	Receipt #{id}	Recepción #{id}	id:int
+batchNoAlerts	No deviation alerts for this batch.	No hay alertas de desviación para este lote.
+inventoryTitle	Raw Materials Inventory	Inventario de Materias Primas
+inventoryEmpty	No raw materials have been registered in QualiTrack Web yet.	Aún no se han registrado materias primas en QualiTrack Web.
+materialsCount	{count} materials	{count} materiales	count:int
+lowStockAlert	{count} materials are below the minimum stock	{count} materiales están por debajo del stock mínimo	count:int
+searchMaterials	Search by name or code	Buscar por nombre o código
+belowMinimum	Below minimum	Bajo el mínimo
+blockedStock	Blocked stock	Stock bloqueado
+stockOk	Stock OK	Stock correcto
+usableStock	Usable stock	Stock utilizable
+physicalStock	Physical stock	Stock físico
+minimumStock	Minimum stock	Stock mínimo
+materialDetail	Material detail	Detalle del material
+receipts	Supplier receipts	Recepciones de proveedor
+receiptsEmpty	No receipts registered.	No hay recepciones registradas.
+supplier	Supplier	Proveedor
+initialAmount	Initial amount	Cantidad inicial
+availableAmount	Available amount	Cantidad disponible
+receivedOn	Received	Recibido
+expiresOn	Expires	Vence
+usable	Usable	Utilizable
+receiptQuarantined	Quarantined	En cuarentena
+receiptReleased	Released	Liberado
+receiptObserved	Observed	Observado
+receiptRejected	Rejected	Rechazado
+movements	Stock movements	Movimientos de stock
+movementsEmpty	No movements recorded.	No hay movimientos registrados.
+productsTitle	Pharmaceutical Product Catalog	Catálogo de Productos Farmacéuticos
+productsEmpty	No products have been registered in QualiTrack Web yet.	Aún no se han registrado productos en QualiTrack Web.
+productsCount	{count} registered products	{count} productos registrados	count:int
+searchProducts	Search by code or name	Buscar por código o nombre
+productDetail	Product detail	Detalle del producto
+bpmSpecifications	BPM specifications	Especificaciones BPM
+reportsTitle	Reports & KPIs	Reportes y KPIs
+reportsSubtitle	KPI dashboard and generated reports	Panel de KPIs y reportes generados
+reportsEmpty	No KPI dashboard or reports have been generated in QualiTrack Web yet.	Aún no se han generado KPIs ni reportes en QualiTrack Web.
+kpiDashboard	KPI dashboard	Panel de KPIs
+kpiEmpty	No KPI dashboard has been calculated yet.	Aún no se ha calculado un panel de KPIs.
+kpiOnTrack	On track	En objetivo
+kpiAtRisk	At risk	En riesgo
+targetValue	Target: {value}	Objetivo: {value}	value:String
+reportHistory	Report history	Historial de reportes
+reportHistoryEmpty	No reports generated.	No hay reportes generados.
+billingTitle	Billing Summary	Resumen de Facturación
+billingSubtitle	Your active subscription and payment history	Tu suscripción activa y el historial de pagos
+billingEmpty	No subscriptions found for this laboratory.	No se encontraron suscripciones para este laboratorio.
+currentSubscription	Current subscription	Suscripción actual
+noActiveSubscription	No active subscription	Sin suscripción activa
+plan	Plan	Plan
+billingCycle	Billing cycle	Ciclo de facturación
+periodStart	Period start	Inicio del periodo
+periodEnd	Period end	Fin del periodo
+amount	Amount	Monto
+maxUsers	Max users	Usuarios máximos
+maxEquipment	Max equipment	Equipos máximos
+paymentHistory	Payment history	Historial de pagos
+paymentsEmpty	No payments recorded.	No hay pagos registrados.
+provider	Provider	Proveedor
+subscriptionHistory	Subscription history	Historial de suscripciones
+billingManagedOnWeb	Plan changes, checkout and cancellation are managed in QualiTrack Web.	Los cambios de plan, pagos y cancelaciones se gestionan en QualiTrack Web.
