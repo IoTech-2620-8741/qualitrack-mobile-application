@@ -94,6 +94,9 @@ final class CommandCenterSummary extends Equatable {
   final Part<BillingSummary>? subscription;
   final Map<int, String> environmentNames;
 
+  /// Equipment names by id, to name the device of each open alert.
+  Map<int, String> get equipmentNames => {for (final e in equipment.value?.equipments ?? const <Equipment>[]) e.id: e.name};
+
   @override
   List<Object?> get props => [laboratory, equipment, batches, alerts, materials, subscription, environmentNames];
 }

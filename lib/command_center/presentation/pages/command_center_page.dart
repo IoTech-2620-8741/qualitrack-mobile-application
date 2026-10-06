@@ -240,6 +240,7 @@ class _OpenAlerts extends StatelessWidget {
         for (final alert in open.take(3)) ...[
           AlertCard(
             alert: alert,
+            deviceName: summary.equipmentNames[alert.equipmentId],
             environmentName: summary.environmentNames[alert.environmentId],
             onTap: () => context.push('/alerts/${alert.id}'),
           ),
