@@ -6,5 +6,6 @@ extension UserRolePresentation on UserRole {
     UserRole.admin => l10n.roleAdmin,
     UserRole.qaManager => l10n.roleQaManager,
     UserRole.labOperator => l10n.roleLabOperator,
+    UserRole.auditor => l10n.roleAuditor,
   };
 }

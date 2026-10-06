@@ -2,7 +2,8 @@
 enum UserRole {
   admin('ROLE_ADMIN'),
   qaManager('ROLE_QA_MANAGER'),
-  labOperator('ROLE_LAB_OPERATOR');
+  labOperator('ROLE_LAB_OPERATOR'),
+  auditor('ROLE_AUDITOR');
 
   const UserRole(this.code);
 

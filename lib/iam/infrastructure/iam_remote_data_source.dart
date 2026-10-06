@@ -21,8 +21,8 @@ class IamRemoteDataSource {
     return OnboardingDto(Json.asMap(data));
   }
 
-  Future<UserDto> getUser(int userId) async {
-    final data = await _client.get('/users/$userId');
-    return UserDto(Json.asMap(data));
-  }
+  Future<void> changePassword(String currentPassword, String newPassword) => _client.post(
+    '/users/me/password-changes',
+    body: {'currentPassword': currentPassword, 'newPassword': newPassword},
+  );
 }

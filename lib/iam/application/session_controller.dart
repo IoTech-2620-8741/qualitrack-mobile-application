@@ -6,20 +6,23 @@ import '../domain/onboarding_state.dart';
 import '../domain/user_session.dart';
 import 'iam_use_cases.dart';
 
-enum SessionStatus { unknown, unauthenticated, setupRequired, authenticated }
+enum SessionStatus { unknown, unauthenticated, passwordChangeRequired, setupRequired, authenticated }
 
 /// Application-wide session state. It is the `refreshListenable` of the
 /// router, so every status change re-evaluates route guards.
 class SessionController extends ChangeNotifier {
   SessionController({
     required RestoreSession restoreSession,
+    required RememberSession rememberSession,
     required SignOut signOut,
     required CheckOnboarding checkOnboarding,
   }) : _restoreSession = restoreSession,
+       _rememberSession = rememberSession,
        _signOut = signOut,
        _checkOnboarding = checkOnboarding;
 
   final RestoreSession _restoreSession;
+  final RememberSession _rememberSession;
   final SignOut _signOut;
   final CheckOnboarding _checkOnboarding;
 
@@ -70,6 +73,15 @@ class SessionController extends ChangeNotifier {
     await _evaluate(session);
   }
 
+  /// Called once the temporary password was replaced.
+  Future<void> passwordChanged() async {
+    final session = _session;
+    if (session == null) return;
+    final updated = session.withPasswordChanged();
+    await _rememberSession(updated);
+    await _evaluate(updated);
+  }
+
   Future<void> signOut() async {
     await _signOut();
     _expired = false;
@@ -90,16 +102,14 @@ class SessionController extends ChangeNotifier {
 
   Future<void> _evaluate(UserSession session) async {
     _session = session;
-    if (!session.hasLaboratory) {
-      _pendingStep = OnboardingStep.laboratory;
-      _set(SessionStatus.setupRequired, session);
-      return;
-    }
     try {
       final onboarding = await _checkOnboarding();
       if (onboarding.isReady) {
         _pendingStep = null;
         _set(SessionStatus.authenticated, session);
+      } else if (onboarding.requiresPasswordChange) {
+        _pendingStep = onboarding.nextStep;
+        _set(SessionStatus.passwordChangeRequired, session);
       } else {
         _pendingStep = onboarding.nextStep;
         _set(SessionStatus.setupRequired, session);
@@ -109,8 +119,16 @@ class SessionController extends ChangeNotifier {
     } on Failure {
       // Network or server problem: keep the valid session; screens will show
       // their own error states and the backend still guards every request.
-      _pendingStep = null;
-      _set(SessionStatus.authenticated, session);
+      if (session.passwordChangeRequired) {
+        _pendingStep = OnboardingStep.passwordChange;
+        _set(SessionStatus.passwordChangeRequired, session);
+      } else if (!session.hasLaboratory) {
+        _pendingStep = OnboardingStep.laboratory;
+        _set(SessionStatus.setupRequired, session);
+      } else {
+        _pendingStep = null;
+        _set(SessionStatus.authenticated, session);
+      }
     }
   }
 

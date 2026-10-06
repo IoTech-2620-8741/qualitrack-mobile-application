@@ -58,11 +58,13 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
     }
   }
 
-  /// The backend answers unknown users with 404 and wrong passwords with 400;
-  /// both are shown as "invalid credentials" to avoid user enumeration.
+  /// The backend answers unknown users with 404, wrong passwords with 400 and
+  /// deactivated accounts with 409; all of them are shown as "invalid
+  /// credentials" to avoid user enumeration.
   Failure _mapSignInFailure(Object error) {
     final failure = ApiExceptionMapper.map(error);
     if (failure is NotFoundFailure ||
+        failure is ConflictFailure ||
         (failure is BadRequestFailure && failure.code != 'CREDENTIALS_REQUIRED')) {
       return const UnauthorizedFailure(code: 'INVALID_CREDENTIALS');
     }

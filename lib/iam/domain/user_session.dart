@@ -12,6 +12,7 @@ final class UserSession extends Equatable {
     required this.roles,
     required this.token,
     this.laboratoryId,
+    this.passwordChangeRequired = false,
   });
 
   final int userId;
@@ -20,14 +21,23 @@ final class UserSession extends Equatable {
   final AccessToken token;
   final LaboratoryId? laboratoryId;
 
+  /// True while a staff member still uses the temporary password.
+  final bool passwordChangeRequired;
+
   bool get hasLaboratory => laboratoryId != null;
 
-  /// UI-only hint: review actions (release/reject, acknowledge/resolve) are
-  /// shown to QA Managers and Admins. The backend remains the authority.
-  bool get canReview => roles.contains(UserRole.admin) || roles.contains(UserRole.qaManager);
+  /// Quality managers release or reject batches, see the subscription and the
+  /// profiles of their staff, as in QualiTrack Web. The backend remains the
+  /// authority on every request.
+  bool get canManageQuality => roles.contains(UserRole.admin) || roles.contains(UserRole.qaManager);
+
+  /// Operators and quality managers attend and resolve alerts; auditors only read.
+  bool get canAttendAlerts => !isAuditor && roles.isNotEmpty;
+
+  bool get isAuditor => primaryRole == UserRole.auditor;
 
   UserRole? get primaryRole {
-    for (final role in const [UserRole.admin, UserRole.qaManager, UserRole.labOperator]) {
+    for (final role in const [UserRole.admin, UserRole.qaManager, UserRole.labOperator, UserRole.auditor]) {
       if (roles.contains(role)) return role;
     }
     return null;
@@ -35,6 +45,14 @@ final class UserSession extends Equatable {
 
   bool isExpired(DateTime now) => token.isExpired(now);
 
+  UserSession withPasswordChanged() => UserSession(
+    userId: userId,
+    username: username,
+    roles: roles,
+    token: token,
+    laboratoryId: laboratoryId,
+  );
+
   @override
-  List<Object?> get props => [userId, username, roles, token, laboratoryId];
+  List<Object?> get props => [userId, username, roles, token, laboratoryId, passwordChangeRequired];
 }
