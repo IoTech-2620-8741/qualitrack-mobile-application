@@ -12,7 +12,6 @@ unknown	Unknown	Desconocido
 noInformation	No information available	Sin información disponible
 noResults	No results match the current filters	No hay resultados para los filtros actuales
 filterAll	All	Todos
-clearFilters	Clear filters	Limpiar filtros
 previous	Previous	Anterior
 next	Next	Siguiente
 pageOf	Page {page} of {total}	Página {page} de {total}	page:int,total:int
@@ -29,12 +28,10 @@ timestamp	Timestamp	Fecha y hora
 parameter	Parameter	Parámetro
 active	Active	Activo
 inactive	Inactive	Inactivo
-normal	Normal	Normal
 startDate	Start date	Fecha de inicio
 endDate	End date	Fecha de fin
 generalInformation	General information	Información general
 updatedAt	Updated at {time}	Actualizado a las {time}	time:String
-calculatedAt	Calculated: {date}	Calculado: {date}	date:String
 errorTitle	Something went wrong	Algo salió mal
 errorNetwork	No connection to QualiTrack. Check your internet connection or the API address.	Sin conexión con QualiTrack. Verifica tu conexión a internet o la dirección de la API.
 errorTimeout	The server took too long to respond. Try again.	El servidor tardó demasiado en responder. Inténtalo de nuevo.
@@ -88,35 +85,20 @@ versionLabel	Version {version}	Versión {version}	version:String
 aboutDescription	QualiTrack Mobile is the monitoring and review companion of the QualiTrack pharmaceutical quality management platform: telemetry, deviation alerts, production batches, inventory and billing at a glance.	QualiTrack Mobile es la app de monitoreo y revisión de la plataforma de gestión de calidad farmacéutica QualiTrack: telemetría, alertas de desviación, lotes de producción, inventario y facturación de un vistazo.
 aboutWebScope	Configuration and data registration (laboratories, products, materials, equipment, sensors, limits, batches, users and subscriptions) are performed in QualiTrack Web.	La configuración y el registro de datos (laboratorios, productos, materiales, equipos, sensores, límites, lotes, usuarios y suscripciones) se realizan en QualiTrack Web.
 laboratory	Laboratory	Laboratorio
-laboratoryNumber	Laboratory {id}	Laboratorio {id}	id:String
 ruc	RUC	RUC
 phone	Phone	Teléfono
 address	Address	Dirección
 regulations	Applicable regulations	Normativas aplicables
-commandCenterTitle	Command Center	Centro de Comando
-commandCenterSubtitle	Operational overview across laboratory, equipment, batches, reports and telemetry.	Vista operativa del laboratorio, equipos, lotes, reportes y telemetría.
 welcomeUser	Hello, {name}	Hola, {name}	name:String
 keyOperationalMetrics	Key operational metrics	Métricas operativas clave
 openAlerts	Open alerts	Alertas abiertas
-rawMaterials	Raw materials	Materias primas
 operationalCount	{count} operational	{count} operativos	count:int
-pendingInProgress	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en progreso	pending:int,inProgress:int
 criticalCount	{count} critical	{count} críticas	count:int
-lowStockCount	{count} low stock	{count} con stock bajo	count:int
 criticalAlertsCount	{count} critical alerts open	{count} alertas críticas abiertas	count:int
 noCriticalAlerts	No critical alerts open	Sin alertas críticas abiertas
 liveTelemetry	Live telemetry	Telemetría en vivo
-liveTelemetryHint	Latest equipment monitoring signal	Última señal de monitoreo de equipos
-onlineOfTotal	{online} of {total} equipment online	{online} de {total} equipos en línea	online:int,total:int
-onlineDevices	Online	En línea
-telemetryAttention	Telemetry warnings	Alertas de telemetría
-withoutStatus	No status	Sin estado
-riskOverview	Risk overview	Resumen de riesgos
-riskOverviewHint	Items that may require operational attention	Elementos que pueden requerir atención operativa
+liveTelemetryHint	Readings of the last 24 hours	Lecturas de las últimas 24 horas
 lowStock	Low stock	Stock bajo
-kpisAtRisk	KPIs at risk	KPIs en riesgo
-itemsCount	{count} items	{count} elementos	count:int
-overallHealth	Overall health	Salud general
 equipmentTitle	Equipment	Equipos
 equipmentDetail	Equipment detail	Detalle del equipo
 equipmentEmpty	No equipment has been registered in QualiTrack Web yet.	Aún no se han registrado equipos en QualiTrack Web.
@@ -126,61 +108,31 @@ needsAttention	Needs attention	Requiere atención
 equipmentOperational	Operational	Operativo
 equipmentMaintenance	Maintenance	Mantenimiento
 equipmentOutOfService	Out of service	Fuera de servicio
-equipment	Equipment	Equipo
 equipmentNumber	Equipment #{id}	Equipo #{id}	id:int
 serialNumber	Serial number	N.° de serie
-linkedSensor	Linked sensor	Sensor vinculado
-sensorLinked	Sensor linked	Sensor vinculado
-noSensor	No sensor	Sin sensor
-telemetryStatus	Telemetry status	Estado de telemetría
-lastHeartbeat	Last heartbeat	Última señal
 viewTelemetry	View telemetry	Ver telemetría
 bpmLimits	BPM limits	Límites BPM
 bpmLimitsEmpty	No BPM limits configured.	No hay límites BPM configurados.
 maintenanceHistory	Maintenance history	Historial de mantenimiento
 maintenanceEmpty	No maintenance records.	Sin registros de mantenimiento.
-deviationTrends	Deviation trends	Tendencias de desviación
-dataPointsCount	{count} data points	{count} puntos de datos	count:int
-trendIncreasing	Increasing	En aumento
-trendDecreasing	Decreasing	En descenso
-trendStable	Stable	Estable
 complianceEvents	Compliance events	Eventos de cumplimiento
 auditLog	Audit log	Registro de auditoría
 telemetryTitle	Telemetry Dashboard	Panel de Telemetría
 telemetrySubtitle	Real-time sensory data and parameter monitoring	Datos sensoriales y monitoreo de parámetros en tiempo real
 liveUpdates	Live · 15 s	En vivo · 15 s
-selectEquipment	Select equipment	Seleccionar equipo
-telemetryOperational	Operational	Operativo
-telemetryWarning	Warning	Advertencia
-telemetryCritical	Critical	Crítico
-telemetryOffline	Offline	Fuera de línea
 telemetryUnavailable	Telemetry unavailable	Telemetría no disponible
-online	Online	En línea
-offline	Offline	Fuera de línea
 connectionStatus	Connection status	Estado de conexión
-detectedAnomalies	Detected anomalies	Anomalías detectadas
 eventsCount	{count} events	{count} eventos	count:int
-anomaliesLast24h	Anomalies in the last 24 h	Anomalías en las últimas 24 h
 liveTelemetryStream	Live telemetry stream	Flujo de telemetría en vivo
 window15m	15 min	15 min
 window1h	1 h	1 h
 window6h	6 h	6 h
 window24h	24 h	24 h
-anomaly	Anomaly	Anomalía
 noHistoryInRange	No telemetry history for this range	Sin historial de telemetría para este rango
 chartSemantics	Telemetry chart with {count} readings {unit}	Gráfico de telemetría con {count} lecturas {unit}	count:int,unit:String
 currentReadings	Current sensor readings	Lecturas actuales de sensores
-noMeasurements	This equipment has not reported measurements yet.	Este equipo aún no ha reportado mediciones.
-targetRange	Target: {min} – {max} {unit}	Objetivo: {min} – {max} {unit}	min:String,max:String,unit:String
-withinLimits	Within limits	Dentro de límites
-outOfLimits	Out of limits	Fuera de límites
-activeTelemetryEvents	Active telemetry events	Eventos de telemetría activos
-noAnomalies	No anomalies detected.	No se detectaron anomalías.
-bpmDeviation	BPM deviation	Desviación BPM
 rawTelemetryLog	Raw telemetry data log	Registro de telemetría
 rawTelemetrySubtitle	Sensory logs and BPM deviation records	Registros sensoriales y desviaciones BPM
-dateRangeAll	Date range: all	Rango de fechas: todo
-onlyAnomalies	Only anomalies	Solo anomalías
 liveEntries	Entries ({count})	Registros ({count})	count:int
 recordedValue	Recorded value	Valor registrado
 alertsTitle	Compliance Alerts	Alertas de Cumplimiento
@@ -209,7 +161,7 @@ resolutionNotes	Resolution notes	Notas de resolución
 resolutionNotesHint	Describe the corrective action and verification	Describe la acción correctiva y su verificación
 resolutionNotesRequired	Resolution notes are required	Las notas de resolución son obligatorias
 reviewActions	Review actions	Acciones de revisión
-reviewRestricted	Review actions are available to QA Managers and Administrators.	Las acciones de revisión están disponibles para QA Managers y Administradores.
+reviewRestricted	Only the quality manager releases or rejects batches.	Solo el responsable de calidad libera o rechaza lotes.
 acknowledge	Acknowledge	Reconocer
 acknowledgeAlert	Acknowledge alert	Reconocer alerta
 acknowledgeConfirm	Confirm that you have reviewed this deviation.	Confirma que revisaste esta desviación.
@@ -247,12 +199,10 @@ releaseConfirm	Release batch {batch}? This action cannot be undone from the app.
 rejectConfirm	Reject batch {batch}? This action cannot be undone from the app.	¿Rechazar el lote {batch}? Esta acción no se puede deshacer desde la app.	batch:String
 batchReleasedMessage	Batch released	Lote liberado
 batchRejectedMessage	Batch rejected	Lote rechazado
-rawMaterialUsageHistory	Raw material usage history	Historial de uso de materias primas
 rawMaterialsUsedEmpty	No raw materials were consumed by this batch.	Este lote no registra consumo de materias primas.
 materialNumber	Material #{id}	Material #{id}	id:int
 stockBeforeAfter	Stock {before} → {after}	Stock {before} → {after}	before:String,after:String
 receiptNumber	Receipt #{id}	Recepción #{id}	id:int
-batchNoAlerts	No deviation alerts for this batch.	No hay alertas de desviación para este lote.
 inventoryTitle	Raw Materials Inventory	Inventario de Materias Primas
 inventoryEmpty	No raw materials have been registered in QualiTrack Web yet.	Aún no se han registrado materias primas en QualiTrack Web.
 materialsCount	{count} materials	{count} materiales	count:int
@@ -265,7 +215,6 @@ usableStock	Usable stock	Stock utilizable
 physicalStock	Physical stock	Stock físico
 minimumStock	Minimum stock	Stock mínimo
 materialDetail	Material detail	Detalle del material
-receipts	Supplier receipts	Recepciones de proveedor
 receiptsEmpty	No receipts registered.	No hay recepciones registradas.
 supplier	Supplier	Proveedor
 initialAmount	Initial amount	Cantidad inicial
@@ -288,11 +237,6 @@ bpmSpecifications	BPM specifications	Especificaciones BPM
 reportsTitle	Reports & KPIs	Reportes y KPIs
 reportsSubtitle	KPI dashboard and generated reports	Panel de KPIs y reportes generados
 reportsEmpty	No KPI dashboard or reports have been generated in QualiTrack Web yet.	Aún no se han generado KPIs ni reportes en QualiTrack Web.
-kpiDashboard	KPI dashboard	Panel de KPIs
-kpiEmpty	No KPI dashboard has been calculated yet.	Aún no se ha calculado un panel de KPIs.
-kpiOnTrack	On track	En objetivo
-kpiAtRisk	At risk	En riesgo
-targetValue	Target: {value}	Objetivo: {value}	value:String
 reportHistory	Report history	Historial de reportes
 reportHistoryEmpty	No reports generated.	No hay reportes generados.
 billingTitle	Billing Summary	Resumen de Facturación
@@ -312,3 +256,165 @@ paymentsEmpty	No payments recorded.	No hay pagos registrados.
 provider	Provider	Proveedor
 subscriptionHistory	Subscription history	Historial de suscripciones
 billingManagedOnWeb	Plan changes, checkout and cancellation are managed in QualiTrack Web.	Los cambios de plan, pagos y cancelaciones se gestionan en QualiTrack Web.
+account	Account	Cuenta
+actionCoolingOff	Cooling off	Refrigeración apagada
+actionCoolingOn	Cooling on	Refrigeración encendida
+actionExecuted	Executed	Ejecutada
+actionFailed	Failed	Fallida
+actionServoClose	Servo closed	Servo cerrado
+actionServoOpen	Servo opened	Servo abierto
+actionVentilationOff	Ventilation off	Ventilación apagada
+actionVentilationOn	Ventilation on	Ventilación encendida
+addPhoto	Add photo	Agregar foto
+alertsOpen	Open	Abiertas
+anEnvironment	an environment	un ambiente
+auditorReadOnly	Auditors consult alerts without changing them.	Los auditores consultan las alertas sin modificarlas.
+automaticActions	Automatic actions	Acciones automáticas
+automaticActionsHint	Responses of the container in the last 24 hours	Respuestas del contenedor en las últimas 24 horas
+batchesInProgress	Batches in progress	Lotes en proceso
+batchesThatUsedIt	Batches that used it	Lotes que la usaron
+changePassword	Change password	Cambiar contraseña
+changePasswordForcedHint	You signed in with a temporary password. Choose your own password to continue.	Ingresaste con una contraseña temporal. Elige tu propia contraseña para continuar.
+changePasswordTitle	Choose your password	Elige tu contraseña
+changePhoto	Change photo	Cambiar foto
+conditionNormalized	The condition returned to normal on {date}; the alert stays open until someone resolves it.	La condición volvió a la normalidad el {date}; la alerta sigue abierta hasta que alguien la resuelva.	date:String
+confirmPassword	Confirm the new password	Confirma la nueva contraseña
+connected	Connected	Conectado
+connectedOfTotal	{connected} of {total} devices connected	{connected} de {total} dispositivos conectados	connected:int,total:int
+container	Container	Contenedor
+containerMonitor	Container monitor	Monitor de contenedor
+criticalRange	Critical range	Rango crítico
+criticalRangeValue	critical {range}	crítico {range}	range:String
+currentPassword	Current password	Contraseña actual
+deviationIndicators	Deviation indicators	Indicadores de desviaciones
+deviationIndicators7d	Deviation indicators (7 days)	Indicadores de desviaciones (7 días)
+deviations24h	Deviations (24 h)	Desviaciones (24 h)
+deviationsCount	{count} deviations	{count} desviaciones	count:int
+deviationsHint	Readings evaluated as warning or critical	Lecturas evaluadas como advertencia o críticas
+deviationsLabel	Deviations	Desviaciones
+deviationsSummary	{deviations} deviations · {critical} critical	{deviations} desviaciones · {critical} críticas	deviations:int,critical:int
+deviceIdentifier	Device identifier	Identificador del dispositivo
+digitalSignature	Digital signature	Firma digital
+dni	DNI	DNI
+dniInvalid	The DNI must have 8 digits.	El DNI debe tener 8 dígitos.
+edit	Edit	Editar
+email	E-mail	Correo
+emailNotifications	E-mail	Correo
+emailNotificationsHint	Receive alerts that reach the minimum severity by e-mail	Recibir por correo las alertas que alcancen la severidad mínima
+environment	Environment	Ambiente
+environmentalDevice	Environmental device	Dispositivo ambiental
+equipmentUsed	Equipment used	Equipos usados
+firmware	Firmware	Firmware
+firstDetected	First detected	Primera detección
+fullName	Full name	Nombre completo
+fullNameInvalid	Enter between 2 and 120 characters.	Ingresa entre 2 y 120 caracteres.
+history	History	Historial
+inAppNotifications	In the app	En la aplicación
+inAppNotificationsHint	Show notices in the bell	Mostrar los avisos en la campanita
+iotDevices	IoT devices	Dispositivos IoT
+iotRole	IoT role	Rol IoT
+lastCommunication	Last communication	Última comunicación
+location	Location	Ubicación
+locationInvalid	Enter between 2 and 120 characters.	Ingresa entre 2 y 120 caracteres.
+lotDepleted	Depleted	Agotado
+lotExpired	Expired	Vencido
+lotNearExpiry	Near expiry	Próximo a vencer
+lotNotYetReceived	Not received yet	Aún no recibido
+markAllRead	Mark all as read	Marcar todas como leídas
+materialLots	Lots	Lotes
+measurementSummary	Measurement summary	Resumen de mediciones
+metricAirQuality	Air quality	Calidad del aire
+metricHumidity	Humidity	Humedad
+metricLuminosity	Luminosity	Luminosidad
+metricMotion	Motion	Movimiento
+metricRfidTag	RFID tag	Etiqueta RFID
+metricTemperature	Temperature	Temperatura
+minMax	min {min} · max {max}	mín {min} · máx {max}	min:String,max:String
+minimumSeverity	Minimum severity	Severidad mínima
+minimumSeverityHint	Alerts below this severity do not notify you. Batch notices always arrive.	Las alertas por debajo de esta severidad no te avisan. Los avisos de lotes siempre llegan.
+motionDetected	Detected	Detectado
+movementConsumption	Consumption	Consumo
+movementReceipt	Receipt	Recepción
+movementReview	Review	Revisión
+movementStorage	Storage	Almacenamiento
+neverCommunicated	Never	Nunca
+newPassword	New password	Nueva contraseña
+noAutomaticActions	No automatic actions in the last 24 hours.	Sin acciones automáticas en las últimas 24 horas.
+noBatchesUsedIt	No batch has used this material.	Ningún lote ha usado este material.
+noContainerAssigned	The batch has no container assigned.	El lote no tiene contenedor asignado.
+noDeviations	No deviations in the last 24 hours.	Sin desviaciones en las últimas 24 horas.
+noEquipmentUsed	No equipment registered for this batch.	No hay equipos registrados para este lote.
+noOpenAlerts	There are no open alerts.	No hay alertas abiertas.
+noParticipatingStaff	No staff registered for this batch.	No hay personal registrado para este lote.
+noProfileConfigured	No ranges configured yet	Aún no hay rangos configurados
+noReadings24h	The device sent no readings in the last 24 hours.	El dispositivo no envió lecturas en las últimas 24 horas.
+noReadingsInPeriod	There are no readings in the period.	No hay lecturas en el periodo.
+normalRange	Normal range	Rango normal
+normalRangeValue	normal {range}	normal {range}	range:String
+notEvaluated	Not evaluated	Sin evaluar
+notLocated	Not located	Sin ubicar
+noticeAlertAcknowledged	{actor} is attending the alert of {variable} in {environment}.	{actor} está atendiendo la alerta de {variable} en {environment}.	actor:String,variable:String,environment:String
+noticeAlertEscalated	The alert of {variable} in {environment} rose to {level}: {value} {unit}.	La alerta de {variable} en {environment} pasó a {level}: {value} {unit}.	variable:String,environment:String,level:String,value:String,unit:String
+noticeAlertOpened	New {severity} alert in {environment}: {variable} at {value} {unit}.	Nueva alerta {severity} en {environment}: {variable} en {value} {unit}.	severity:String,environment:String,variable:String,value:String,unit:String
+noticeAlertResolved	{actor} resolved the alert of {variable} in {environment}.	{actor} resolvió la alerta de {variable} en {environment}.	actor:String,variable:String,environment:String
+noticeBatchRejected	{actor} rejected batch {batch}: {note}	{actor} rechazó el lote {batch}: {note}	actor:String,batch:String,note:String
+noticeBatchReleased	{actor} released batch {batch}.	{actor} liberó el lote {batch}.	actor:String,batch:String
+noticeLevelCritical	critical	crítica
+noticeLevelLow	low	leve
+noticeLevelWarning	warning	advertencia
+noticeSeverityCritical	critical	crítica
+noticeSeverityLow	low	leve
+noticeSeverityWarning	warning	de advertencia
+notificationPreferences	Notification preferences	Preferencias de notificación
+notificationsEmpty	You have no notifications yet.	Aún no tienes notificaciones.
+notificationsTitle	Notifications	Notificaciones
+notificationsUnread	Notifications, {count} unread	Notificaciones, {count} sin leer	count:int
+onlyDeviations	Only deviations	Solo desviaciones
+openAlertsHint	Most urgent first	Las más urgentes primero
+participatingStaff	Participating staff	Personal participante
+passwordChanged	Your password was changed.	Tu contraseña se cambió.
+passwordPolicyHint	Between 8 and 72 characters, with letters and numbers.	Entre 8 y 72 caracteres, con letras y números.
+passwordsDoNotMatch	The passwords do not match.	Las contraseñas no coinciden.
+pendingCount	{count} pending	{count} pendientes	count:int
+period24h	24 hours	24 horas
+period31d	31 days	31 días
+period7d	7 days	7 días
+periodMax31Days	Choose a period of up to 31 days	Elige un periodo de hasta 31 días
+personalData	Personal data	Datos personales
+phoneInvalid	Enter a phone with 6 to 15 digits.	Ingresa un teléfono de 6 a 15 dígitos.
+photoRemoved	Your photo was removed.	Se quitó tu foto.
+photoTooLarge	The photo cannot exceed 2 MB.	La foto no puede superar 2 MB.
+photoTypeNotAllowed	Choose a JPG, PNG or WebP image.	Elige una imagen JPG, PNG o WebP.
+photoUpdated	Your photo was updated.	Se actualizó tu foto.
+preferencesSaved	Preferences saved.	Preferencias guardadas.
+profileSaved	Your data was saved.	Se guardaron tus datos.
+profileVersion	Profile version {version}	Perfil versión {version}	version:String
+readingsCount	{count} readings	{count} lecturas	count:int
+recentBatches	Recent batches	Lotes recientes
+removePhoto	Remove photo	Quitar foto
+removePhotoConfirm	Your initials will be shown instead of the photo.	Se mostrarán tus iniciales en lugar de la foto.
+renewalCancelled	Renewal cancelled: access until {date}	Renovación cancelada: acceso hasta el {date}	date:String
+reportBatchTraceability	Batch traceability	Trazabilidad de lote
+reportCompliance	Environmental compliance	Cumplimiento ambiental
+reportEquipmentLog	Equipment log	Bitácora de equipo
+reportInventory	Inventory	Inventario
+reportKpiSummary	Indicator summary	Resumen de indicadores
+reportsGeneratedOnWeb	Reports are generated and downloaded in QualiTrack Web.	Los reportes se generan y descargan en QualiTrack Web.
+requiresReview	Requires review	Requiere revisión
+roleAuditor	Auditor	Auditor
+save	Save	Guardar
+selectDevice	Device	Dispositivo
+signatureHash	SHA-256 hash	Huella SHA-256
+signedAt	Signed at	Firmado el
+signedBy	Signed by	Firmado por
+someone	Someone	Alguien
+stateCritical	Critical	Crítico
+stateNormal	Normal	Normal
+stateWarning	Warning	Advertencia
+telemetryNoDevices	There are no IoT devices located in an environment yet.	Aún no hay dispositivos IoT ubicados en un ambiente.
+thresholdExceeded	Limit exceeded: {value}	Límite superado: {value}	value:String
+timeInRange	{value} in range	{value} en rango	value:String
+unread	Unread	Sin leer
+until	until {date}	hasta el {date}	date:String
+viewAll	View all	Ver todas
+you	You	Tú
