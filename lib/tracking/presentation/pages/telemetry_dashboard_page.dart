@@ -337,7 +337,7 @@ class _ChartCard extends StatelessWidget {
               _Legend(color: AppColors.chartWarning, label: l10n.stateWarning),
               _Legend(color: AppColors.chartCritical, label: l10n.stateCritical),
               if (threshold != null) ...[
-                _Legend(color: AppColors.chartNormalRange, label: l10n.normalRange),
+                _Legend(color: AppColors.chartNormalRange, label: l10n.normalRange, dashed: true),
                 _Legend(color: AppColors.chartCritical, label: l10n.criticalRange, dashed: true),
               ],
             ],
@@ -386,9 +386,13 @@ String? rangeText(BuildContext context, MetricThreshold? threshold) {
   if (threshold == null) return null;
   final locale = context.localeName;
   final unit = threshold.unit ?? '';
-  String bounds(double? min, double? max) =>
-      '${min == null ? '−∞' : Formatters.number(min, locale)}–${max == null ? '∞' : Formatters.number(max, locale)} $unit'
-          .trim();
+  // An open bound reads as "≤ 300 lux" or "≥ 2 °C" instead of an infinity.
+  String bounds(double? min, double? max) {
+    final low = min == null ? null : Formatters.number(min, locale);
+    final high = max == null ? null : Formatters.number(max, locale);
+    final text = low == null ? '≤ $high' : (high == null ? '≥ $low' : '$low–$high');
+    return '$text $unit'.trim();
+  }
   final parts = <String>[
     if (threshold.normalMin != null || threshold.normalMax != null)
       context.l10n.normalRangeValue(bounds(threshold.normalMin, threshold.normalMax)),

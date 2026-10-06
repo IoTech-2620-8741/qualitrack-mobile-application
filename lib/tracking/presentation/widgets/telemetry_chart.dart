@@ -65,10 +65,12 @@ class TelemetryChart extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 44,
-                  getTitlesWidget: (value, meta) => Text(
-                    NumberFormat.compact(locale: locale).format(value),
-                    style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-                  ),
+                  getTitlesWidget: (value, meta) => _crowdsEdge(value, meta)
+                      ? const SizedBox.shrink()
+                      : Text(
+                          NumberFormat.compact(locale: locale).format(value),
+                          style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                        ),
                 ),
               ),
               bottomTitles: AxisTitles(
@@ -76,13 +78,15 @@ class TelemetryChart extends StatelessWidget {
                   showTitles: true,
                   reservedSize: 24,
                   interval: (maxX - minX) / 3,
-                  getTitlesWidget: (value, meta) => Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      timeFormat.format(DateTime.fromMillisecondsSinceEpoch(value.toInt())),
-                      style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
-                    ),
-                  ),
+                  getTitlesWidget: (value, meta) => _crowdsEdge(value, meta)
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            timeFormat.format(DateTime.fromMillisecondsSinceEpoch(value.toInt())),
+                            style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -134,6 +138,17 @@ class TelemetryChart extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// fl_chart labels the axis ends besides the interval steps; an end label
+  /// too close to a step label would overlap it, so it is left out.
+  static bool _crowdsEdge(double value, TitleMeta meta) {
+    if (value != meta.min && value != meta.max) return false;
+    final gap = meta.appliedInterval * 0.5;
+    final step = value == meta.min
+        ? (meta.min / meta.appliedInterval).ceil() * meta.appliedInterval
+        : (meta.max / meta.appliedInterval).floor() * meta.appliedInterval;
+    return step != value && (step - value).abs() < gap;
   }
 
   HorizontalLine _rangeLine(double y, Color color) =>
