@@ -4,70 +4,82 @@ import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
 import '../../domain/telemetry.dart';
 
-extension TelemetryStatusPresentation on TelemetryStatus {
-  BadgeTone get tone => switch (this) {
-    TelemetryStatus.operational => BadgeTone.success,
-    TelemetryStatus.warning => BadgeTone.warning,
-    TelemetryStatus.critical => BadgeTone.critical,
-    TelemetryStatus.offline => BadgeTone.neutral,
-    TelemetryStatus.unknown => BadgeTone.neutral,
+extension MonitoredMetricPresentation on MonitoredMetric {
+  String label(AppLocalizations l10n, {String? raw}) => switch (this) {
+    MonitoredMetric.airQuality => l10n.metricAirQuality,
+    MonitoredMetric.motion => l10n.metricMotion,
+    MonitoredMetric.temperature => l10n.metricTemperature,
+    MonitoredMetric.humidity => l10n.metricHumidity,
+    MonitoredMetric.luminosity => l10n.metricLuminosity,
+    MonitoredMetric.rfidTag => l10n.metricRfidTag,
+    MonitoredMetric.unknown => raw ?? l10n.unknown,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    TelemetryStatus.operational => l10n.telemetryOperational,
-    TelemetryStatus.warning => l10n.telemetryWarning,
-    TelemetryStatus.critical => l10n.telemetryCritical,
-    TelemetryStatus.offline => l10n.telemetryOffline,
-    TelemetryStatus.unknown => l10n.unknown,
+  IconData get icon => switch (this) {
+    MonitoredMetric.airQuality => Icons.air_outlined,
+    MonitoredMetric.motion => Icons.directions_walk_outlined,
+    MonitoredMetric.temperature => Icons.thermostat_outlined,
+    MonitoredMetric.humidity => Icons.water_drop_outlined,
+    MonitoredMetric.luminosity => Icons.light_mode_outlined,
+    MonitoredMetric.rfidTag => Icons.nfc_outlined,
+    MonitoredMetric.unknown => Icons.sensors_outlined,
   };
 }
 
-class TelemetryStatusBadge extends StatelessWidget {
-  const TelemetryStatusBadge({super.key, required this.status});
+extension EnvironmentalStatePresentation on EnvironmentalState {
+  BadgeTone get tone => switch (this) {
+    EnvironmentalState.normal => BadgeTone.success,
+    EnvironmentalState.warning => BadgeTone.warning,
+    EnvironmentalState.critical => BadgeTone.critical,
+    EnvironmentalState.unknown => BadgeTone.neutral,
+  };
 
-  final EquipmentTelemetryStatus? status;
+  String label(AppLocalizations l10n) => switch (this) {
+    EnvironmentalState.normal => l10n.stateNormal,
+    EnvironmentalState.warning => l10n.stateWarning,
+    EnvironmentalState.critical => l10n.stateCritical,
+    EnvironmentalState.unknown => l10n.notEvaluated,
+  };
+}
+
+/// Localized name of an `ActuationAction` (e.g. `COOLING_ON`).
+String actuationLabel(AppLocalizations l10n, String action) => switch (action) {
+  'VENTILATION_ON' => l10n.actionVentilationOn,
+  'VENTILATION_OFF' => l10n.actionVentilationOff,
+  'COOLING_ON' => l10n.actionCoolingOn,
+  'COOLING_OFF' => l10n.actionCoolingOff,
+  'SERVO_OPEN' => l10n.actionServoOpen,
+  'SERVO_CLOSE' => l10n.actionServoClose,
+  _ => action,
+};
+
+class ConnectionBadge extends StatelessWidget {
+  const ConnectionBadge({super.key, required this.connection});
+
+  final DeviceConnection? connection;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final value = status;
-    if (value == null) {
+    final value = connection;
+    if (value == null || value.status == ConnectionStatus.unknown) {
       return StatusBadge(
         label: l10n.telemetryUnavailable,
         tone: BadgeTone.neutral,
         icon: Icons.sensors_off_outlined,
       );
     }
-    return StatusBadge(label: value.currentStatus.label(l10n), tone: value.currentStatus.tone);
+    return value.isConnected
+        ? StatusBadge(label: l10n.connected, tone: BadgeTone.success, icon: Icons.wifi_rounded)
+        : StatusBadge(label: l10n.requiresReview, tone: BadgeTone.warning, icon: Icons.wifi_off_rounded);
   }
 }
 
-class OnlineBadge extends StatelessWidget {
-  const OnlineBadge({super.key, required this.online});
+class StateBadge extends StatelessWidget {
+  const StateBadge({super.key, required this.state});
 
-  final bool online;
+  final EnvironmentalState state;
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return StatusBadge(
-      label: online ? l10n.online : l10n.offline,
-      tone: online ? BadgeTone.success : BadgeTone.neutral,
-      icon: online ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-    );
-  }
-}
-
-/// Icon used for a telemetry parameter card; falls back to a generic sensor.
-IconData parameterIcon(String parameter) {
-  final p = parameter.toLowerCase();
-  if (p.contains('temp')) return Icons.thermostat_outlined;
-  if (p.contains('hum')) return Icons.water_drop_outlined;
-  if (p.contains('air') || p.contains('aire') || p.contains('co2') || p.contains('aqi')) {
-    return Icons.air_outlined;
-  }
-  if (p.contains('press')) return Icons.speed_outlined;
-  if (p.contains('volt')) return Icons.bolt_outlined;
-  if (p.contains('rpm')) return Icons.rotate_right_outlined;
-  return Icons.sensors_outlined;
+  Widget build(BuildContext context) => StatusBadge(label: state.label(context.l10n), tone: state.tone);
 }

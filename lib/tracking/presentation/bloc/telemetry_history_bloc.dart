@@ -3,18 +3,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../equipment/application/equipment_queries.dart';
 import '../../../equipment/domain/equipment.dart';
+import '../../../laboratory/application/laboratory_queries.dart';
+import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/value_objects.dart';
 import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/telemetry_queries.dart';
 import '../../domain/telemetry.dart';
+import 'telemetry_dashboard_bloc.dart';
 
-/// Inclusive date range applied by the backend (`from`/`to`).
+/// Period sent to the backend (`from`/`to`), at most 31 days.
 final class HistoryRange extends Equatable {
   const HistoryRange({required this.from, required this.to});
 
+  factory HistoryRange.last(Duration duration, DateTime now) => HistoryRange(from: now.subtract(duration), to: now);
+
   final DateTime from;
   final DateTime to;
+
+  bool get isValid => from.isBefore(to) && to.difference(from) <= TelemetryAnalysis.maxPeriod;
 
   @override
   List<Object?> get props => [from, to];
@@ -28,47 +35,53 @@ sealed class TelemetryHistoryEvent extends Equatable {
 }
 
 final class TelemetryHistoryStarted extends TelemetryHistoryEvent {
-  const TelemetryHistoryStarted({this.equipmentId});
+  const TelemetryHistoryStarted({this.deviceId});
 
-  final int? equipmentId;
+  final int? deviceId;
 
   @override
-  List<Object?> get props => [equipmentId];
+  List<Object?> get props => [deviceId];
 }
 
-final class TelemetryHistoryEquipmentSelected extends TelemetryHistoryEvent {
-  const TelemetryHistoryEquipmentSelected(this.equipmentId);
+final class TelemetryHistoryDeviceSelected extends TelemetryHistoryEvent {
+  const TelemetryHistoryDeviceSelected(this.deviceId);
 
-  final int equipmentId;
+  final int deviceId;
 
   @override
-  List<Object?> get props => [equipmentId];
+  List<Object?> get props => [deviceId];
 }
 
 final class TelemetryHistoryRangeChanged extends TelemetryHistoryEvent {
   const TelemetryHistoryRangeChanged(this.range);
 
-  final HistoryRange? range;
+  final HistoryRange range;
 
   @override
   List<Object?> get props => [range];
+}
+
+final class TelemetryHistoryMetricChanged extends TelemetryHistoryEvent {
+  const TelemetryHistoryMetricChanged(this.metric);
+
+  /// Null shows every metric.
+  final MonitoredMetric? metric;
+
+  @override
+  List<Object?> get props => [metric];
 }
 
 final class TelemetryHistorySearchRequested extends TelemetryHistoryEvent {
   const TelemetryHistorySearchRequested();
 }
 
-final class TelemetryHistoryFiltersCleared extends TelemetryHistoryEvent {
-  const TelemetryHistoryFiltersCleared();
-}
+final class TelemetryHistoryDeviationsToggled extends TelemetryHistoryEvent {
+  const TelemetryHistoryDeviationsToggled(this.onlyDeviations);
 
-final class TelemetryHistoryAnomaliesToggled extends TelemetryHistoryEvent {
-  const TelemetryHistoryAnomaliesToggled(this.onlyAnomalies);
-
-  final bool onlyAnomalies;
+  final bool onlyDeviations;
 
   @override
-  List<Object?> get props => [onlyAnomalies];
+  List<Object?> get props => [onlyDeviations];
 }
 
 final class TelemetryHistoryPageChanged extends TelemetryHistoryEvent {
@@ -82,25 +95,32 @@ final class TelemetryHistoryPageChanged extends TelemetryHistoryEvent {
 
 final class TelemetryHistoryState extends Equatable {
   const TelemetryHistoryState({
-    this.equipments = const RemoteState(),
-    this.selectedEquipmentId,
-    this.range,
-    this.onlyAnomalies = false,
+    required this.range,
+    this.catalog = const RemoteState(),
+    this.selectedDeviceId,
+    this.metric,
+    this.onlyDeviations = false,
     this.points = const RemoteState(),
     this.page = 0,
   });
 
   static const int pageSize = 20;
 
-  final RemoteState<List<Equipment>> equipments;
-  final int? selectedEquipmentId;
-  final HistoryRange? range;
-  final bool onlyAnomalies;
-  final RemoteState<List<TelemetryHistoryPoint>> points;
+  final RemoteState<DeviceCatalog> catalog;
+  final int? selectedDeviceId;
+  final HistoryRange range;
+  final MonitoredMetric? metric;
+  final bool onlyDeviations;
+  final RemoteState<List<Measurement>> points;
   final int page;
 
-  List<TelemetryHistoryPoint> get filtered => (points.data ?? const <TelemetryHistoryPoint>[])
-      .where((p) => !onlyAnomalies || p.isAnomaly)
+  /// Metrics present in the loaded readings (for the metric filter).
+  List<MonitoredMetric> get metrics =>
+      (points.data ?? const <Measurement>[]).map((p) => p.metric).toSet().toList()
+        ..sort((a, b) => a.index.compareTo(b.index));
+
+  List<Measurement> get filtered => (points.data ?? const <Measurement>[])
+      .where((p) => (metric == null || p.metric == metric) && (!onlyDeviations || p.state.isDeviation))
       .toList(growable: false);
 
   int get pageCount {
@@ -108,7 +128,7 @@ final class TelemetryHistoryState extends Equatable {
     return total == 0 ? 1 : ((total - 1) ~/ pageSize) + 1;
   }
 
-  List<TelemetryHistoryPoint> get pageItems {
+  List<Measurement> get pageItems {
     final all = filtered;
     final start = page * pageSize;
     if (start >= all.length) return const [];
@@ -117,50 +137,52 @@ final class TelemetryHistoryState extends Equatable {
   }
 
   TelemetryHistoryState copyWith({
-    RemoteState<List<Equipment>>? equipments,
-    int? selectedEquipmentId,
+    RemoteState<DeviceCatalog>? catalog,
+    int? selectedDeviceId,
     HistoryRange? range,
-    bool clearRange = false,
-    bool? onlyAnomalies,
-    RemoteState<List<TelemetryHistoryPoint>>? points,
+    MonitoredMetric? metric,
+    bool clearMetric = false,
+    bool? onlyDeviations,
+    RemoteState<List<Measurement>>? points,
     int? page,
   }) => TelemetryHistoryState(
-    equipments: equipments ?? this.equipments,
-    selectedEquipmentId: selectedEquipmentId ?? this.selectedEquipmentId,
-    range: clearRange ? null : (range ?? this.range),
-    onlyAnomalies: onlyAnomalies ?? this.onlyAnomalies,
+    catalog: catalog ?? this.catalog,
+    selectedDeviceId: selectedDeviceId ?? this.selectedDeviceId,
+    range: range ?? this.range,
+    metric: clearMetric ? null : (metric ?? this.metric),
+    onlyDeviations: onlyDeviations ?? this.onlyDeviations,
     points: points ?? this.points,
     page: page ?? this.page,
   );
 
   @override
-  List<Object?> get props => [equipments, selectedEquipmentId, range, onlyAnomalies, points, page];
+  List<Object?> get props => [catalog, selectedDeviceId, range, metric, onlyDeviations, points, page];
 }
 
 class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryState> {
   TelemetryHistoryBloc({
     required GetEquipments getEquipments,
-    required GetTelemetryHistory getHistory,
+    required GetEnvironments getEnvironments,
+    required GetMeasurements getMeasurements,
     required LaboratoryId Function() laboratoryId,
+    DateTime Function()? clock,
   }) : _getEquipments = getEquipments,
-       _getHistory = getHistory,
+       _getEnvironments = getEnvironments,
+       _getMeasurements = getMeasurements,
        _laboratoryId = laboratoryId,
-       super(const TelemetryHistoryState()) {
+       super(TelemetryHistoryState(range: HistoryRange.last(const Duration(hours: 24), (clock ?? DateTime.now)()))) {
     on<TelemetryHistoryStarted>(_onStarted);
-    on<TelemetryHistoryEquipmentSelected>((e, emit) async {
-      emit(state.copyWith(selectedEquipmentId: e.equipmentId, page: 0));
+    on<TelemetryHistoryDeviceSelected>((e, emit) async {
+      emit(state.copyWith(selectedDeviceId: e.deviceId, page: 0, clearMetric: true));
       await _load(emit);
     });
-    on<TelemetryHistoryRangeChanged>((e, emit) {
-      emit(e.range == null ? state.copyWith(clearRange: true) : state.copyWith(range: e.range));
+    on<TelemetryHistoryRangeChanged>((e, emit) => emit(state.copyWith(range: e.range)));
+    on<TelemetryHistoryMetricChanged>((e, emit) {
+      emit(e.metric == null ? state.copyWith(clearMetric: true, page: 0) : state.copyWith(metric: e.metric, page: 0));
     });
     on<TelemetryHistorySearchRequested>((e, emit) => _load(emit));
-    on<TelemetryHistoryFiltersCleared>((e, emit) async {
-      emit(state.copyWith(clearRange: true, onlyAnomalies: false, page: 0));
-      await _load(emit);
-    });
-    on<TelemetryHistoryAnomaliesToggled>(
-      (e, emit) => emit(state.copyWith(onlyAnomalies: e.onlyAnomalies, page: 0)),
+    on<TelemetryHistoryDeviationsToggled>(
+      (e, emit) => emit(state.copyWith(onlyDeviations: e.onlyDeviations, page: 0)),
     );
     on<TelemetryHistoryPageChanged>((e, emit) {
       if (e.page < 0 || e.page >= state.pageCount) return;
@@ -169,32 +191,42 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
   }
 
   final GetEquipments _getEquipments;
-  final GetTelemetryHistory _getHistory;
+  final GetEnvironments _getEnvironments;
+  final GetMeasurements _getMeasurements;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onStarted(TelemetryHistoryStarted event, Emitter<TelemetryHistoryState> emit) async {
-    emit(state.copyWith(equipments: state.equipments.loading()));
+    emit(state.copyWith(catalog: state.catalog.loading()));
     try {
-      final equipments = await _getEquipments(_laboratoryId());
-      emit(state.copyWith(equipments: state.equipments.success(equipments, empty: equipments.isEmpty)));
-      if (equipments.isEmpty) return;
-      final requested = event.equipmentId;
-      final id = equipments.any((e) => e.id == requested) ? requested! : equipments.first.id;
-      emit(state.copyWith(selectedEquipmentId: id));
+      final laboratoryId = _laboratoryId();
+      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _getEnvironments(laboratoryId)]);
+      final catalog = DeviceCatalog(
+        devices: telemetryDevices(results[0] as List<Equipment>),
+        environments: results[1] as List<LabEnvironment>,
+      );
+      emit(state.copyWith(catalog: state.catalog.success(catalog, empty: catalog.devices.isEmpty)));
+      if (catalog.devices.isEmpty) return;
+      final requested = event.deviceId;
+      final id = catalog.devices.any((e) => e.id == requested) ? requested! : catalog.devices.first.id;
+      emit(state.copyWith(selectedDeviceId: id));
       await _load(emit);
     } catch (error) {
-      emit(state.copyWith(equipments: state.equipments.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(catalog: state.catalog.failed(ApiExceptionMapper.map(error))));
     }
   }
 
   Future<void> _load(Emitter<TelemetryHistoryState> emit) async {
-    final equipmentId = state.selectedEquipmentId;
-    if (equipmentId == null) return;
+    final deviceId = state.selectedDeviceId;
+    TelemetryTarget? target;
+    for (final device in state.catalog.data?.devices ?? const <Equipment>[]) {
+      if (device.id == deviceId) target = targetOf(device);
+    }
+    if (target == null) return;
     emit(state.copyWith(points: state.points.loading(), page: 0));
     try {
       final range = state.range;
-      final points = await _getHistory(equipmentId, from: range?.from, to: range?.to);
-      if (state.selectedEquipmentId != equipmentId) return;
+      final points = await _getMeasurements(_laboratoryId(), target, from: range.from, to: range.to);
+      if (state.selectedDeviceId != deviceId) return;
       emit(state.copyWith(points: state.points.success(points, empty: points.isEmpty)));
     } catch (error) {
       emit(state.copyWith(points: state.points.failed(ApiExceptionMapper.map(error))));

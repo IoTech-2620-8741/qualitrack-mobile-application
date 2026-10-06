@@ -33,6 +33,7 @@ abstract final class AppColors {
 
   // Charts
   static const Color chartLine = Color(0xFF0D9488);
-  static const Color chartAnomaly = Color(0xFFEF4444);
-  static const Color chartLimit = Color(0xFFF59E0B);
+  static const Color chartCritical = Color(0xFFEF4444);
+  static const Color chartWarning = Color(0xFFF59E0B);
+  static const Color chartNormalRange = Color(0xFF16A34A);
 }
