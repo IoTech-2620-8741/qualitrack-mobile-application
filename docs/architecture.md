@@ -47,24 +47,30 @@ a Bounded Context.
 
 | Folder | Context | Mobile scope |
 |---|---|---|
-| `iam` | Identity & Access Management | Sign in, session, onboarding check, profile, logout |
-| `subscription` | Payments & Subscriptions | Active plan, history, payments (read-only) |
-| `laboratory` | Laboratory Management | Laboratory info, product catalog (read-only) |
-| `inventory` | Inventory Management | Materials, receipts, movements (read-only) |
-| `equipment` | Equipment Management | Equipment, maintenance, BPM limits (read-only) |
-| `tracking` | Tracking & Telemetry | Status, latest measurements, history, polling (read-only) |
-| `batch` | Product Batch Management | Batches, raw material usage, release/reject of existing batches |
-| `compliance` | Compliance & Alerting | Alerts, acknowledge/resolve, compliance events |
-| `reporting` | Reporting & Audit | KPI dashboard, report history, trends, audit logs (read-only) |
+| `iam` | Identity & Access Management | Sign in, session, onboarding check, forced and voluntary password change, logout |
+| `subscription` | Payments & Subscriptions | Current plan, history, payments (read-only, quality managers only) |
+| `laboratory` | Laboratory Management | Laboratory, environments, staff names, product catalog per environment (read-only) |
+| `inventory` | Inventory Management | Raw materials per environment, lots, movements, batches that used them (read-only) |
+| `equipment` | Equipment Management | Equipment and IoT role, maintenance, BPM limits (read-only) |
+| `tracking` | Tracking & Telemetry | Connection, readings per environment or container monitor, profile ranges, automatic actions, polling (read-only) |
+| `batch` | Product Batch Management | Batches, traceability, release (digital signature) and rejection |
+| `compliance` | Compliance & Alerting | Alerts per environment, acknowledge/resolve, compliance events, in-app notifications and preferences |
+| `reporting` | Reporting & Audit | Measurement summary and deviation indicators per period, report history, audit logs (read-only) |
+| `profile` | Profile | Personal data, photo |
 
 ## Key flows
 
 **Session.** `SplashPage` → `SessionController.restore()` reads the JWT from the
 keystore, discards it if `exp` has passed, and calls `GET /users/me/onboarding`.
-Status `authenticated | setupRequired | unauthenticated` drives the
+Status `authenticated | passwordChangeRequired | setupRequired | unauthenticated` drives the
 `go_router` redirect (`refreshListenable`). On any authenticated 401 the
 `AuthInterceptor` calls `SessionController.expire()` once (re-entrancy guard);
 the router then shows Sign In with a "session expired" banner.
+
+**Temporary password.** Staff members registered by the quality manager sign in
+with a temporary password; while `nextStep` is `PASSWORD_CHANGE` the router only
+shows the password change screen. After `POST /users/me/password-changes` the
+session is re-evaluated.
 
 **No fallback IDs.** Every laboratory scoped call obtains the id through
 `SessionController.requireLaboratoryId()`, which throws
@@ -83,21 +89,34 @@ so rejected transitions (e.g. "Rejected batches cannot be released") are visible
 screens load secondary sections independently (`Section<T>`) so one failing
 endpoint does not hide the rest.
 
-**Live telemetry.** `TelemetryDashboardBloc` polls status + latest measurements
-every 15 s and the last 24 h history every 4th tick. Polling pauses when the app
-goes to background and the timer is cancelled in `close()`. Chart windows
-(15 min / 1 h / 6 h / 24 h) are offered only if real timestamps span them. No
-WebSockets are simulated and the app never POSTs telemetry.
+**Live telemetry.** Only IoT devices located in an environment report telemetry
+(the environmental device of the environment and its container monitors).
+`TelemetryDashboardBloc` loads the last 24 hours once; then every 15 s it reads
+the connection and only the readings of the last minutes, merged by id, and
+the automatic actions every 4th tick. Polling pauses when the app goes to
+background and the timer is cancelled in `close()`. Chart windows
+(15 min / 1 h / 6 h / 24 h) are offered only if real timestamps span them; the
+normal and critical ranges of the profile are drawn as dashed lines. The app
+never POSTs telemetry.
 
-**Review actions.** Acknowledge/Resolve and Release/Reject are shown only to
-`ROLE_QA_MANAGER` / `ROLE_ADMIN` (`UserSession.canReview`) and always ask for
-confirmation. The backend remains the authority (see gaps in
-`mobile-api-mapping.md`).
+**Environments.** Several resources are exposed per environment (alerts,
+materials, products, deviation indicators). Laboratory-wide screens add them up
+with `loadAll` (`shared/application/bounded_concurrency.dart`, 4 requests in
+flight), the same way QualiTrack Web does.
+
+**Notifications.** `UnreadNotificationsController` keeps the count of the bell
+(every 60 s while the app is in foreground and after reading); opening a notice
+marks it as read and leads to the alert or the batch.
+
+**Roles.** As in QualiTrack Web: operators and quality managers acknowledge and
+resolve alerts (`UserSession.canAttendAlerts`); only quality managers release or
+reject batches and see the subscription (`canManageQuality`); auditors only
+read. Every action asks for confirmation and the backend remains the authority.
 
 ## Localization
 
 English (default) and Spanish. Strings live in `l10n/strings.tsv` and
-`tool/generate_l10n.py` generates `lib/shared/presentation/l10n/app_localizations.dart`
+`dart run tool/generate_l10n.dart` generates `lib/shared/presentation/l10n/app_localizations.dart`
 (a `LocalizationsDelegate` registered with `flutter_localizations`). A test
 verifies both languages define the same keys.
 

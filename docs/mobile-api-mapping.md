@@ -1,112 +1,86 @@
 # QualiTrack Mobile — API Mapping
 
-Fuente de verdad: `qualitrack-platform` (rama `develop`, commit `923048a`).
+Fuente de verdad: `qualitrack-platform` v0.13.2 (rama `develop`).
 Todas las rutas son relativas a `API_BASE_URL` (p. ej. `http://10.0.2.2:8080`) y comienzan con `/api/v1`.
+`{lab}` = laboratorio de la sesión, `{env}` = ambiente.
 
-## Reglas transversales verificadas en el backend
+## Reglas transversales del backend
 
-| Tema | Comportamiento real |
+| Tema | Comportamiento |
 |---|---|
-| Autenticación | `POST /api/v1/authentication/sign-in` es público. Todo lo demás exige `Authorization: Bearer <JWT>`. Sin token → `401` (cuerpo HTML/“Unauthorized”). |
-| JWT | Claims: `sub`, `userId`, `laboratoryId`, `roles`, `exp`. Expira a los **7 días** (`authorization.jwt.expiration.days=7`). |
-| Tenant | `TenantResourceInterceptor` valida cada path/query param reconocido (`laboratoryId`, `labId`, `userId`, `equipmentId`, `batchId`, `alertId`, `rawMaterialId`, `productId`, `staffId`, `reportId`, `subscriptionId`) contra el laboratorio del token → `403 {code: ACCESS_DENIED}`. |
-| Onboarding | `OnboardingInterceptor`: si `GET /users/me/onboarding` no devuelve `nextStep = READY`, los endpoints operativos responden `403 {code: ONBOARDING_REQUIRED, nextStep}`. `nextStep ∈ {SUBSCRIPTION, LABORATORY, READY}`. |
-| Roles | `ROLE_ADMIN`, `ROLE_QA_MANAGER`, `ROLE_LAB_OPERATOR` (`iam.domain.model.valueobjects.Roles`). |
-| Errores | `ErrorResource {code, message, details}`. `VALIDATION_ERROR`→400, `*_NOT_FOUND`→404, `*_CONFLICT`→409, `UNEXPECTED_ERROR`→500, `ACCESS_DENIED`→403, Inventory `INVENTORY_CONFLICT`→409. Algunos GET devuelven 404 sin cuerpo. |
-| Paginación | No existe en ningún endpoint. Todas las listas son completas. |
-| Fechas | Telemetría, alertas y eventos guardan `timestamp` como **String** (ISO-8601 esperado). Filtro `from`/`to` de historial compara strings; Web envía `Date.toISOString()` (UTC). |
-
-## Enums reales
-
-| Enum | Valores |
-|---|---|
-| AlertStatus | `UNRESOLVED`, `ACKNOWLEDGED`, `RESOLVED` |
-| AlertSeverity | `LOW`, `WARNING`, `CRITICAL` |
-| BatchStatus | `PENDING`, `IN_PROGRESS`, `RELEASED`, `REJECTED` |
-| TelemetryStatus | `OPERATIONAL`, `WARNING`, `CRITICAL`, `OFFLINE` |
-| EquipmentStatus | `OPERATIONAL`, `MAINTENANCE`, `OUT_OF_SERVICE`, `INACTIVE` (se expone como String) |
-| MaintenanceType | `PREVENTIVE`, `CORRECTIVE`, `CALIBRATION`, `INSPECTION`, `OTHER` |
-| RawMaterialBatchStatus (recepción) | `QUARANTINED`, `RELEASED`, `OBSERVED`, `REJECTED` |
-| SubscriptionStatus | `ACTIVE`, `INACTIVE`, `PENDING_PAYMENT`, `CANCELLED`, `EXPIRED` |
-| PaymentStatus | `PENDING`, `PAID`, `FAILED`, `CANCELLED`, `REFUNDED` |
-| BillingCycle | `MONTHLY`, `YEARLY` |
-| PlanCode | `FREE`, `BASIC`, `PROFESSIONAL`, `ENTERPRISE` |
-| KpiMetricStatus | `ON_TRACK`, `AT_RISK`, `CRITICAL`, `UNKNOWN` |
-| AuditAction | `CREATE`, `UPDATE`, `DELETE`, `RELEASE`, `REJECT`, `APPROVE`, `REGISTER`, `REMOVE`, `EXPORT`, `GENERATE`, `LOGIN`, `LOGOUT`, `SYSTEM` |
-| ReportType | `BATCH_TRACEABILITY`, `COMPLIANCE_PERIOD`, `EQUIPMENT_LOG`, `KPI_SUMMARY` |
-| TrendDirection | `INCREASING`, `DECREASING`, `STABLE` |
-| ComplianceEventType | `DEVIATION_ALERT_CREATED`, `DEVIATION_ALERT_ACKNOWLEDGED`, `DEVIATION_ALERT_RESOLVED`, `NOTIFICATION_PREFERENCE_UPDATED`, `BATCH_BLOCKED`, `BATCH_RELEASED`, `BATCH_REJECTED`, `RAW_MATERIAL_LOW_STOCK`, `EQUIPMENT_CALIBRATION_EXPIRED`, `EQUIPMENT_DEVIATION_DETECTED` |
+| Autenticación | `POST /authentication/sign-in` es público. Todo lo demás exige `Authorization: Bearer <JWT>`. Sin token → `401`. |
+| Sesión | `AuthenticatedUserResource {id, username, token, roles, laboratoryId, passwordChangeRequired}`. El JWT expira a los 7 días y también se valida contra el claim `userId`, porque el usuario puede cambiar su nombre de usuario. |
+| Onboarding | `GET /users/me/onboarding` → `nextStep ∈ {PASSWORD_CHANGE, SUBSCRIPTION, LABORATORY, READY}`. Mientras no sea `READY`, las rutas operativas responden `403 {code: ONBOARDING_REQUIRED, nextStep}`. |
+| Roles | `ROLE_ADMIN`, `ROLE_QA_MANAGER`, `ROLE_LAB_OPERATOR`, `ROLE_AUDITOR`. El auditor solo lee: toda escritura le responde `403`. |
+| Laboratorio | Las rutas `/laboratories/{lab}/**` responden `403` si el laboratorio no es el del usuario. |
+| Errores | `ErrorResource {code, message, details}`: `400`, `403`, `404`, `409`, `413`/`415` (foto), `502` (proveedor de correo). |
+| Paginación | No existe. Los avisos aceptan `limit` (máximo 100). |
+| Fechas | Los periodos (`from`/`to`) se envían como `Date.toISOString()` en UTC, igual que Web. La telemetría acepta hasta 31 días. |
 
 ## Tabla de mapeo
 
-“Any” = cualquier rol autenticado cuyo laboratorio coincida (el backend sólo aplica aislamiento por tenant).
-“QA/ADMIN (UI)” = la app sólo muestra la acción a `ROLE_QA_MANAGER` / `ROLE_ADMIN`; ver *Brechas*.
+“Cualquiera” = cualquier rol con cuenta en el laboratorio. Las acciones de escritura de la app son solo las de la tabla; todo lo demás se registra en QualiTrack Web.
 
-| Mobile module | Screen | Bounded Context | Backend endpoint | HTTP method | Read/Action | Role |
-|---|---|---|---|---|---|---|
-| iam | Sign In | Identity & Access Management | `/api/v1/authentication/sign-in` | POST | Action (login) | Public |
-| iam | Splash / Session gate | Identity & Access Management | `/api/v1/users/me/onboarding` | GET | Read | Any |
-| iam | Profile | Identity & Access Management | `/api/v1/users/{userId}` | GET | Read | Any (propio usuario) |
-| laboratory | Command Center / Profile / Drawer header | Laboratory Management | `/api/v1/laboratories/{laboratoryId}` | GET | Read | Any |
-| laboratory | Products (catálogo) | Laboratory Management | `/api/v1/laboratories/{laboratoryId}/products` | GET | Read | Any |
-| equipment | Equipment list | Equipment Management | `/api/v1/equipments?labId={laboratoryId}` | GET | Read | Any |
-| equipment | Equipment detail | Equipment Management | `/api/v1/equipments/{equipmentId}` | GET | Read | Any |
-| equipment | Equipment detail → Maintenance | Equipment Management | `/api/v1/equipments/{equipmentId}/maintenance-records` | GET | Read | Any |
-| equipment / tracking | Equipment detail → BPM limits, Telemetry targets | Equipment Management | `/api/v1/equipments/{equipmentId}/bpm-configs` | GET | Read | Any |
-| tracking | Telemetry Dashboard | Tracking & Telemetry | `/api/v1/equipments/{equipmentId}/telemetry-status` | GET | Read (polling 15 s) | Any |
-| tracking | Telemetry Dashboard | Tracking & Telemetry | `/api/v1/equipments/{equipmentId}/telemetry-measurements` | GET | Read (polling 15 s) | Any |
-| tracking | Telemetry Dashboard (chart, anomalies) / Raw Telemetry Data Log | Tracking & Telemetry | `/api/v1/equipments/{equipmentId}/telemetry-history?from&to` | GET | Read | Any |
-| compliance | Compliance Alerts (lista del laboratorio = agregación por equipo, igual que Web) | Compliance & Alerting | `/api/v1/equipments/{equipmentId}/deviation-alerts?status&severity` | GET | Read | Any |
-| compliance / batch | Batch detail → Alerts | Compliance & Alerting | `/api/v1/batches/{batchId}/deviation-alerts` | GET | Read | Any |
-| compliance | Deviation Details | Compliance & Alerting | `/api/v1/deviation-alerts/{alertId}` | GET | Read | Any |
-| compliance | Deviation Details → Acknowledge | Compliance & Alerting | `/api/v1/deviation-alerts/{alertId}` body `{status: ACKNOWLEDGED, performedBy}` | PATCH | Action (review) | QA/ADMIN (UI) |
-| compliance | Deviation Details → Resolve | Compliance & Alerting | `/api/v1/deviation-alerts/{alertId}` body `{status: RESOLVED, performedBy, resolutionNotes}` | PATCH | Action (review) | QA/ADMIN (UI) |
-| compliance | Equipment detail → Compliance timeline | Compliance & Alerting | `/api/v1/equipments/{equipmentId}/compliance-events` | GET | Read | Any |
-| compliance | Batch detail → Compliance timeline | Compliance & Alerting | `/api/v1/batches/{batchId}/compliance-events` | GET | Read | Any |
-| batch | Production Batches | Product Batch Management | `/api/v1/batches?labId={laboratoryId}` | GET | Read | Any |
-| batch | Batch Detail → General Information | Product Batch Management | `/api/v1/batches/{batchId}` | GET | Read | Any |
-| batch | Batch Detail → Raw Materials Used | Product Batch Management | `/api/v1/batches/{batchId}/raw-materials` | GET | Read | Any |
-| batch | Release Batch | Product Batch Management | `/api/v1/batches/{batchId}` body `{status: RELEASED, releaseDate, notes}` | PATCH | Action (review) | QA/ADMIN (UI) |
-| batch | Reject Batch | Product Batch Management | `/api/v1/batches/{batchId}` body `{status: REJECTED, rejectionDate, reason}` | PATCH | Action (review) | QA/ADMIN (UI) |
-| inventory | Raw Materials Inventory | Inventory Management | `/api/v1/laboratories/{laboratoryId}/inventory/materials` | GET | Read | Any |
-| inventory | Material detail → Receipts | Inventory Management | `/api/v1/laboratories/{laboratoryId}/inventory/materials/{materialId}/receipts` | GET | Read | Any |
-| inventory | Material detail → Movements | Inventory Management | `/api/v1/laboratories/{laboratoryId}/inventory/materials/{materialId}/movements` | GET | Read | Any |
-| reporting | KPI Dashboard | Reporting & Audit | `/api/v1/laboratories/{laboratoryId}/kpi-dashboards` | GET | Read (404 ⇒ empty state) | Any |
-| reporting | Report history | Reporting & Audit | `/api/v1/laboratories/{laboratoryId}/reports` | GET | Read | Any |
-| reporting | Equipment detail → Deviation trends | Reporting & Audit | `/api/v1/equipments/{equipmentId}/deviation-trends` | GET | Read | Any |
-| reporting | Equipment detail → Audit log | Reporting & Audit | `/api/v1/equipments/{equipmentId}/audit-logs?dateFrom&dateTo` | GET | Read | Any |
-| reporting | Batch detail → Audit log | Reporting & Audit | `/api/v1/batches/{batchId}/audit-logs?dateFrom&dateTo` | GET | Read | Any |
-| subscription | Billing Summary → Current plan | Payments & Subscriptions | `/api/v1/laboratories/{laboratoryId}/subscriptions?status=ACTIVE` | GET | Read (404 ⇒ sin suscripción activa) | Any |
-| subscription | Billing Summary → Subscription history | Payments & Subscriptions | `/api/v1/laboratories/{laboratoryId}/billing-summary` | GET | Read | Any |
-| subscription | Billing Summary → Payments | Payments & Subscriptions | `/api/v1/subscriptions/{subscriptionId}/payments` | GET | Read | Any |
-| subscription | Billing Summary → Plan limits | Payments & Subscriptions | `/api/v1/subscription-plans` | GET | Read (sólo para mostrar `maxUsers`/`maxEquipment` del plan actual) | Any |
-| command_center | Command Center | (composición de UI) | laboratory, equipment, telemetry-status, batches, deviation-alerts, inventory/materials, kpi-dashboards, subscriptions?status=ACTIVE | GET | Read | Any |
+| Módulo | Pantalla | Bounded Context | Endpoint | Método | Rol |
+|---|---|---|---|---|---|
+| iam | Inicio de sesión | IAM | `/authentication/sign-in` | POST | Público |
+| iam | Splash / guardia de sesión | IAM | `/users/me/onboarding` | GET | Cualquiera |
+| iam | Cambio de contraseña (obligatorio con la temporal y desde el perfil) | IAM | `/users/me/password-changes` | POST | Cualquiera |
+| laboratory | Panel, perfil | Laboratory | `/laboratories/{lab}` | GET | Cualquiera |
+| laboratory | Nombres de ambientes en todas las listas | Laboratory | `/laboratories/{lab}/environments` | GET | Cualquiera |
+| laboratory | Catálogo de productos (por ambiente) | Laboratory | `/laboratories/{lab}/environments/{env}/products` | GET | Cualquiera |
+| laboratory | Nombres del personal (quién atendió, firmó o registró) | Laboratory | `/laboratories/{lab}/staff` | GET | Cualquiera |
+| equipment | Equipos | Equipment | `/laboratories/{lab}/equipments` | GET | Cualquiera |
+| equipment | Detalle de equipo | Equipment | `/laboratories/{lab}/equipments/{id}` | GET | Cualquiera |
+| equipment | Detalle → mantenimientos | Equipment | `/laboratories/{lab}/environments/{env}/equipments/{id}/maintenance-records` | GET | Cualquiera |
+| equipment | Detalle → parámetros BPM | Equipment | `/laboratories/{lab}/equipments/{id}/bpm-configs` | GET | Cualquiera |
+| tracking | Monitoreo, equipos, panel | Tracking | `/laboratories/{lab}/environments/{env}/devices/{id}/telemetry-status` | GET | Cualquiera |
+| tracking | Monitoreo e historial (dispositivo ambiental) | Tracking | `/laboratories/{lab}/environments/{env}/telemetry-measurements?from&to` | GET | Cualquiera |
+| tracking | Monitoreo e historial (monitor de contenedor) | Tracking | `/laboratories/{lab}/environments/{env}/container-monitors/{id}/telemetry-measurements?from&to` | GET | Cualquiera |
+| tracking | Monitoreo → rangos normal y crítico vigentes | Tracking | `/laboratories/{lab}/environments/{env}/devices/{id}/environmental-profile` | GET | Cualquiera |
+| tracking | Monitoreo → acciones automáticas del contenedor | Tracking | `/laboratories/{lab}/environments/{env}/container-monitors/{id}/actuation-events?from&to` | GET | Cualquiera |
+| compliance | Alertas (todas las de cada ambiente) | Compliance & Alerting | `/laboratories/{lab}/environments/{env}/deviation-alerts` | GET | Cualquiera |
+| compliance | Detalle de alerta | Compliance & Alerting | `/deviation-alerts/{id}` | GET | Cualquiera |
+| compliance | Detalle → atender | Compliance & Alerting | `/deviation-alerts/{id}/acknowledgements` | POST | Operario, QA |
+| compliance | Detalle → resolver con notas | Compliance & Alerting | `/deviation-alerts/{id}/resolutions` | POST | Operario, QA |
+| compliance | Detalle de equipo → eventos de cumplimiento | Compliance & Alerting | `/laboratories/{lab}/equipments/{id}/compliance-events` | GET | Cualquiera |
+| compliance | Detalle de lote → eventos de cumplimiento | Compliance & Alerting | `/batches/{id}/compliance-events` | GET | Cualquiera |
+| compliance | Campanita (contador) | Compliance & Alerting | `/users/me/notifications/unread-count` | GET | Cualquiera |
+| compliance | Avisos | Compliance & Alerting | `/users/me/notifications?limit` | GET | Cualquiera |
+| compliance | Avisos → marcar uno o todos como leídos | Compliance & Alerting | `/users/me/notifications/{id}/read-receipts`, `/users/me/notifications/read-receipts` | POST | Cualquiera |
+| compliance | Preferencias de notificación | Compliance & Alerting | `/users/me/notification-preferences` | GET, PUT | Cualquiera |
+| batch | Lotes del laboratorio | Product Batch | `/laboratories/{lab}/batches` | GET | Cualquiera |
+| batch | Detalle → trazabilidad (materias primas, equipos, personal, contenedor, firma) | Product Batch | `/laboratories/{lab}/environments/{env}/products/{p}/batches/{id}/traceability` | GET | Cualquiera |
+| batch | Detalle → liberar (firma digital) | Product Batch | `/laboratories/{lab}/environments/{env}/products/{p}/batches/{id}/releases` | POST | QA |
+| batch | Detalle → rechazar con motivo | Product Batch | `/laboratories/{lab}/environments/{env}/products/{p}/batches/{id}/rejections` | POST | QA |
+| inventory | Materias primas (de cada ambiente) | Inventory | `/laboratories/{lab}/environments/{env}/raw-materials` | GET | Cualquiera |
+| inventory | Detalle de materia prima | Inventory | `/laboratories/{lab}/environments/{env}/raw-materials/{id}` | GET | Cualquiera |
+| inventory | Detalle → lotes recibidos | Inventory | `/laboratories/{lab}/environments/{env}/raw-materials/{id}/batches` | GET | Cualquiera |
+| inventory | Detalle → movimientos | Inventory | `/laboratories/{lab}/environments/{env}/raw-materials/{id}/movements` | GET | Cualquiera |
+| inventory | Detalle → lotes de producto que la usaron | Inventory | `/laboratories/{lab}/environments/{env}/raw-materials/{id}/usages` | GET | Cualquiera |
+| reporting | Reportes → resumen de mediciones del periodo | Reporting & Audit | `/laboratories/{lab}/kpi-dashboards?from&to` | GET | Cualquiera |
+| reporting | Reportes y equipo → indicadores de desviaciones | Reporting & Audit | `/laboratories/{lab}/environments/{env}/deviation-trends?from&to` | GET | Cualquiera |
+| reporting | Historial de reportes | Reporting & Audit | `/laboratories/{lab}/reports` | GET | Cualquiera |
+| reporting | Detalle de equipo → auditoría | Reporting & Audit | `/laboratories/{lab}/equipments/{id}/audit-logs` | GET | Cualquiera |
+| reporting | Detalle de lote → auditoría | Reporting & Audit | `/batches/{id}/audit-logs` | GET | Cualquiera |
+| subscription | Suscripción | Payments & Subscriptions | `/laboratories/{lab}/subscriptions` | GET | QA |
+| subscription | Suscripción → pagos | Payments & Subscriptions | `/subscriptions/{id}/payments` | GET | QA |
+| subscription | Suscripción → límites del plan | Payments & Subscriptions | `/subscription-plans` | GET | QA |
+| profile | Perfil, cabecera del menú | Profile | `/users/me/profile` | GET, PUT | Cualquiera |
+| profile | Foto de perfil (imagen JPG, PNG o WebP de hasta 2 MB en el cuerpo) | Profile | `/users/me/profile/photo` | GET, PUT, DELETE | Cualquiera |
+| command_center | Panel | (composición de UI) | laboratorio, ambientes, equipos, conexión, lotes, alertas, materias primas y, para QA, suscripción | GET | Cualquiera |
 
-## Endpoints existentes que mobile NO usará (y por qué)
+## Endpoints que la app no usa
 
 | Endpoint | Motivo |
 |---|---|
-| `POST /authentication/sign-up` | Registro permanece en Web. |
-| `POST /laboratories`, `PUT /laboratories/{id}` | Configuración del laboratorio en Web. |
-| `POST /laboratories/{id}/products`, `/staff`, `/raw-materials`; `PATCH /staff/{id}`; `GET /laboratories/{id}/staff` | Administración (CRUD) en Web. `GET …/raw-materials` es el catálogo legado del BC Laboratory; Web usa Inventory. |
-| `POST /laboratories/{id}/inventory/materials`, `PUT …/materials/{id}`, `POST …/receipts`, `POST /receipts/{id}/reviews`, `POST …/consumptions`, `GET/POST …/legacy-materials` | Registro/recepción/consumo/importación en Web. `usable-receipts` sólo sirve para consumir. |
-| `POST /equipments`, `POST …/maintenance-records`, `POST …/bpm-configs` | Configuración en Web. |
-| `POST …/telemetry-measurements`, `POST …/telemetry-history`, `PUT …/telemetry-status` | Adquisición IoT (Edge/ESP32). El móvil nunca publica telemetría. |
-| `POST /equipments/{id}/deviation-alerts` | Las alertas las genera el sistema. |
-| `POST /batches`, `POST /batches/{id}/raw-materials`, `GET /batches?status=` | Creación en Web. El filtro por estado se hace sobre la lista del laboratorio ya cargada (evita peticiones duplicadas). |
-| `GET/PUT /users/{id}/notification-preferences` | No hay push real todavía; se deja fuera en esta etapa. |
-| `GET /users`, `PUT /users/{id}/roles/{role}`, `PATCH /users/{id}`, `GET /roles` | Administración de usuarios en Web. |
-| `POST /laboratories/{id}/kpi-dashboards`, `POST …/compliance-reports`, `POST /batches/{id}/reports`, `POST /equipments/{id}/log-reports`, `POST …/audit-logs` | Generan/escriben datos; no se generan reportes automáticamente desde mobile. |
-| `GET /reports/{id}`, `GET /reports/{id}/content` | Descarga de PDF/CSV fuera de alcance en esta etapa (el listado de historial sí se muestra). |
-| `POST /subscription-checkout-sessions`, `PATCH /subscriptions/{id}`, `POST /stripe/webhooks` | Checkout/cancelación/Stripe permanecen en Web. |
-| `GET /raw-materials/{id}/compliance-events` | Opcional; no aparece en mockups. |
-| `GET /raw-materials/{id}/usages` | Su control de tenant resuelve `rawMaterialId` contra el catálogo **legado** de Laboratory, mientras que los usos generados por Inventory guardan el id del material de Inventory. Mobile usa en su lugar los movimientos de Inventory (`productBatchId`) y `GET /batches/{id}/raw-materials`. |
-
-## Brechas detectadas (no se modifica el backend)
-
-1. **Autorización por rol de release/reject y acknowledge/resolve**: el backend sólo valida tenant (y que `performedBy` sea el usuario autenticado en alertas); **no** restringe por rol. Web tampoco oculta las acciones. Mobile las muestra sólo a `ROLE_QA_MANAGER`/`ROLE_ADMIN` como se pidió, pero esto **no** sustituye autorización del servidor. Se recomienda añadir `hasAnyAuthority('ROLE_QA_MANAGER','ROLE_ADMIN')` en `BatchController.updateBatchStatus` y `DeviationAlertController.updateAlertStatus` (mismo patrón que `InventoryController.review`). No se añadió porque no es un endpoint de consulta faltante.
-2. **Alertas por laboratorio**: no existe `GET /laboratories/{id}/deviation-alerts`; se agrega por equipo (mismo enfoque que `DashboardStore` de Web, concurrencia limitada). No se crea endpoint nuevo para no duplicar.
-3. **Sin estado online por laboratorio**: el estado de telemetría se consulta por equipo.
-4. **Métricas del mockup sin fuente** (latencia en ms, “Sampling rate”, “Overall health 92.5%” fijo, distribución porcentual): se omiten; `overallHealthScore` sólo se muestra si existe un KPI dashboard real.
-5. **IDs de materia prima**: `RawMaterialUsage.rawMaterialId` puede referirse al material de Inventory (consumos) o al catálogo legado (vínculos antiguos); por eso la trazabilidad por material se muestra con movimientos de Inventory.
-6. **Recibo PDF de pagos**: no hay endpoint → no se muestra.
+| `POST /authentication/sign-up`, `password-recovery-requests`, `password-resets` | El registro y la recuperación de contraseña se hacen en Web. |
+| `PUT /users/me` (usuario y correo) | Los datos de acceso se cambian en Web. |
+| Altas y cambios de laboratorio, ambientes, usos, personal, productos, equipos, dispositivos IoT, perfiles ambientales, parámetros BPM, materias primas, lotes de materia prima y su revisión o almacenamiento | Configuración y registro en Web. |
+| `POST .../products/{p}/batches` y sus consumos, equipos, personal y contenedor | La fabricación se registra en Web. |
+| `POST .../telemetry-measurements`, `.../actuation-events`, `.../deviation-alerts` | Los publica el Edge; la app nunca publica telemetría. |
+| `POST /deviation-alerts/{id}/email-notifications` | El reenvío del correo queda en Web. |
+| `GET /laboratories/{lab}/staff/{id}/profile`, `.../audit-logs`, `POST .../deactivations` | Gestión del personal en Web. |
+| `POST` de reportes y `GET /reports/{id}/content` | Los reportes se generan y descargan en Web. |
+| `POST /subscription-checkout-sessions`, `/subscriptions/{id}/cancellation-requests`, `/stripe/webhooks` | Pagos y cancelación en Web. |
+| Push (`TS77`, Firebase) | Pendiente: requiere el proyecto de Firebase y el registro del dispositivo en el backend. |

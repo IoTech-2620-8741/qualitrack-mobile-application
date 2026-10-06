@@ -1,10 +1,10 @@
 # QualiTrack Mobile
 
 Official Flutter companion app of **QualiTrack**, the pharmaceutical Quality
-Management System by IoTech. It lets QA Managers, Supervisors and Lab Operators
+Management System by IoTech. It lets quality managers, operators and auditors
 monitor and review — from their phone — what is registered and configured in
-QualiTrack Web: IoT telemetry, deviation alerts, production batches, inventory,
-equipment, KPIs and billing.
+QualiTrack Web: the conditions of environments and containers, deviation alerts,
+production batches, inventory, equipment, indicators and the subscription.
 
 > Creation and configuration (laboratories, products, materials, receipts,
 > equipment, sensors, limits, batches, users, plans, checkout) stay in
@@ -13,13 +13,17 @@ equipment, KPIs and billing.
 ## Features
 
 - Secure sign-in (JWT in Keychain/Keystore), session restore, expiry handling and logout
-- Command Center with real operational metrics only
-- Telemetry dashboard with live polling (15 s), charts and anomalies; raw telemetry log
-- Compliance alerts with filters, detail, **acknowledge** and **resolve** (QA Manager/Admin)
-- Production batches, raw materials used, traceability, **release/reject** of existing batches (QA Manager/Admin)
-- Inventory (usable/physical/minimum stock, receipts, movements)
-- Equipment (telemetry status, BPM limits, maintenance, trends, audit log)
-- Product catalog, KPI dashboard & report history, billing summary
+- Forced password change on the first sign-in of staff members (temporary password)
+- Control panel with the same cards as the Web dashboard (equipment, batches in progress, open alerts, low stock, subscription for quality managers)
+- Monitoring of environments and containers: connection, readings with their state, normal and critical ranges, deviations, automatic actions, live polling (15 s); reading history of up to 31 days
+- Alerts of every environment with filters and detail; **acknowledge** and **resolve** (operators and quality managers)
+- In-app notifications (bell) and notification preferences
+- Production batches with traceability (raw materials, equipment, staff, container) and **release** with digital signature or **rejection** (quality managers)
+- Inventory per environment (stock, lots and expiry, movements, batches that used each material)
+- Equipment (IoT role, connection, BPM limits, maintenance, deviation indicators, audit log)
+- Product catalog, measurement summary and deviation indicators per period, report history, subscription
+- Profile: personal data, photo and password
+- Auditors only read
 - English / Spanish, accessible badges (icon + text), responsive from 360×640
 
 ## Architecture
@@ -45,14 +49,15 @@ lib/
 ├── inventory/      # Inventory Management
 ├── reporting/      # Reporting & Audit
 ├── subscription/   # Payments & Subscriptions
+├── profile/        # Profile (personal data and photo)
 └── command_center/ # UI composition of the home screen
 ```
 
 ## Requirements
 
-- Flutter stable 3.29 or newer (Dart ≥ 3.7)
+- Flutter stable 3.29 or newer (Dart ≥ 3.7); verified with Flutter 3.44 / Dart 3.12
 - Android Studio / Android SDK (or Xcode for iOS)
-- A running `qualitrack-platform` backend
+- A running `qualitrack-platform` backend (v0.13.2 or newer)
 
 ## Installation
 
@@ -92,7 +97,7 @@ powershell -ExecutionPolicy Bypass -File tool\verify.ps1
 ```
 
 Localized strings are edited in `l10n/strings.tsv`, then regenerated with
-`python tool/generate_l10n.py`.
+`dart run tool/generate_l10n.dart`.
 
 ## Build APK
 
@@ -101,5 +106,5 @@ flutter build apk --release --dart-define=API_BASE_URL=https://<host>
 ```
 
 The APK is generated in `build/app/outputs/flutter-apk/app-release.apk` and can
-be distributed with Firebase App Distribution. Push notifications are not
-implemented because the backend does not provide them yet.
+be distributed with Firebase App Distribution. Notifications are shown inside
+the app (bell); push notifications with Firebase are pending.
