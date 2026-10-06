@@ -118,7 +118,7 @@ class EquipmentCard extends StatelessWidget {
                       children: [
                         Text(e.name, style: theme.textTheme.titleSmall),
                         Text(
-                          [e.type, item.environmentName].whereType<String>().join(' · '),
+                          [if (e.deviceType == null) e.type, item.environmentName].whereType<String>().join(' · '),
                           style: theme.textTheme.bodySmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

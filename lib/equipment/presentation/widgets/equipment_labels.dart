@@ -23,6 +23,10 @@ extension EquipmentStatusPresentation on EquipmentStatus {
 extension EquipmentLabel on Equipment {
   String statusLabel(AppLocalizations l10n) =>
       status == EquipmentStatus.unknown && rawStatus != null ? rawStatus! : status.label(l10n);
+
+  /// IoT devices are named by their role, as in QualiTrack Web: the backend
+  /// stores the role code (`CONTAINER_MONITOR`) as their type.
+  String? typeLabel(AppLocalizations l10n) => deviceType?.label(l10n) ?? type;
 }
 
 extension IotDeviceTypePresentation on IotDeviceType {

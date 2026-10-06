@@ -10,14 +10,18 @@ import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart'
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
 import 'package:qualitrack_mobile/compliance/presentation/pages/alert_detail_page.dart';
 import 'package:qualitrack_mobile/compliance/presentation/pages/alerts_page.dart';
+import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/pages/change_password_page.dart';
 import 'package:qualitrack_mobile/iam/presentation/pages/sign_in_page.dart';
 import 'package:qualitrack_mobile/shared/domain/failure.dart';
+import 'package:qualitrack_mobile/shared/presentation/l10n/app_localizations.dart';
 import 'package:qualitrack_mobile/shared/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/shared/presentation/view_status.dart';
 import 'package:qualitrack_mobile/shared/presentation/widgets/state_views.dart';
+import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/tracking/presentation/pages/telemetry_dashboard_page.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -136,6 +140,40 @@ void main() {
       await tester.pump();
 
       verify(() => bloc.add(const PasswordChangeSubmitted(currentPassword: 'temp1234', newPassword: 'mine5678'))).called(1);
+    });
+  });
+
+  group('Labels', () {
+    testWidgets('IoT devices are named by their role and open ranges by their bound', (tester) async {
+      late BuildContext context;
+      await tester.pumpLocalized(
+        Builder(
+          builder: (c) {
+            context = c;
+            return const SizedBox();
+          },
+        ),
+      );
+
+      expect(equipmentFixture().typeLabel(context.l10n), 'Container monitor');
+      expect(equipmentFixture(deviceType: null).typeLabel(context.l10n), 'Chamber');
+      expect(
+        rangeText(
+          context,
+          const MetricThreshold(
+            metric: MonitoredMetric.luminosity,
+            unit: 'lux',
+            normalMax: 300,
+            criticalMin: 2,
+            criticalMax: 500,
+          ),
+        ),
+        'normal ≤ 300 lux · critical 2–500 lux',
+      );
+      expect(
+        rangeText(context, const MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', normalMin: 2)),
+        'normal ≥ 2 °C',
+      );
     });
   });
 

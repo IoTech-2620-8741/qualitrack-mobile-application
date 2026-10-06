@@ -61,7 +61,7 @@ class _DetailBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        PageHeader(title: e.name, subtitle: [e.type, e.model].whereType<String>().join(' · ')),
+        PageHeader(title: e.name, subtitle: [e.typeLabel(l10n), e.model].whereType<String>().join(' · ')),
         const SizedBox(height: AppSpacing.md),
         InfoCard(
           title: l10n.generalInformation,
@@ -75,7 +75,7 @@ class _DetailBody extends StatelessWidget {
                 valueWidget: StatusBadge(label: e.statusLabel(l10n), tone: e.status.tone),
               ),
               KeyValue(label: l10n.environment, value: detail.environmentName ?? l10n.notLocated),
-              KeyValue(label: l10n.type, value: e.type ?? '—'),
+              KeyValue(label: l10n.type, value: e.typeLabel(l10n) ?? '—'),
               KeyValue(label: l10n.model, value: e.model ?? '—'),
               KeyValue(label: l10n.serialNumber, value: e.serialNumber ?? '—'),
               if (e.deviceType != null) KeyValue(label: l10n.iotRole, value: e.deviceType!.label(l10n)),
