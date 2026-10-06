@@ -135,9 +135,17 @@ class _MaterialCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(material.name, style: theme.textTheme.titleSmall),
-                        Text(
-                          [material.code, environmentName].whereType<String>().join(' · '),
-                          style: theme.textTheme.bodySmall?.copyWith(fontFamily: AppTypography.monospace),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: material.code,
+                                style: const TextStyle(fontFamily: AppTypography.monospace),
+                              ),
+                              if (environmentName != null) TextSpan(text: ' · $environmentName'),
+                            ],
+                          ),
+                          style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ),
