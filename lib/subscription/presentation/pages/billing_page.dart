@@ -114,6 +114,14 @@ class _BillingBody extends StatelessWidget {
                           KeyValue(label: l10n.maxEquipment, value: '${plan.maxEquipment}'),
                       ],
                     ),
+                    if (active.cancelAtPeriodEnd) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      StatusBadge(
+                        label: l10n.renewalCancelled(Formatters.date(active.currentPeriodEnd, locale)),
+                        tone: BadgeTone.warning,
+                        icon: Icons.event_busy_outlined,
+                      ),
+                    ],
                   ],
                 ),
         ),

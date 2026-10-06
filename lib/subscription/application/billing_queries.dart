@@ -30,9 +30,17 @@ class GetBillingSummary {
   final SubscriptionRepository _repository;
 
   Future<BillingSummary> call(LaboratoryId laboratoryId) async {
-    final active = await _repository.getActive(laboratoryId);
-    final subscriptions = await _repository.getBillingSummary(laboratoryId);
-    final current = active ?? (subscriptions.isEmpty ? null : subscriptions.first);
+    final subscriptions = [...await _repository.getSubscriptions(laboratoryId)]
+      ..sort((a, b) {
+        final left = a.currentPeriodStart;
+        final right = b.currentPeriodStart;
+        if (left == null && right == null) return b.id.compareTo(a.id);
+        if (left == null) return 1;
+        if (right == null) return -1;
+        return right.compareTo(left);
+      });
+    final active = subscriptions.where((s) => s.isActive).firstOrNull;
+    final current = active ?? subscriptions.firstOrNull;
 
     SubscriptionPlan? plan;
     if (active != null) {
