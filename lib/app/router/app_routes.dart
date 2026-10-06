@@ -3,6 +3,7 @@ abstract final class AppRoutes {
   static const String splash = '/splash';
   static const String signIn = '/sign-in';
   static const String setupRequired = '/setup-required';
+  static const String changePassword = '/change-password';
 
   static const String home = '/home';
   static const String telemetry = '/telemetry';
@@ -16,8 +17,11 @@ abstract final class AppRoutes {
   static const String products = '/products';
   static const String reports = '/reports';
   static const String billing = '/billing';
+  static const String notifications = '/notifications';
   static const String profile = '/profile';
+  static const String profilePassword = '/profile/password';
+  static const String profileNotifications = '/profile/notifications';
   static const String about = '/about';
 
-  static const Set<String> public = {splash, signIn, setupRequired};
+  static const Set<String> public = {splash, signIn, setupRequired, changePassword};
 }

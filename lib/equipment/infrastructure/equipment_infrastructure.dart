@@ -3,6 +3,8 @@ import '../../shared/infrastructure/http/api_client.dart';
 import '../../shared/infrastructure/http/json_utils.dart';
 import '../domain/equipment.dart';
 
+/// `EquipmentResource {id, laboratoryId, environmentId, name, type, model,
+/// serialNumber, status, deviceType, sensorExternalId, firmwareVersion}`.
 class EquipmentDto {
   const EquipmentDto(this.json);
 
@@ -13,13 +15,16 @@ class EquipmentDto {
     return Equipment(
       id: Json.requireInt(json, 'id'),
       laboratoryId: Json.requireInt(json, 'laboratoryId'),
+      environmentId: Json.optInt(json, 'environmentId'),
       name: Json.requireString(json, 'name'),
       type: Json.optString(json, 'type'),
       model: Json.optString(json, 'model'),
       serialNumber: Json.optString(json, 'serialNumber'),
       status: EquipmentStatus.fromCode(status),
       rawStatus: status,
+      deviceType: IotDeviceType.fromCode(Json.optString(json, 'deviceType')),
       sensorExternalId: Json.optString(json, 'sensorExternalId'),
+      firmwareVersion: Json.optString(json, 'firmwareVersion'),
     );
   }
 }
@@ -60,19 +65,18 @@ class EquipmentRemoteDataSource {
 
   final ApiClient _client;
 
-  Future<List<EquipmentDto>> getByLaboratory(int labId) async => Json.asList(
-    await _client.get('/equipments', query: {'labId': labId}),
-  ).map(EquipmentDto.new).toList();
+  Future<List<EquipmentDto>> getByLaboratory(int labId) async =>
+      Json.asList(await _client.get('/laboratories/$labId/equipments')).map(EquipmentDto.new).toList();
 
-  Future<EquipmentDto> getById(int id) async =>
-      EquipmentDto(Json.asMap(await _client.get('/equipments/$id')));
+  Future<EquipmentDto> getById(int labId, int id) async =>
+      EquipmentDto(Json.asMap(await _client.get('/laboratories/$labId/equipments/$id')));
 
-  Future<List<MaintenanceRecordDto>> getMaintenance(int id) async => Json.asList(
-    await _client.get('/equipments/$id/maintenance-records'),
+  Future<List<MaintenanceRecordDto>> getMaintenance(int labId, int environmentId, int id) async => Json.asList(
+    await _client.get('/laboratories/$labId/environments/$environmentId/equipments/$id/maintenance-records'),
   ).map(MaintenanceRecordDto.new).toList();
 
-  Future<List<BpmParameterConfigDto>> getBpmConfigs(int id) async => Json.asList(
-    await _client.get('/equipments/$id/bpm-configs'),
+  Future<List<BpmParameterConfigDto>> getBpmConfigs(int labId, int id) async => Json.asList(
+    await _client.get('/laboratories/$labId/equipments/$id/bpm-configs'),
   ).map(BpmParameterConfigDto.new).toList();
 }
 
@@ -92,14 +96,21 @@ class EquipmentRepositoryImpl implements EquipmentRepository {
   }
 
   @override
-  Future<Equipment> getById(int equipmentId) async =>
-      (await _remote.getById(equipmentId)).toDomain();
+  Future<Equipment> getById(LaboratoryId laboratoryId, int equipmentId) async =>
+      (await _remote.getById(laboratoryId.value, equipmentId)).toDomain();
 
   @override
-  Future<List<MaintenanceRecord>> getMaintenance(int equipmentId) async =>
-      (await _remote.getMaintenance(equipmentId)).map((d) => d.toDomain()).toList(growable: false);
+  Future<List<MaintenanceRecord>> getMaintenance(
+    LaboratoryId laboratoryId,
+    int environmentId,
+    int equipmentId,
+  ) async => (await _remote.getMaintenance(laboratoryId.value, environmentId, equipmentId))
+      .map((d) => d.toDomain())
+      .toList(growable: false);
 
   @override
-  Future<List<BpmParameterConfig>> getBpmConfigs(int equipmentId) async =>
-      (await _remote.getBpmConfigs(equipmentId)).map((d) => d.toDomain()).toList(growable: false);
+  Future<List<BpmParameterConfig>> getBpmConfigs(LaboratoryId laboratoryId, int equipmentId) async =>
+      (await _remote.getBpmConfigs(laboratoryId.value, equipmentId))
+          .map((d) => d.toDomain())
+          .toList(growable: false);
 }

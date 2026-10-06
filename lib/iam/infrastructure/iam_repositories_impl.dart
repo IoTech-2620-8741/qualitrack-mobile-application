@@ -5,7 +5,6 @@ import '../../shared/infrastructure/http/json_utils.dart';
 import '../../shared/infrastructure/storage/secure_key_value_store.dart';
 import '../domain/iam_repositories.dart';
 import '../domain/onboarding_state.dart';
-import '../domain/user_account.dart';
 import '../domain/user_session.dart';
 import 'iam_dtos.dart';
 import 'iam_remote_data_source.dart';
@@ -25,7 +24,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<OnboardingState> getOnboarding() async => (await _remote.getOnboarding()).toDomain();
 
   @override
-  Future<UserAccount> getUser(int userId) async => (await _remote.getUser(userId)).toDomain();
+  Future<void> changePassword({required String currentPassword, required String newPassword}) =>
+      _remote.changePassword(currentPassword, newPassword);
 }
 
 /// Stores the session as a single JSON document inside the platform keystore.

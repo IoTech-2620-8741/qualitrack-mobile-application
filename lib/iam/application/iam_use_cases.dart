@@ -1,7 +1,6 @@
 import '../../shared/domain/failure.dart';
 import '../domain/iam_repositories.dart';
 import '../domain/onboarding_state.dart';
-import '../domain/user_account.dart';
 import '../domain/user_session.dart';
 
 /// Signs in against IAM and persists the session securely.
@@ -41,6 +40,15 @@ class RestoreSession {
   }
 }
 
+/// Persists an updated session (e.g. once the temporary password was replaced).
+class RememberSession {
+  const RememberSession(this._sessions);
+
+  final SessionRepository _sessions;
+
+  Future<void> call(UserSession session) => _sessions.save(session);
+}
+
 class SignOut {
   const SignOut(this._sessions);
 
@@ -57,10 +65,18 @@ class CheckOnboarding {
   Future<OnboardingState> call() => _auth.getOnboarding();
 }
 
-class GetUserAccount {
-  const GetUserAccount(this._auth);
+/// Replaces the password of the signed-in user (`POST /users/me/password-changes`).
+/// The password policy (8 to 72 characters with letters and numbers) is
+/// enforced by the backend; here only the presence of both values is checked.
+class ChangePassword {
+  const ChangePassword(this._auth);
 
   final AuthRepository _auth;
 
-  Future<UserAccount> call(int userId) => _auth.getUser(userId);
+  Future<void> call({required String currentPassword, required String newPassword}) {
+    if (currentPassword.isEmpty || newPassword.isEmpty) {
+      throw const BadRequestFailure(code: 'PASSWORDS_REQUIRED');
+    }
+    return _auth.changePassword(currentPassword: currentPassword, newPassword: newPassword);
+  }
 }

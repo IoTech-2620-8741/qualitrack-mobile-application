@@ -1,105 +1,256 @@
 import 'package:equatable/equatable.dart';
 
-/// `TelemetryStatus` of the Tracking & Telemetry context.
-enum TelemetryStatus {
-  operational('OPERATIONAL'),
-  warning('WARNING'),
-  critical('CRITICAL'),
-  offline('OFFLINE'),
-  unknown('UNKNOWN');
+import '../../shared/domain/value_objects.dart';
 
-  const TelemetryStatus(this.code);
+/// `MonitoredMetric` of Tracking & Telemetry. Environmental devices measure
+/// air quality and motion; container monitors measure temperature, humidity,
+/// luminosity and read RFID tags.
+enum MonitoredMetric {
+  airQuality('AIR_QUALITY'),
+  motion('MOTION'),
+  temperature('TEMPERATURE'),
+  humidity('HUMIDITY'),
+  luminosity('LUMINOSITY'),
+  rfidTag('RFID_TAG'),
+  unknown('');
+
+  const MonitoredMetric(this.code);
 
   final String code;
 
-  static TelemetryStatus fromCode(String? code) {
+  /// Metrics with a numeric value that can be charted against thresholds.
+  bool get isNumeric => this != motion && this != rfidTag && this != unknown;
+
+  static MonitoredMetric fromCode(String? code) {
     for (final value in values) {
-      if (value.code == code) return value;
+      if (value != unknown && value.code == code) return value;
     }
-    return TelemetryStatus.unknown;
+    return MonitoredMetric.unknown;
   }
 }
 
-/// `EquipmentTelemetryStatusResource`. When no status was ever reported the
-/// backend answers a synthetic `OFFLINE` status with `isOnline = false`.
-final class EquipmentTelemetryStatus extends Equatable {
-  const EquipmentTelemetryStatus({
-    required this.equipmentId,
-    required this.isOnline,
-    required this.currentStatus,
-    this.id,
-    this.lastHeartbeat,
-    this.rawLastHeartbeat,
-  });
+/// `EnvironmentalState`: how a reading was evaluated in Cloud against the
+/// profile that was in force.
+enum EnvironmentalState {
+  normal('NORMAL'),
+  warning('WARNING'),
+  critical('CRITICAL'),
+  unknown('');
 
-  final int? id;
-  final int equipmentId;
-  final bool isOnline;
-  final TelemetryStatus currentStatus;
-  final DateTime? lastHeartbeat;
-  final String? rawLastHeartbeat;
+  const EnvironmentalState(this.code);
 
-  bool get needsAttention =>
-      currentStatus == TelemetryStatus.warning || currentStatus == TelemetryStatus.critical;
+  final String code;
 
-  @override
-  List<Object?> get props => [id, equipmentId, isOnline, currentStatus, lastHeartbeat, rawLastHeartbeat];
+  bool get isDeviation => this == warning || this == critical;
+
+  static EnvironmentalState fromCode(String? code) {
+    for (final value in values) {
+      if (value != unknown && value.code == code) return value;
+    }
+    return EnvironmentalState.unknown;
+  }
 }
 
-/// `MeasurementResource`: latest readings reported by the edge layer.
+/// `DeviceConnectionStatus` (TS41): a device that has not communicated within
+/// its expected period requires review.
+enum ConnectionStatus {
+  connected('CONNECTED'),
+  requiresReview('REQUIRES_REVIEW'),
+  unknown('');
+
+  const ConnectionStatus(this.code);
+
+  final String code;
+
+  static ConnectionStatus fromCode(String? code) {
+    for (final value in values) {
+      if (value != unknown && value.code == code) return value;
+    }
+    return ConnectionStatus.unknown;
+  }
+}
+
+/// An IoT device whose telemetry is read: the environmental device of an
+/// environment or a container monitor located in it.
+final class TelemetryTarget extends Equatable {
+  const TelemetryTarget({
+    required this.deviceId,
+    required this.environmentId,
+    required this.containerMonitor,
+  });
+
+  final int deviceId;
+  final int environmentId;
+  final bool containerMonitor;
+
+  @override
+  List<Object?> get props => [deviceId, environmentId, containerMonitor];
+}
+
+/// `DeviceTelemetryStatusResource`.
+final class DeviceConnection extends Equatable {
+  const DeviceConnection({
+    required this.deviceId,
+    required this.status,
+    this.lastCommunicationAt,
+    this.expectedPeriodSeconds,
+  });
+
+  final int deviceId;
+  final ConnectionStatus status;
+  final DateTime? lastCommunicationAt;
+  final int? expectedPeriodSeconds;
+
+  bool get isConnected => status == ConnectionStatus.connected;
+
+  @override
+  List<Object?> get props => [deviceId, status, lastCommunicationAt, expectedPeriodSeconds];
+}
+
+/// `MeasurementResource`: a reading evaluated in Cloud.
 final class Measurement extends Equatable {
   const Measurement({
     required this.id,
-    required this.equipmentId,
-    required this.parameterName,
-    required this.value,
+    required this.deviceId,
+    required this.environmentId,
+    required this.metric,
+    required this.rawMetric,
+    required this.state,
+    this.value,
+    this.textValue,
     this.unit,
-    this.timestamp,
-    this.rawTimestamp,
+    this.measuredAt,
+    this.thresholdValue,
+    this.profileVersion,
   });
 
   final int id;
-  final int equipmentId;
-  final String parameterName;
-  final double value;
+  final int deviceId;
+  final int environmentId;
+  final MonitoredMetric metric;
+
+  /// Metric code as sent by the backend (kept for metrics unknown to the app).
+  final String rawMetric;
+  final double? value;
+  final String? textValue;
   final String? unit;
-  final DateTime? timestamp;
-  final String? rawTimestamp;
+  final DateTime? measuredAt;
+  final EnvironmentalState state;
 
-  /// Series identity: the same parameter may be reported with different units.
-  String get seriesKey => '${parameterName.trim().toLowerCase()}|${unit ?? ''}';
+  /// Limit that was exceeded, when the reading is a deviation.
+  final double? thresholdValue;
+  final int? profileVersion;
+
+  bool get isNumeric => metric.isNumeric && value != null && value!.isFinite;
 
   @override
-  List<Object?> get props => [id, equipmentId, parameterName, value, unit, timestamp, rawTimestamp];
+  List<Object?> get props => [
+    id,
+    deviceId,
+    environmentId,
+    metric,
+    rawMetric,
+    value,
+    textValue,
+    unit,
+    measuredAt,
+    state,
+    thresholdValue,
+    profileVersion,
+  ];
 }
 
-/// `TelemetryHistoryPointResource`.
-final class TelemetryHistoryPoint extends Equatable {
-  const TelemetryHistoryPoint({
+/// Normal and critical range of one metric. Readings outside the normal range
+/// are warnings; outside the critical range, critical.
+final class MetricThreshold extends Equatable {
+  const MetricThreshold({
+    required this.metric,
+    this.unit,
+    this.normalMin,
+    this.normalMax,
+    this.criticalMin,
+    this.criticalMax,
+  });
+
+  final MonitoredMetric metric;
+  final String? unit;
+  final double? normalMin;
+  final double? normalMax;
+  final double? criticalMin;
+  final double? criticalMax;
+
+  @override
+  List<Object?> get props => [metric, unit, normalMin, normalMax, criticalMin, criticalMax];
+}
+
+/// Automatic response of a container: the action executed when a metric
+/// reaches a state.
+final class ActuationRule extends Equatable {
+  const ActuationRule({required this.metric, required this.state, required this.action});
+
+  final MonitoredMetric metric;
+  final EnvironmentalState state;
+  final String action;
+
+  @override
+  List<Object?> get props => [metric, state, action];
+}
+
+/// `EnvironmentalProfileResource`: versioned thresholds (and rules for
+/// container monitors) configured in QualiTrack Web.
+final class EnvironmentalProfile extends Equatable {
+  const EnvironmentalProfile({
+    required this.version,
+    this.thresholds = const [],
+    this.actuationRules = const [],
+    this.updatedAt,
+  });
+
+  final int version;
+  final List<MetricThreshold> thresholds;
+  final List<ActuationRule> actuationRules;
+  final DateTime? updatedAt;
+
+  MetricThreshold? thresholdFor(MonitoredMetric metric) {
+    for (final threshold in thresholds) {
+      if (threshold.metric == metric) return threshold;
+    }
+    return null;
+  }
+
+  @override
+  List<Object?> get props => [version, thresholds, actuationRules, updatedAt];
+}
+
+/// `ActuationEventResource`: an action executed by a container monitor.
+final class ActuationEvent extends Equatable {
+  const ActuationEvent({
     required this.id,
-    required this.equipmentId,
-    required this.parameterName,
-    required this.recordedValue,
-    required this.isAnomaly,
-    this.timestamp,
-    this.rawTimestamp,
+    required this.deviceId,
+    required this.action,
+    required this.result,
+    this.triggerMetric,
+    this.triggerState,
+    this.occurredAt,
   });
 
   final int id;
-  final int equipmentId;
-  final String parameterName;
-  final double recordedValue;
-  final bool isAnomaly;
-  final DateTime? timestamp;
-  final String? rawTimestamp;
+  final int deviceId;
+  final String action;
+  final String result;
+  final MonitoredMetric? triggerMetric;
+  final EnvironmentalState? triggerState;
+  final DateTime? occurredAt;
+
+  bool get executed => result == 'EXECUTED';
 
   @override
-  List<Object?> get props => [id, equipmentId, parameterName, recordedValue, isAnomaly, timestamp, rawTimestamp];
+  List<Object?> get props => [id, deviceId, action, result, triggerMetric, triggerState, occurredAt];
 }
 
-/// Latest reading of one parameter (one card in the dashboard).
-final class ParameterReading extends Equatable {
-  const ParameterReading({required this.latest, required this.samples});
+/// Latest reading of one metric (one card in the dashboard).
+final class MetricReading extends Equatable {
+  const MetricReading({required this.latest, required this.samples});
 
   final Measurement latest;
   final int samples;
@@ -122,57 +273,58 @@ enum TelemetryWindow {
 
 /// Pure functions over telemetry collections (no Flutter dependencies).
 abstract final class TelemetryAnalysis {
-  /// Groups measurements by parameter/unit and keeps the most recent one.
-  /// Measurements without a parseable timestamp keep API order.
-  static List<ParameterReading> latestByParameter(List<Measurement> measurements) {
+  /// The backend accepts history periods of up to 31 days.
+  static const Duration maxPeriod = Duration(days: 31);
+
+  /// Groups readings by metric and keeps the most recent one, in the order
+  /// of [MonitoredMetric].
+  static List<MetricReading> latestByMetric(List<Measurement> measurements) {
     final groups = <String, List<Measurement>>{};
     for (final m in measurements) {
-      groups.putIfAbsent(m.seriesKey, () => []).add(m);
+      groups.putIfAbsent(m.rawMetric, () => []).add(m);
     }
     final readings = groups.values.map((items) {
-      final sorted = [...items]..sort(_compareMeasurementsDesc);
-      return ParameterReading(latest: sorted.first, samples: items.length);
+      final sorted = [...items]..sort(compareNewestFirst);
+      return MetricReading(latest: sorted.first, samples: items.length);
     }).toList();
-    readings.sort((a, b) => a.latest.parameterName.compareTo(b.latest.parameterName));
+    readings.sort((a, b) {
+      final order = a.latest.metric.index.compareTo(b.latest.metric.index);
+      return order != 0 ? order : a.latest.rawMetric.compareTo(b.latest.rawMetric);
+    });
     return readings;
   }
 
-  static int _compareMeasurementsDesc(Measurement a, Measurement b) {
-    final left = a.timestamp;
-    final right = b.timestamp;
+  static int compareNewestFirst(Measurement a, Measurement b) {
+    final left = a.measuredAt;
+    final right = b.measuredAt;
     if (left == null && right == null) return b.id.compareTo(a.id);
     if (left == null) return 1;
     if (right == null) return -1;
-    return right.compareTo(left);
+    final byTime = right.compareTo(left);
+    return byTime != 0 ? byTime : b.id.compareTo(a.id);
   }
 
-  /// Distinct parameter names present in the history, sorted.
-  static List<String> parameters(List<TelemetryHistoryPoint> points) =>
-      (points.map((p) => p.parameterName).toSet().toList()..sort());
+  /// Numeric metrics present in the readings, in the order of [MonitoredMetric].
+  static List<MonitoredMetric> chartMetrics(List<Measurement> points) =>
+      points.where((p) => p.isNumeric).map((p) => p.metric).toSet().toList()
+        ..sort((a, b) => a.index.compareTo(b.index));
 
-  /// Points of [parameter] inside [window], anchored to the most recent real
+  /// Readings of [metric] inside [window], anchored to the most recent real
   /// timestamp (not the device clock), sorted ascending for charting.
-  static List<TelemetryHistoryPoint> series(
-    List<TelemetryHistoryPoint> points,
-    String parameter,
-    TelemetryWindow window,
-  ) {
-    final dated = points
-        .where((p) => p.parameterName == parameter && p.timestamp != null)
-        .toList()
-      ..sort((a, b) => a.timestamp!.compareTo(b.timestamp!));
+  static List<Measurement> series(List<Measurement> points, MonitoredMetric metric, TelemetryWindow window) {
+    final dated = points.where((p) => p.metric == metric && p.isNumeric && p.measuredAt != null).toList()
+      ..sort((a, b) => a.measuredAt!.compareTo(b.measuredAt!));
     if (dated.isEmpty) return const [];
-    final end = dated.last.timestamp!;
-    final start = end.subtract(window.duration);
-    return dated.where((p) => !p.timestamp!.isBefore(start)).toList(growable: false);
+    final start = dated.last.measuredAt!.subtract(window.duration);
+    return dated.where((p) => !p.measuredAt!.isBefore(start)).toList(growable: false);
   }
 
   /// A window is offered only when the real data spans more than the
   /// previous (smaller) window, so options always change what is displayed.
-  static List<TelemetryWindow> availableWindows(List<TelemetryHistoryPoint> points, String parameter) {
+  static List<TelemetryWindow> availableWindows(List<Measurement> points, MonitoredMetric metric) {
     final dated = points
-        .where((p) => p.parameterName == parameter && p.timestamp != null)
-        .map((p) => p.timestamp!)
+        .where((p) => p.metric == metric && p.isNumeric && p.measuredAt != null)
+        .map((p) => p.measuredAt!)
         .toList()
       ..sort();
     if (dated.length < 2) return dated.isEmpty ? const [] : const [TelemetryWindow.fifteenMinutes];
@@ -184,26 +336,39 @@ abstract final class TelemetryAnalysis {
     return result;
   }
 
-  static List<TelemetryHistoryPoint> anomalies(List<TelemetryHistoryPoint> points) {
-    final result = points.where((p) => p.isAnomaly).toList()..sort(_compareHistoryDesc);
-    return result;
-  }
+  /// Readings evaluated as warning or critical, newest first.
+  static List<Measurement> deviations(List<Measurement> points) =>
+      points.where((p) => p.state.isDeviation).toList()..sort(compareNewestFirst);
 
-  static int _compareHistoryDesc(TelemetryHistoryPoint a, TelemetryHistoryPoint b) {
-    final left = a.timestamp;
-    final right = b.timestamp;
-    if (left == null && right == null) return b.id.compareTo(a.id);
-    if (left == null) return 1;
-    if (right == null) return -1;
-    return right.compareTo(left);
-  }
+  static List<Measurement> newestFirst(List<Measurement> points) => [...points]..sort(compareNewestFirst);
 
-  static List<TelemetryHistoryPoint> newestFirst(List<TelemetryHistoryPoint> points) =>
-      [...points]..sort(_compareHistoryDesc);
+  /// Adds [incoming] readings to [current] (by id) and drops the ones older
+  /// than [since], so live polling only downloads the latest minutes.
+  static List<Measurement> merge(List<Measurement> current, List<Measurement> incoming, DateTime since) {
+    final byId = <int, Measurement>{for (final m in current) m.id: m};
+    for (final m in incoming) {
+      byId[m.id] = m;
+    }
+    return byId.values.where((m) => m.measuredAt == null || !m.measuredAt!.isBefore(since)).toList()
+      ..sort(compareNewestFirst);
+  }
 }
 
 abstract interface class TelemetryRepository {
-  Future<EquipmentTelemetryStatus> getStatus(int equipmentId);
-  Future<List<Measurement>> getLatestMeasurements(int equipmentId);
-  Future<List<TelemetryHistoryPoint>> getHistory(int equipmentId, {DateTime? from, DateTime? to});
+  Future<DeviceConnection> getConnection(LaboratoryId laboratoryId, TelemetryTarget target);
+  Future<List<Measurement>> getMeasurements(
+    LaboratoryId laboratoryId,
+    TelemetryTarget target, {
+    required DateTime from,
+    required DateTime to,
+  });
+
+  /// Null when no profile was configured yet.
+  Future<EnvironmentalProfile?> getProfile(LaboratoryId laboratoryId, TelemetryTarget target);
+  Future<List<ActuationEvent>> getActuationEvents(
+    LaboratoryId laboratoryId,
+    TelemetryTarget target, {
+    required DateTime from,
+    required DateTime to,
+  });
 }

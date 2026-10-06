@@ -1,5 +1,7 @@
 # QualiTrack Mobile — Fase de análisis (Etapa 1)
 
+> Documento histórico del análisis inicial (2026-09-16, backend `923048a`). Las rutas y reglas vigentes están en [`mobile-api-mapping.md`](mobile-api-mapping.md).
+
 Fecha: 2026-09-16 · Fuentes revisadas:
 
 - `qualitrack-platform` (Spring Boot, rama `develop` @ `923048a`): 35 controllers REST, 832 clases Java.

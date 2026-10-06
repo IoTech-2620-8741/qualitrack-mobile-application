@@ -12,16 +12,19 @@ import '../../../shared/presentation/widgets/failure_message.dart';
 import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../tracking/presentation/widgets/telemetry_labels.dart';
 import '../../domain/compliance.dart';
 import '../bloc/alert_detail_bloc.dart';
 import '../widgets/alert_widgets.dart';
 
-/// "Deviation Details" mockup. Review actions are shown only to QA Managers
-/// and Admins ([canReview]); the backend validates every transition.
+/// "Deviation Details" mockup. Operators and quality managers attend and
+/// resolve alerts ([canAttend]); auditors only read. The backend validates
+/// every transition.
 class AlertDetailPage extends StatelessWidget {
-  const AlertDetailPage({super.key, required this.canReview});
+  const AlertDetailPage({super.key, required this.canAttend, required this.currentUserId});
 
-  final bool canReview;
+  final bool canAttend;
+  final int? currentUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +55,9 @@ class AlertDetailPage extends StatelessWidget {
           onRetry: () => context.read<AlertDetailBloc>().add(const AlertDetailRequested()),
           builder: (context, alert) => _AlertDetailBody(
             alert: alert,
-            equipmentName: state.equipmentName,
-            canReview: canReview,
+            names: state.context,
+            canAttend: canAttend,
+            currentUserId: currentUserId,
             submitting: state.submitting,
           ),
         ),
@@ -65,21 +69,32 @@ class AlertDetailPage extends StatelessWidget {
 class _AlertDetailBody extends StatelessWidget {
   const _AlertDetailBody({
     required this.alert,
-    required this.equipmentName,
-    required this.canReview,
+    required this.names,
+    required this.canAttend,
+    required this.currentUserId,
     required this.submitting,
   });
 
   final DeviationAlert alert;
-  final String? equipmentName;
-  final bool canReview;
+  final AlertContext names;
+  final bool canAttend;
+  final int? currentUserId;
   final bool submitting;
+
+  String _person(AppLocalizations l10n, int id) =>
+      id == currentUserId ? l10n.you : (names.people[id] ?? l10n.userNumber(id));
+
+  String _who(AppLocalizations l10n, String locale, int? userId, DateTime? at) {
+    final person = userId == null ? '—' : _person(l10n, userId);
+    return at == null ? person : '$person · ${Formatters.dateTime(at, locale)}';
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final locale = context.localeName;
     final theme = Theme.of(context);
+    final device = names.deviceName ?? l10n.equipmentNumber(alert.equipmentId);
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
@@ -87,11 +102,7 @@ class _AlertDetailBody extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                alert.severity.tone.icon,
-                color: alert.severity.tone.foreground,
-                size: 32,
-              ),
+              Icon(alert.severity.tone.icon, color: alert.severity.tone.foreground, size: 32),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -99,12 +110,10 @@ class _AlertDetailBody extends StatelessWidget {
                   children: [
                     Semantics(
                       header: true,
-                      child: Text(alert.parameterName, style: theme.textTheme.titleLarge),
+                      child: Text(alertVariable(l10n, alert.parameterName), style: theme.textTheme.titleLarge),
                     ),
                     Text(
-                      alert.timestamp != null
-                          ? Formatters.dateTime(alert.timestamp, locale)
-                          : (alert.rawTimestamp ?? '—'),
+                      Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale),
                       style: theme.textTheme.bodySmall,
                     ),
                     Text(l10n.alertNumber(alert.id), style: theme.textTheme.bodySmall),
@@ -114,6 +123,14 @@ class _AlertDetailBody extends StatelessWidget {
             ],
           ),
         ),
+        if (alert.normalizedAt != null && alert.isOpen) ...[
+          const SizedBox(height: AppSpacing.md),
+          InfoCard(
+            color: AppColors.successContainer,
+            borderColor: AppColors.success.withValues(alpha: 0.3),
+            child: Text(l10n.conditionNormalized(Formatters.dateTime(alert.normalizedAt, locale))),
+          ),
+        ],
         const SizedBox(height: AppSpacing.md),
         InfoCard(
           title: l10n.technicalInspection,
@@ -129,27 +146,20 @@ class _AlertDetailBody extends StatelessWidget {
               KeyValue(
                 label: l10n.status,
                 value: alert.status.label(l10n),
-                valueWidget: StatusBadge(
-                  label: alert.status.label(l10n),
-                  tone: alert.status.tone,
-                  icon: alert.status.icon,
-                ),
+                valueWidget: StatusBadge(label: alert.status.label(l10n), tone: alert.status.tone, icon: alert.status.icon),
               ),
+              KeyValue(label: l10n.recordedValue, value: formatAlertValue(alert.recordedValue, alert.unit, locale)),
+              KeyValue(label: l10n.thresholdValue, value: formatAlertValue(alert.thresholdValue, alert.unit, locale)),
+              KeyValue(label: l10n.deviationsLabel, value: '${alert.deviationCount}'),
+              KeyValue(label: l10n.firstDetected, value: Formatters.dateTime(alert.timestamp, locale)),
+              if (names.environmentName != null) KeyValue(label: l10n.environment, value: names.environmentName!),
               KeyValue(
-                label: l10n.recordedValue,
-                value: formatAlertValue(alert.recordedValue, alert.unit, locale),
-              ),
-              KeyValue(
-                label: l10n.thresholdValue,
-                value: formatAlertValue(alert.thresholdValue, alert.unit, locale),
-              ),
-              KeyValue(
-                label: l10n.equipment,
-                value: equipmentName ?? l10n.equipmentNumber(alert.equipmentId),
+                label: alert.origin == AlertOrigin.container ? l10n.containerMonitor : l10n.environmentalDevice,
+                value: device,
                 valueWidget: TextButton(
                   style: TextButton.styleFrom(padding: EdgeInsets.zero),
                   onPressed: () => context.push('/equipment/${alert.equipmentId}'),
-                  child: Text(equipmentName ?? l10n.equipmentNumber(alert.equipmentId)),
+                  child: Text(device),
                 ),
               ),
               if (alert.batchId != null)
@@ -163,26 +173,48 @@ class _AlertDetailBody extends StatelessWidget {
                   ),
                 ),
               if (alert.acknowledgedBy != null)
-                KeyValue(label: l10n.acknowledgedBy, value: l10n.userNumber(alert.acknowledgedBy!)),
+                KeyValue(
+                  label: l10n.acknowledgedBy,
+                  value: _who(l10n, locale, alert.acknowledgedBy, alert.acknowledgedAt),
+                ),
               if (alert.resolvedBy != null)
-                KeyValue(label: l10n.resolvedBy, value: l10n.userNumber(alert.resolvedBy!)),
+                KeyValue(label: l10n.resolvedBy, value: _who(l10n, locale, alert.resolvedBy, alert.resolvedAt)),
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        if (alert.status == AlertStatus.resolved || !canReview)
+        if (alert.relatedActuations.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.md),
           InfoCard(
-            title: l10n.resolutionNotes,
-            child: Text(
-              alert.resolutionNotes?.isNotEmpty == true ? alert.resolutionNotes! : '—',
+            title: l10n.automaticActions,
+            child: Column(
+              children: [
+                for (final action in alert.relatedActuations)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.settings_remote_outlined, color: AppColors.primary),
+                    title: Text(actuationLabel(l10n, action.action)),
+                    subtitle: Text(Formatters.dateTime(action.occurredAt, locale)),
+                    trailing: StatusBadge(
+                      label: action.result == 'EXECUTED' ? l10n.actionExecuted : l10n.actionFailed,
+                      tone: action.result == 'EXECUTED' ? BadgeTone.success : BadgeTone.critical,
+                    ),
+                  ),
+              ],
             ),
           ),
-        if (canReview && alert.canResolve)
+        ],
+        const SizedBox(height: AppSpacing.md),
+        if (alert.status == AlertStatus.resolved || !canAttend)
+          InfoCard(
+            title: l10n.resolutionNotes,
+            child: Text(alert.resolutionNotes?.isNotEmpty == true ? alert.resolutionNotes! : '—'),
+          ),
+        if (canAttend && alert.canResolve)
           _ReviewActions(alert: alert, submitting: submitting)
-        else if (!canReview && alert.isOpen)
+        else if (!canAttend && alert.isOpen)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.md),
-            child: Text(l10n.reviewRestricted, style: theme.textTheme.bodySmall),
+            child: Text(l10n.auditorReadOnly, style: theme.textTheme.bodySmall),
           ),
       ],
     );
@@ -257,8 +289,7 @@ class _ReviewActionsState extends State<_ReviewActions> {
                 hintText: l10n.resolutionNotesHint,
                 alignLabelWithHint: true,
               ),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? l10n.resolutionNotesRequired : null,
+              validator: (v) => (v == null || v.trim().isEmpty) ? l10n.resolutionNotesRequired : null,
             ),
             const SizedBox(height: AppSpacing.md),
             if (busy) const LinearProgressIndicator(),

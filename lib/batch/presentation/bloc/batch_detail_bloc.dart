@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../compliance/application/compliance_queries.dart';
 import '../../../compliance/domain/compliance.dart';
+import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../reporting/application/reporting_queries.dart';
 import '../../../reporting/domain/reporting.dart';
 import '../../../shared/domain/failure.dart';
+import '../../../shared/domain/value_objects.dart';
 import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../../shared/presentation/section.dart';
@@ -14,29 +16,23 @@ import '../../domain/batch.dart';
 
 final class BatchDetail extends Equatable {
   const BatchDetail({
-    required this.batch,
-    this.rawMaterials = const Section.empty(),
-    this.alerts = const Section.empty(),
+    required this.traceability,
     this.events = const Section.empty(),
     this.auditLogs = const Section.empty(),
+    this.people = const {},
   });
 
-  final ProductionBatch batch;
-  final Section<RawMaterialUsage> rawMaterials;
-  final Section<DeviationAlert> alerts;
+  final BatchTraceability traceability;
   final Section<ComplianceEvent> events;
   final Section<AuditLogEntry> auditLogs;
 
-  BatchDetail withBatch(ProductionBatch updated) => BatchDetail(
-    batch: updated,
-    rawMaterials: rawMaterials,
-    alerts: alerts,
-    events: events,
-    auditLogs: auditLogs,
-  );
+  /// Full names by user account (who signed or registered something).
+  final Map<int, String> people;
+
+  ProductionBatch get batch => traceability.batch;
 
   @override
-  List<Object?> get props => [batch, rawMaterials, alerts, events, auditLogs];
+  List<Object?> get props => [traceability, events, auditLogs, people];
 }
 
 enum BatchReviewAction { release, reject }
@@ -114,99 +110,98 @@ final class BatchDetailState extends Equatable {
 class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
   BatchDetailBloc({
     required this.batchId,
-    required GetBatchDetail getBatch,
-    required GetBatchRawMaterials getRawMaterials,
-    required GetBatchAlerts getAlerts,
+    required GetBatchTraceability getTraceability,
     required GetBatchComplianceEvents getEvents,
     required GetBatchAuditLogs getAuditLogs,
-    required ReleaseExistingBatch release,
-    required RejectExistingBatch reject,
-  }) : _getBatch = getBatch,
-       _getRawMaterials = getRawMaterials,
-       _getAlerts = getAlerts,
+    required GetUserDirectory getUserDirectory,
+    required ReleaseBatch release,
+    required RejectBatch reject,
+    required LaboratoryId Function() laboratoryId,
+  }) : _getTraceability = getTraceability,
        _getEvents = getEvents,
        _getAuditLogs = getAuditLogs,
+       _getUserDirectory = getUserDirectory,
        _release = release,
        _reject = reject,
+       _laboratoryId = laboratoryId,
        super(const BatchDetailState()) {
     on<BatchDetailRequested>(_onRequested);
     on<BatchReleaseSubmitted>(
       (e, emit) => _run(
         emit,
         BatchReviewAction.release,
-        () => _release(batchId: batchId, releaseDate: e.date, notes: e.notes),
+        (batch) => _release(_laboratoryId(), batch, releaseDate: e.date, notes: e.notes),
       ),
     );
     on<BatchRejectSubmitted>(
       (e, emit) => _run(
         emit,
         BatchReviewAction.reject,
-        () => _reject(batchId: batchId, rejectionDate: e.date, reason: e.reason),
+        (batch) => _reject(_laboratoryId(), batch, rejectionDate: e.date, reason: e.reason),
       ),
     );
   }
 
   final int batchId;
-  final GetBatchDetail _getBatch;
-  final GetBatchRawMaterials _getRawMaterials;
-  final GetBatchAlerts _getAlerts;
+  final GetBatchTraceability _getTraceability;
   final GetBatchComplianceEvents _getEvents;
   final GetBatchAuditLogs _getAuditLogs;
-  final ReleaseExistingBatch _release;
-  final RejectExistingBatch _reject;
+  final GetUserDirectory _getUserDirectory;
+  final ReleaseBatch _release;
+  final RejectBatch _reject;
+  final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(BatchDetailRequested event, Emitter<BatchDetailState> emit) async {
     final current = state.detail;
-    emit(state.copyWith(
-      detail: event.refresh && current.hasData ? current.refreshingState() : current.loading(),
-    ));
+    emit(state.copyWith(detail: event.refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
-      final batch = await _getBatch(batchId);
-      final sections = await Future.wait<Object>([
-        Section.load(() => _getRawMaterials(batchId)),
-        Section.load(() => _getAlerts(batchId)),
-        Section.load(() => _getEvents(batchId)),
-        Section.load(() => _getAuditLogs(batchId)),
-      ]);
-      emit(state.copyWith(
-        detail: state.detail.success(BatchDetail(
-          batch: batch,
-          rawMaterials: sections[0] as Section<RawMaterialUsage>,
-          alerts: sections[1] as Section<DeviationAlert>,
-          events: sections[2] as Section<ComplianceEvent>,
-          auditLogs: sections[3] as Section<AuditLogEntry>,
-        )),
-      ));
+      emit(state.copyWith(detail: state.detail.success(await _load())));
     } catch (error) {
       emit(state.copyWith(detail: state.detail.failed(ApiExceptionMapper.map(error))));
+    }
+  }
+
+  Future<BatchDetail> _load() async {
+    final laboratoryId = _laboratoryId();
+    final traceability = await _getTraceability(laboratoryId, batchId);
+    final sections = await Future.wait<Object>([
+      Section.load(() => _getEvents(batchId)),
+      Section.load(() => _getAuditLogs(batchId)),
+      _people(laboratoryId),
+    ]);
+    return BatchDetail(
+      traceability: traceability,
+      events: sections[0] as Section<ComplianceEvent>,
+      auditLogs: sections[1] as Section<AuditLogEntry>,
+      people: sections[2] as Map<int, String>,
+    );
+  }
+
+  /// Names are a convenience: ids are shown when the staff cannot be read.
+  Future<Map<int, String>> _people(LaboratoryId laboratoryId) async {
+    try {
+      return await _getUserDirectory(laboratoryId);
+    } on UnauthorizedFailure {
+      rethrow;
+    } on Failure {
+      return const {};
     }
   }
 
   Future<void> _run(
     Emitter<BatchDetailState> emit,
     BatchReviewAction action,
-    Future<ProductionBatch> Function() command,
+    Future<void> Function(ProductionBatch batch) command,
   ) async {
     final current = state.detail.data;
     if (state.submitting || current == null) return;
-    emit(state.copyWith(
-      actionStatus: BatchActionStatus.submitting,
-      lastAction: action,
-      clearActionFailure: true,
-    ));
+    emit(state.copyWith(actionStatus: BatchActionStatus.submitting, lastAction: action, clearActionFailure: true));
     try {
-      final updated = await command();
-      emit(state.copyWith(
-        detail: state.detail.success(current.withBatch(updated)),
-        actionStatus: BatchActionStatus.success,
-      ));
-      // Reload secondary sections (audit log/compliance events change).
-      add(const BatchDetailRequested(refresh: true));
+      await command(current.batch);
+      // The decision changes the traceability, the audit log and the events.
+      emit(state.copyWith(detail: state.detail.success(await _load()), actionStatus: BatchActionStatus.success));
     } catch (error) {
-      emit(state.copyWith(
-        actionStatus: BatchActionStatus.failure,
-        actionFailure: ApiExceptionMapper.map(error),
-      ));
+      emit(state.copyWith(actionStatus: BatchActionStatus.failure, actionFailure: ApiExceptionMapper.map(error)));
     }
   }
 }

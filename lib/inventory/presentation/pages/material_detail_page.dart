@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
@@ -64,6 +65,7 @@ class _Body extends StatelessWidget {
             spacing: AppSpacing.xl,
             runSpacing: AppSpacing.lg,
             children: [
+              if (detail.environmentName != null) KeyValue(label: l10n.environment, value: detail.environmentName!),
               KeyValue(label: l10n.unit, value: m.unit.isEmpty ? '—' : m.unit),
               KeyValue(label: l10n.usableStock, value: qty(m.usableStock)),
               KeyValue(label: l10n.physicalStock, value: qty(m.physicalStock)),
@@ -73,7 +75,7 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<InventoryReceipt>(
-          title: l10n.receipts,
+          title: l10n.materialLots,
           section: detail.receipts,
           emptyMessage: l10n.receiptsEmpty,
           itemBuilder: (context, r) => Column(
@@ -97,10 +99,16 @@ class _Body extends StatelessWidget {
                     label: l10n.usable,
                     value: r.usable ? l10n.yes : l10n.no,
                     valueWidget: StatusBadge(
-                      label: r.usable ? l10n.yes : (r.availability ?? l10n.no),
+                      label: r.usable ? l10n.yes : lotAvailabilityLabel(l10n, r.availability),
                       tone: r.usable ? BadgeTone.success : BadgeTone.neutral,
                     ),
                   ),
+                  if (r.isNearExpiry || r.isExpired)
+                    StatusBadge(
+                      label: r.isExpired ? l10n.lotExpired : l10n.lotNearExpiry,
+                      tone: r.isExpired ? BadgeTone.critical : BadgeTone.warning,
+                      icon: Icons.event_busy_outlined,
+                    ),
                 ],
               ),
             ],
@@ -124,7 +132,7 @@ class _Body extends StatelessWidget {
               if (mv.reason != null && mv.reason!.isNotEmpty) mv.reason!,
             ];
             return SectionRow(
-              title: Formatters.humanize(mv.type),
+              title: movementTypeLabel(l10n, mv.type),
               subtitle: details.join(' · '),
               trailing: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -139,6 +147,21 @@ class _Body extends StatelessWidget {
               ),
             );
           },
+        ),
+        const SizedBox(height: AppSpacing.md),
+        SectionCard<MaterialUsage>(
+          title: l10n.batchesThatUsedIt,
+          section: detail.usages,
+          emptyMessage: l10n.noBatchesUsedIt,
+          itemBuilder: (context, u) => SectionRow(
+            leading: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
+            title: l10n.batchNumberShort(u.batchId),
+            subtitle: Formatters.dateTime(u.usageDate, locale),
+            trailing: TextButton(
+              onPressed: () => context.push('/batches/${u.batchId}'),
+              child: Text(qty(u.quantityUsed, u.unit)),
+            ),
+          ),
         ),
       ],
     );

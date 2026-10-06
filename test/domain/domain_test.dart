@@ -5,8 +5,10 @@ import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
 import 'package:qualitrack_mobile/iam/domain/access_token.dart';
 import 'package:qualitrack_mobile/iam/domain/onboarding_state.dart';
+import 'package:qualitrack_mobile/iam/domain/password_policy.dart';
 import 'package:qualitrack_mobile/iam/domain/user_role.dart';
-import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
+import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
+import 'package:qualitrack_mobile/profile/domain/profile.dart';
 import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 
@@ -29,17 +31,25 @@ void main() {
   });
 
   group('UserRole & UserSession', () {
-    test('parses only backend roles', () {
+    test('parses every backend role, including the auditor', () {
       expect(
-        UserRole.parseAll(['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_LAB_OPERATOR']),
-        [UserRole.admin, UserRole.labOperator],
+        UserRole.parseAll(['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_LAB_OPERATOR', 'ROLE_OTHER']),
+        [UserRole.admin, UserRole.auditor, UserRole.labOperator],
       );
     });
 
-    test('review is offered only to QA managers and admins', () {
-      expect(sessionFixture(roles: [UserRole.qaManager]).canReview, isTrue);
-      expect(sessionFixture(roles: [UserRole.admin]).canReview, isTrue);
-      expect(sessionFixture(roles: [UserRole.labOperator]).canReview, isFalse);
+    test('quality decisions belong to quality managers and admins', () {
+      expect(sessionFixture(roles: [UserRole.qaManager]).canManageQuality, isTrue);
+      expect(sessionFixture(roles: [UserRole.admin]).canManageQuality, isTrue);
+      expect(sessionFixture(roles: [UserRole.labOperator]).canManageQuality, isFalse);
+      expect(sessionFixture(roles: [UserRole.auditor]).canManageQuality, isFalse);
+    });
+
+    test('operators and quality managers attend alerts, auditors only read', () {
+      expect(sessionFixture(roles: [UserRole.labOperator]).canAttendAlerts, isTrue);
+      expect(sessionFixture(roles: [UserRole.qaManager]).canAttendAlerts, isTrue);
+      expect(sessionFixture(roles: [UserRole.auditor]).canAttendAlerts, isFalse);
+      expect(sessionFixture(roles: [UserRole.auditor]).isAuditor, isTrue);
     });
 
     test('laboratory id has no default value', () {
@@ -48,11 +58,43 @@ void main() {
       expect(sessionFixture(laboratoryId: null).hasLaboratory, isFalse);
     });
 
-    test('onboarding steps map backend codes', () {
+    test('onboarding steps map backend codes, including the password change', () {
       expect(OnboardingStep.fromCode('READY'), OnboardingStep.ready);
+      expect(OnboardingStep.fromCode('PASSWORD_CHANGE'), OnboardingStep.passwordChange);
       expect(OnboardingStep.fromCode('SUBSCRIPTION'), OnboardingStep.subscription);
       expect(OnboardingStep.fromCode('LABORATORY'), OnboardingStep.laboratory);
       expect(OnboardingStep.fromCode('OTHER'), OnboardingStep.unknown);
+      expect(const OnboardingState(nextStep: OnboardingStep.passwordChange).requiresPasswordChange, isTrue);
+    });
+
+    test('a changed password clears the temporary password flag', () {
+      final session = sessionFixture(passwordChangeRequired: true);
+      expect(session.withPasswordChanged().passwordChangeRequired, isFalse);
+      expect(session.withPasswordChanged().userId, session.userId);
+    });
+
+    test('password policy of the platform', () {
+      expect(PasswordPolicy.isSatisfiedBy('abcd1234'), isTrue);
+      expect(PasswordPolicy.isSatisfiedBy('añoÑ2026'), isTrue);
+      expect(PasswordPolicy.isSatisfiedBy('abc123'), isFalse);
+      expect(PasswordPolicy.isSatisfiedBy('abcdefgh'), isFalse);
+      expect(PasswordPolicy.isSatisfiedBy('12345678'), isFalse);
+      expect(PasswordPolicy.isSatisfiedBy('a1' * 37), isFalse);
+    });
+  });
+
+  group('Laboratory', () {
+    test('environment usages map backend codes', () {
+      expect(EnvironmentUsage.fromCode('RAW_MATERIAL_STORAGE'), EnvironmentUsage.rawMaterialStorage);
+      expect(EnvironmentUsage.fromCode(null), EnvironmentUsage.unassigned);
+      expect(EnvironmentUsage.fromCode(''), EnvironmentUsage.unassigned);
+      expect(storage.displayName, 'ALM-01 · Cold storage');
+    });
+
+    test('catalog finds the environment of a product', () {
+      const catalog = ProductCatalog(environments: [storage, production], products: []);
+      expect(catalog.environment(4), production);
+      expect(catalog.environment(99), isNull);
     });
   });
 
@@ -80,10 +122,7 @@ void main() {
         alertFixture(id: 2, status: AlertStatus.acknowledged, severity: AlertSeverity.low),
         alertFixture(id: 3, status: AlertStatus.resolved),
       ]);
-      expect(summary.total, 3);
-      expect(summary.unresolved, 1);
-      expect(summary.acknowledged, 1);
-      expect(summary.resolved, 1);
+      expect([summary.total, summary.unresolved, summary.acknowledged, summary.resolved], [3, 1, 1, 1]);
       expect(summary.critical, 1);
       expect(summary.open, 2);
     });
@@ -91,6 +130,8 @@ void main() {
     test('unknown enum values are preserved as unknown', () {
       expect(AlertStatus.fromCode('X'), AlertStatus.unknown);
       expect(AlertSeverity.fromCode(null), AlertSeverity.unknown);
+      expect(AlertOrigin.fromCode('ENVIRONMENT'), AlertOrigin.environment);
+      expect(NotificationType.fromCode('BATCH_RELEASED'), NotificationType.batchReleased);
     });
   });
 
@@ -107,114 +148,123 @@ void main() {
         batchFixture(id: 1),
         batchFixture(id: 2, status: BatchStatus.released),
         batchFixture(id: 3, status: BatchStatus.rejected),
+        batchFixture(id: 4, status: BatchStatus.inProgress),
       ]);
-      expect([summary.total, summary.pending, summary.released, summary.rejected], [3, 1, 1, 1]);
+      expect([summary.total, summary.pending, summary.inProgress, summary.released, summary.rejected], [4, 1, 1, 1, 1]);
       expect(isoDate(DateTime(2026, 9, 4)), '2026-09-04');
     });
   });
 
   group('Inventory & Equipment', () {
-    test('below minimum uses usable stock', () {
-      const material = InventoryMaterial(
-        id: 1,
-        laboratoryId: 7,
-        code: 'FE-01',
-        name: 'Hierro',
-        unit: 'g',
-        minimumStock: 5,
-        usableStock: 3,
-        physicalStock: 10,
-      );
-      expect(material.isBelowMinimum, isTrue);
-      expect(material.hasBlockedStock, isTrue);
-      expect(material.matches('fe-'), isTrue);
+    test('low stock follows the classification of the backend', () {
+      expect(materialFixture(stockStatus: 'LOW', usable: 50).isBelowMinimum, isTrue);
+      expect(materialFixture(stockStatus: 'SUFFICIENT', usable: 1).isBelowMinimum, isFalse);
+      expect(materialFixture(stockStatus: null, usable: 3).isBelowMinimum, isTrue);
+      expect(materialFixture().hasBlockedStock, isTrue);
+      expect(materialFixture().matches('fe-'), isTrue);
     });
 
-    test('BPM limits check values and parameter names', () {
-      const limit = BpmParameterConfig(
-        id: 1,
-        equipmentId: 10,
-        parameterName: 'Temperature',
-        minValue: 8,
-        maxValue: 15,
-        unit: '°C',
-      );
-      expect(limit.appliesTo(' temperature '), isTrue);
-      expect(limit.isWithin(10), isTrue);
-      expect(limit.isWithin(16), isFalse);
-    });
-
-    test('equipment attention and search', () {
-      final eq = equipmentFixture();
-      expect(eq.needsAttention, isFalse);
-      expect(eq.matches('esp32'), isTrue);
+    test('only located IoT devices report telemetry', () {
+      expect(equipmentFixture().isIotDevice, isTrue);
+      expect(equipmentFixture().isContainerMonitor, isTrue);
+      expect(equipmentFixture(deviceType: null).isIotDevice, isFalse);
+      expect(IotDeviceType.fromCode('ENVIRONMENTAL_DEVICE'), IotDeviceType.environmentalDevice);
+      expect(IotDeviceType.fromCode(null), isNull);
       expect(EquipmentStatus.fromCode('OUT_OF_SERVICE'), EquipmentStatus.outOfService);
     });
   });
 
   group('TelemetryAnalysis', () {
-    Measurement m(int id, String p, double v, DateTime t) => Measurement(
-      id: id,
-      equipmentId: 10,
-      parameterName: p,
-      value: v,
-      unit: p == 'Temperature' ? '°C' : '%',
-      timestamp: t,
-    );
-
-    TelemetryHistoryPoint h(int id, String p, DateTime t, {bool anomaly = false}) =>
-        TelemetryHistoryPoint(
-          id: id,
-          equipmentId: 10,
-          parameterName: p,
-          recordedValue: id.toDouble(),
-          isAnomaly: anomaly,
-          timestamp: t,
-        );
-
     final base = DateTime.utc(2026, 6, 14, 12);
 
-    test('keeps the latest reading of each parameter (no fixed sensor set)', () {
-      final readings = TelemetryAnalysis.latestByParameter([
-        m(1, 'Temperature', 10, base),
-        m(2, 'Temperature', 12, base.add(const Duration(minutes: 1))),
-        m(3, 'Humidity', 52, base),
+    test('keeps the latest reading of each metric in metric order', () {
+      final readings = TelemetryAnalysis.latestByMetric([
+        measurementFixture(id: 1, value: 10, measuredAt: base),
+        measurementFixture(id: 2, value: 12, measuredAt: base.add(const Duration(minutes: 1))),
+        measurementFixture(id: 3, metric: MonitoredMetric.airQuality, value: 400, measuredAt: base),
       ]);
-      expect(readings.map((r) => r.latest.parameterName), ['Humidity', 'Temperature']);
+      expect(readings.map((r) => r.latest.metric), [MonitoredMetric.airQuality, MonitoredMetric.temperature]);
       expect(readings.last.latest.value, 12);
       expect(readings.last.samples, 2);
     });
 
+    test('motion and RFID are not charted', () {
+      final metrics = TelemetryAnalysis.chartMetrics([
+        measurementFixture(id: 1, metric: MonitoredMetric.motion, value: 1),
+        measurementFixture(id: 2, metric: MonitoredMetric.humidity, value: 50),
+        measurementFixture(id: 3, metric: MonitoredMetric.rfidTag, value: null),
+      ]);
+      expect(metrics, [MonitoredMetric.humidity]);
+    });
+
     test('windows are offered only when real timestamps span them', () {
       final points = [
-        h(1, 'Temperature', base),
-        h(2, 'Temperature', base.add(const Duration(minutes: 30))),
+        measurementFixture(id: 1, measuredAt: base),
+        measurementFixture(id: 2, measuredAt: base.add(const Duration(minutes: 30))),
       ];
       expect(
-        TelemetryAnalysis.availableWindows(points, 'Temperature'),
+        TelemetryAnalysis.availableWindows(points, MonitoredMetric.temperature),
         [TelemetryWindow.fifteenMinutes, TelemetryWindow.oneHour],
       );
-      expect(TelemetryAnalysis.availableWindows(const [], 'Temperature'), isEmpty);
+      expect(TelemetryAnalysis.availableWindows(const [], MonitoredMetric.temperature), isEmpty);
     });
 
     test('series is anchored to the latest real timestamp', () {
       final points = [
-        h(1, 'Temperature', base),
-        h(2, 'Temperature', base.add(const Duration(minutes: 50))),
-        h(3, 'Temperature', base.add(const Duration(minutes: 60))),
-        h(4, 'Humidity', base.add(const Duration(minutes: 60))),
+        measurementFixture(id: 1, measuredAt: base),
+        measurementFixture(id: 2, measuredAt: base.add(const Duration(minutes: 50))),
+        measurementFixture(id: 3, measuredAt: base.add(const Duration(minutes: 60))),
+        measurementFixture(id: 4, metric: MonitoredMetric.humidity, measuredAt: base.add(const Duration(minutes: 60))),
       ];
-      final series = TelemetryAnalysis.series(points, 'Temperature', TelemetryWindow.fifteenMinutes);
+      final series = TelemetryAnalysis.series(points, MonitoredMetric.temperature, TelemetryWindow.fifteenMinutes);
       expect(series.map((p) => p.id), [2, 3]);
     });
 
-    test('anomalies newest first', () {
-      final anomalies = TelemetryAnalysis.anomalies([
-        h(1, 'Temperature', base, anomaly: true),
-        h(2, 'Temperature', base.add(const Duration(minutes: 5))),
-        h(3, 'Temperature', base.add(const Duration(minutes: 9)), anomaly: true),
+    test('deviations are the warning and critical readings, newest first', () {
+      final deviations = TelemetryAnalysis.deviations([
+        measurementFixture(id: 1, state: EnvironmentalState.critical, measuredAt: base),
+        measurementFixture(id: 2, measuredAt: base.add(const Duration(minutes: 5))),
+        measurementFixture(id: 3, state: EnvironmentalState.warning, measuredAt: base.add(const Duration(minutes: 9))),
       ]);
-      expect(anomalies.map((p) => p.id), [3, 1]);
+      expect(deviations.map((p) => p.id), [3, 1]);
+    });
+
+    test('merge adds new readings and drops the ones out of the period', () {
+      final merged = TelemetryAnalysis.merge(
+        [measurementFixture(id: 1, measuredAt: base), measurementFixture(id: 2, measuredAt: base.add(const Duration(hours: 2)))],
+        [measurementFixture(id: 3, measuredAt: base.add(const Duration(hours: 3))), measurementFixture(id: 2, value: 7, measuredAt: base.add(const Duration(hours: 2)))],
+        base.add(const Duration(hours: 1)),
+      );
+      expect(merged.map((m) => m.id), [3, 2]);
+      expect(merged.last.value, 7);
+    });
+
+    test('profile finds the threshold of a metric', () {
+      const profile = EnvironmentalProfile(
+        version: 3,
+        thresholds: [MetricThreshold(metric: MonitoredMetric.temperature, normalMin: 2, normalMax: 8)],
+      );
+      expect(profile.thresholdFor(MonitoredMetric.temperature)?.normalMax, 8);
+      expect(profile.thresholdFor(MonitoredMetric.humidity), isNull);
+    });
+  });
+
+  group('Profile', () {
+    test('initials and display name', () {
+      const profile = UserProfile(userId: 1, username: 'lucia@senkalab.test', fullName: 'Lucía Ramos Vega');
+      expect(profile.displayName, 'Lucía Ramos Vega');
+      expect(profile.initials, 'LV');
+      expect(const UserProfile(userId: 1, username: 'qa').initials, 'Q');
+    });
+
+    test('personal data rules of the Profile context', () {
+      expect(PersonalDataRules.isValidDni('12345678'), isTrue);
+      expect(PersonalDataRules.isValidDni('1234567'), isFalse);
+      expect(PersonalDataRules.isValidPhone('+51 987 654 321'), isTrue);
+      expect(PersonalDataRules.isValidPhone('12345'), isFalse);
+      expect(PersonalDataRules.isValidFullName('A'), isFalse);
+      expect(ProfilePhoto.contentTypeOf('me.JPG'), 'image/jpeg');
+      expect(ProfilePhoto.contentTypeOf('me.gif'), isNull);
     });
   });
 }

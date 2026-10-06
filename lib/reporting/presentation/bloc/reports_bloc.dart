@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../equipment/application/equipment_queries.dart';
+import '../../../equipment/domain/equipment.dart';
+import '../../../laboratory/application/laboratory_queries.dart';
+import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
 import '../../../shared/infrastructure/http/api_exception_mapper.dart';
@@ -10,23 +14,37 @@ import '../../application/reporting_queries.dart';
 import '../../domain/reporting.dart';
 
 final class ReportsData extends Equatable {
-  const ReportsData({required this.kpi, required this.reports, this.kpiFailure});
+  const ReportsData({
+    required this.kpi,
+    required this.trends,
+    required this.reports,
+    this.environmentNames = const {},
+    this.deviceNames = const {},
+    this.kpiFailure,
+  });
 
-  /// Null when no KPI dashboard has been calculated in Web yet (HTTP 404).
+  /// Null when the indicators could not be calculated ([kpiFailure]).
   final KpiDashboard? kpi;
-
-  /// Set when the KPI dashboard could not be read; the report history is still
-  /// displayed.
   final Failure? kpiFailure;
+  final Section<DeviationTrend> trends;
   final Section<AuditReport> reports;
+  final Map<int, String> environmentNames;
+  final Map<int, String> deviceNames;
 
-  bool get everythingFailed => kpiFailure != null && reports.failure != null;
+  bool get everythingFailed => kpiFailure != null && trends.failed && reports.failed;
 
   @override
-  List<Object?> get props => [kpi, kpiFailure, reports];
+  List<Object?> get props => [kpi, kpiFailure, trends, reports, environmentNames, deviceNames];
 }
 
-final class ReportsRequested extends Equatable {
+sealed class ReportsEvent extends Equatable {
+  const ReportsEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class ReportsRequested extends ReportsEvent {
   const ReportsRequested({this.refresh = false});
 
   final bool refresh;
@@ -35,33 +53,74 @@ final class ReportsRequested extends Equatable {
   List<Object?> get props => [refresh];
 }
 
-/// Read-only: it never triggers report or KPI generation.
-class ReportsBloc extends Bloc<ReportsRequested, RemoteState<ReportsData>> {
+final class ReportsPeriodChanged extends ReportsEvent {
+  const ReportsPeriodChanged(this.period);
+
+  final ReportPeriod period;
+
+  @override
+  List<Object?> get props => [period];
+}
+
+final class ReportsState extends Equatable {
+  const ReportsState({this.remote = const RemoteState(), this.period = ReportPeriod.last24Hours});
+
+  final RemoteState<ReportsData> remote;
+  final ReportPeriod period;
+
+  ReportsState copyWith({RemoteState<ReportsData>? remote, ReportPeriod? period}) =>
+      ReportsState(remote: remote ?? this.remote, period: period ?? this.period);
+
+  @override
+  List<Object?> get props => [remote, period];
+}
+
+/// Indicators and report history. It is read-only: reports are generated in
+/// QualiTrack Web.
+class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   ReportsBloc({
     required GetKpiDashboard getKpiDashboard,
+    required GetDeviationTrends getDeviationTrends,
     required GetReportHistory getReportHistory,
+    required GetEnvironments getEnvironments,
+    required GetEquipments getEquipments,
     required LaboratoryId Function() laboratoryId,
   }) : _getKpi = getKpiDashboard,
+       _getTrends = getDeviationTrends,
        _getReports = getReportHistory,
+       _getEnvironments = getEnvironments,
+       _getEquipments = getEquipments,
        _laboratoryId = laboratoryId,
-       super(const RemoteState()) {
-    on<ReportsRequested>(_onRequested);
+       super(const ReportsState()) {
+    on<ReportsRequested>((event, emit) => _load(emit, refresh: event.refresh));
+    on<ReportsPeriodChanged>((event, emit) async {
+      if (event.period == state.period) return;
+      emit(state.copyWith(period: event.period));
+      await _load(emit, refresh: true);
+    });
   }
 
   final GetKpiDashboard _getKpi;
+  final GetDeviationTrends _getTrends;
   final GetReportHistory _getReports;
+  final GetEnvironments _getEnvironments;
+  final GetEquipments _getEquipments;
   final LaboratoryId Function() _laboratoryId;
 
-  Future<void> _onRequested(ReportsRequested event, Emitter<RemoteState<ReportsData>> emit) async {
-    emit(event.refresh && state.hasData ? state.refreshingState() : state.loading());
+  Future<void> _load(Emitter<ReportsState> emit, {required bool refresh}) async {
+    final current = state.remote;
+    emit(state.copyWith(remote: refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
       final lab = _laboratoryId();
-      // Both parts load independently: a failing KPI dashboard must not hide
-      // the report history, and vice versa.
+      final period = state.period;
+      final results = await Future.wait<Object>([_getEnvironments(lab), _getEquipments(lab)]);
+      final environments = results[0] as List<LabEnvironment>;
+      final equipments = results[1] as List<Equipment>;
+      // Each part loads independently: one failing indicator must not hide the rest.
       KpiDashboard? kpi;
       Failure? kpiFailure;
       try {
-        kpi = await _getKpi(lab);
+        kpi = await _getKpi(lab, period);
       } on UnauthorizedFailure {
         rethrow;
       } on OnboardingRequiredFailure {
@@ -69,16 +128,25 @@ class ReportsBloc extends Bloc<ReportsRequested, RemoteState<ReportsData>> {
       } on Failure catch (failure) {
         kpiFailure = failure;
       }
-      final reports = await Section.load(() => _getReports(lab));
-      final data = ReportsData(kpi: kpi, kpiFailure: kpiFailure, reports: reports);
+      final sections = await Future.wait<Object>([
+        Section.load(() => _getTrends(lab, environments.map((e) => e.id), period)),
+        Section.load(() => _getReports(lab)),
+      ]);
+      final data = ReportsData(
+        kpi: kpi,
+        kpiFailure: kpiFailure,
+        trends: sections[0] as Section<DeviationTrend>,
+        reports: sections[1] as Section<AuditReport>,
+        environmentNames: {for (final e in environments) e.id: e.name},
+        deviceNames: {for (final e in equipments) e.id: e.name},
+      );
       if (data.everythingFailed) {
-        emit(state.failed(kpiFailure!));
+        emit(state.copyWith(remote: state.remote.failed(kpiFailure!)));
         return;
       }
-      final empty = kpi == null && kpiFailure == null && reports.failure == null && reports.items.isEmpty;
-      emit(state.success(data, empty: empty));
+      emit(state.copyWith(remote: state.remote.success(data)));
     } catch (error) {
-      emit(state.failed(ApiExceptionMapper.map(error)));
+      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
     }
   }
 }

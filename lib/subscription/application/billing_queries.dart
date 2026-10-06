@@ -10,6 +10,7 @@ final class BillingSummary extends Equatable {
     required this.plan,
     required this.subscriptions,
     required this.payments,
+    this.plans = const [],
   });
 
   final Subscription? active;
@@ -19,8 +20,17 @@ final class BillingSummary extends Equatable {
   final List<Subscription> subscriptions;
   final List<SubscriptionPayment> payments;
 
+  /// Catalog of plans, to name every subscription of the history.
+  final List<SubscriptionPlan> plans;
+
+  /// "Standard Lab" instead of the plan code, when the plan is in the catalog.
+  String planNameOf(Subscription subscription) =>
+      _planOf(plans, subscription)?.name ??
+      (subscription == active ? plan?.name : null) ??
+      subscription.planCode;
+
   @override
-  List<Object?> get props => [active, plan, subscriptions, payments];
+  List<Object?> get props => [active, plan, subscriptions, payments, plans];
 }
 
 /// Read-only billing overview (no checkout, plan change or cancellation).
@@ -30,23 +40,29 @@ class GetBillingSummary {
   final SubscriptionRepository _repository;
 
   Future<BillingSummary> call(LaboratoryId laboratoryId) async {
-    final active = await _repository.getActive(laboratoryId);
-    final subscriptions = await _repository.getBillingSummary(laboratoryId);
-    final current = active ?? (subscriptions.isEmpty ? null : subscriptions.first);
+    final subscriptions = [...await _repository.getSubscriptions(laboratoryId)]
+      ..sort((a, b) {
+        final left = a.currentPeriodStart;
+        final right = b.currentPeriodStart;
+        if (left == null && right == null) return b.id.compareTo(a.id);
+        if (left == null) return 1;
+        if (right == null) return -1;
+        return right.compareTo(left);
+      });
+    final active = subscriptions.where((s) => s.isActive).firstOrNull;
+    final current = active ?? subscriptions.firstOrNull;
 
-    SubscriptionPlan? plan;
-    if (active != null) {
+    var plans = const <SubscriptionPlan>[];
+    if (subscriptions.isNotEmpty) {
       try {
-        final plans = await _repository.getPlans();
-        plan = plans
-            .where((p) => p.code == active.planCode && p.billingCycle == active.billingCycle)
-            .firstOrNull;
+        plans = await _repository.getPlans();
       } on UnauthorizedFailure {
         rethrow;
       } on Failure {
-        plan = null;
+        plans = const [];
       }
     }
+    final plan = active == null ? null : _planOf(plans, active);
 
     final payments = current == null
         ? const <SubscriptionPayment>[]
@@ -65,6 +81,11 @@ class GetBillingSummary {
       plan: plan,
       subscriptions: subscriptions,
       payments: sortedPayments,
+      plans: plans,
     );
   }
 }
+
+SubscriptionPlan? _planOf(List<SubscriptionPlan> plans, Subscription subscription) => plans
+    .where((p) => p.code == subscription.planCode && p.billingCycle == subscription.billingCycle)
+    .firstOrNull;

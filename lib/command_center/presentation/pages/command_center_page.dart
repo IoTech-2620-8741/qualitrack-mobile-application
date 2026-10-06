@@ -6,8 +6,14 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
+import '../../../batch/presentation/widgets/batch_labels.dart';
+import '../../../compliance/presentation/bloc/unread_notifications_controller.dart';
+import '../../../compliance/presentation/widgets/alert_widgets.dart';
+import '../../../compliance/presentation/widgets/notification_bell.dart';
 import '../../../iam/domain/user_session.dart';
 import '../../../iam/presentation/widgets/role_labels.dart';
+import '../../../profile/presentation/bloc/current_profile_controller.dart';
+import '../../../profile/presentation/widgets/profile_avatar.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
@@ -20,10 +26,19 @@ import '../../../shared/presentation/widgets/status_badge.dart';
 import '../../application/get_command_center_summary.dart';
 import '../bloc/command_center_bloc.dart';
 
+/// Panel shown after signing in (US: consult the control panel of the
+/// laboratory), with the same cards as the Web dashboard.
 class CommandCenterPage extends StatelessWidget {
-  const CommandCenterPage({super.key, required this.session});
+  const CommandCenterPage({
+    super.key,
+    required this.session,
+    required this.currentProfile,
+    required this.notifications,
+  });
 
   final UserSession session;
+  final CurrentProfileController currentProfile;
+  final UnreadNotificationsController notifications;
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +48,18 @@ class CommandCenterPage extends StatelessWidget {
       appBar: AppBar(
         title: const BrandTitle(),
         actions: [
+          NotificationBell(controller: notifications),
           IconButton(tooltip: l10n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
-          IconButton(
-            tooltip: l10n.profile,
-            onPressed: () => context.push('/profile'),
-            icon: CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.primaryContainer,
-              child: Text(
-                session.username.isEmpty ? '?' : session.username[0].toUpperCase(),
-                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
+          ListenableBuilder(
+            listenable: currentProfile,
+            builder: (context, _) => IconButton(
+              tooltip: l10n.profile,
+              onPressed: () => context.push('/profile'),
+              icon: ProfileAvatar(
+                radius: 16,
+                photo: currentProfile.photo,
+                initials: currentProfile.profile?.initials ??
+                    (session.username.isEmpty ? '?' : session.username[0].toUpperCase()),
               ),
             ),
           ),
@@ -57,15 +74,22 @@ class CommandCenterPage extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                PageHeader(title: l10n.commandCenterTitle, subtitle: l10n.commandCenterSubtitle),
-                const SizedBox(height: AppSpacing.md),
-                _Hero(session: session, summary: summary),
+                ListenableBuilder(
+                  listenable: currentProfile,
+                  builder: (context, _) => _Hero(
+                    session: session,
+                    name: currentProfile.profile?.displayName ?? session.username,
+                    summary: summary,
+                  ),
+                ),
                 SectionHeader(title: l10n.keyOperationalMetrics),
                 _Metrics(summary: summary),
+                SectionHeader(title: l10n.openAlerts, subtitle: l10n.openAlertsHint),
+                _OpenAlerts(summary: summary),
                 SectionHeader(title: l10n.liveTelemetry, subtitle: l10n.liveTelemetryHint),
                 _TelemetryCard(summary: summary),
-                SectionHeader(title: l10n.riskOverview, subtitle: l10n.riskOverviewHint),
-                _RiskOverview(summary: summary),
+                SectionHeader(title: l10n.recentBatches),
+                _RecentBatches(summary: summary),
               ],
             ),
           ),
@@ -75,10 +99,14 @@ class CommandCenterPage extends StatelessWidget {
   }
 }
 
+String _error(BuildContext context, Failure? failure) =>
+    failure == null ? '' : failureMessage(context, failure).split('\n').first;
+
 class _Hero extends StatelessWidget {
-  const _Hero({required this.session, required this.summary});
+  const _Hero({required this.session, required this.name, required this.summary});
 
   final UserSession session;
+  final String name;
   final CommandCenterSummary summary;
 
   @override
@@ -86,9 +114,9 @@ class _Hero extends StatelessWidget {
     final l10n = context.l10n;
     final locale = context.localeName;
     final lab = summary.laboratory.value;
-    final kpi = summary.kpi.value;
     final alerts = summary.alerts.value;
-    final sub = summary.subscription;
+    final billing = summary.subscription;
+    final active = billing?.value?.active;
     const light = TextStyle(color: Colors.white70, fontSize: 12);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -103,12 +131,13 @@ class _Hero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.welcomeUser(session.username), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+          Text(
+            l10n.welcomeUser(name),
+            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            [session.primaryRole?.label(l10n), lab?.name ?? l10n.laboratoryNumber(session.laboratoryId?.toString() ?? '—')]
-                .whereType<String>()
-                .join(' · '),
+            [session.primaryRole?.label(l10n), lab?.name].whereType<String>().join(' · '),
             style: light,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -118,50 +147,20 @@ class _Hero extends StatelessWidget {
             children: [
               if (alerts != null)
                 StatusBadge(
-                  label: alerts.critical > 0
-                      ? l10n.criticalAlertsCount(alerts.critical)
+                  label: alerts.summary.critical > 0
+                      ? l10n.criticalAlertsCount(alerts.summary.critical)
                       : l10n.noCriticalAlerts,
-                  tone: alerts.critical > 0 ? BadgeTone.critical : BadgeTone.success,
+                  tone: alerts.summary.critical > 0 ? BadgeTone.critical : BadgeTone.success,
                 ),
-              if (sub.isOk && sub.value != null)
+              if (billing != null && billing.isOk)
                 StatusBadge(
-                  label: '${l10n.plan}: ${sub.value!.planCode} · ${Formatters.humanize(sub.value!.status)}',
-                  tone: BadgeTone.brand,
+                  label: active == null
+                      ? l10n.noActiveSubscription
+                      : '${l10n.plan}: ${billing.value!.plan?.name ?? active.planCode} · ${l10n.until(Formatters.date(active.currentPeriodEnd, locale))}',
+                  tone: active == null ? BadgeTone.warning : BadgeTone.brand,
                 ),
-              if (sub.isOk && sub.value == null)
-                StatusBadge(label: l10n.noActiveSubscription, tone: BadgeTone.warning),
             ],
           ),
-          if (kpi != null && kpi.overallHealthScore != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: AppRadius.lgAll,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l10n.overallHealth.toUpperCase(), style: light),
-                  Text(
-                    '${Formatters.number(kpi.overallHealthScore, locale, maxDecimals: 1)}%',
-                    style: AppTypography.metric.copyWith(color: Colors.white),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  LinearProgressIndicator(
-                    value: (kpi.overallHealthScore! / 100).clamp(0.0, 1.0),
-                    backgroundColor: Colors.white24,
-                    color: Colors.white,
-                    minHeight: 6,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(l10n.calculatedAt(Formatters.dateTime(kpi.timestamp, locale)), style: light),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -189,33 +188,31 @@ class _Metrics extends StatelessWidget {
         MetricTile(
           label: l10n.equipmentTitle,
           value: _value(eq, (v) => '${v.total}'),
-          caption: eq.isOk ? l10n.operationalCount(eq.value!.operational) : _err(context, eq.failure),
+          caption: eq.isOk ? l10n.operationalCount(eq.value!.operational) : _error(context, eq.failure),
           icon: Icons.precision_manufacturing_outlined,
           color: AppColors.info,
           onTap: () => context.push('/equipment'),
         ),
         MetricTile(
-          label: l10n.batchesTitle,
-          value: _value(batches, (v) => '${v.total}'),
-          caption: batches.isOk
-              ? l10n.pendingInProgress(batches.value!.pending, batches.value!.inProgress)
-              : _err(context, batches.failure),
+          label: l10n.batchesInProgress,
+          value: _value(batches, (v) => '${v.summary.inProgress}'),
+          caption: batches.isOk ? l10n.pendingCount(batches.value!.summary.pending) : _error(context, batches.failure),
           icon: Icons.inventory_2_outlined,
           color: AppColors.primary,
           onTap: () => context.go('/batches'),
         ),
         MetricTile(
           label: l10n.openAlerts,
-          value: _value(alerts, (v) => '${v.open}'),
-          caption: alerts.isOk ? l10n.criticalCount(alerts.value!.critical) : _err(context, alerts.failure),
+          value: _value(alerts, (v) => '${v.summary.open}'),
+          caption: alerts.isOk ? l10n.criticalCount(alerts.value!.summary.critical) : _error(context, alerts.failure),
           icon: Icons.notifications_active_outlined,
           color: AppColors.critical,
           onTap: () => context.go('/alerts'),
         ),
         MetricTile(
-          label: l10n.rawMaterials,
-          value: _value(materials, (v) => '${v.length}'),
-          caption: materials.isOk ? l10n.lowStockCount(lowStock ?? 0) : _err(context, materials.failure),
+          label: l10n.lowStock,
+          value: lowStock == null ? '—' : '$lowStock',
+          caption: materials.isOk ? l10n.materialsCount(materials.value!.length) : _error(context, materials.failure),
           icon: Icons.science_outlined,
           color: AppColors.warning,
           onTap: () => context.push('/inventory'),
@@ -223,9 +220,40 @@ class _Metrics extends StatelessWidget {
       ],
     );
   }
+}
 
-  String _err(BuildContext context, Failure? failure) =>
-      failure == null ? '' : failureMessage(context, failure).split('\n').first;
+class _OpenAlerts extends StatelessWidget {
+  const _OpenAlerts({required this.summary});
+
+  final CommandCenterSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final part = summary.alerts;
+    if (!part.isOk) return InfoCard(child: Text(failureMessage(context, part.failure!)));
+    final open = part.value!.open;
+    if (open.isEmpty) return InfoCard(child: Text(l10n.noOpenAlerts));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final alert in open.take(3)) ...[
+          AlertCard(
+            alert: alert,
+            deviceName: summary.equipmentNames[alert.equipmentId],
+            environmentName: summary.environmentNames[alert.environmentId],
+            onTap: () => context.push('/alerts/${alert.id}'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+        if (open.length > 3)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(onPressed: () => context.go('/alerts'), child: Text(l10n.viewAll)),
+          ),
+      ],
+    );
+  }
 }
 
 class _TelemetryCard extends StatelessWidget {
@@ -237,14 +265,12 @@ class _TelemetryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final eq = summary.equipment;
-    if (!eq.isOk) {
-      return InfoCard(child: Text(failureMessage(context, eq.failure!)));
-    }
+    if (!eq.isOk) return InfoCard(child: Text(failureMessage(context, eq.failure!)));
     final snapshot = eq.value!;
-    final attention = snapshot.telemetryAttention;
-    final tone = snapshot.total == 0
+    final review = snapshot.requiresReview;
+    final tone = snapshot.devices == 0
         ? BadgeTone.neutral
-        : (attention > 0 ? BadgeTone.warning : (snapshot.online > 0 ? BadgeTone.success : BadgeTone.neutral));
+        : (review > 0 ? BadgeTone.warning : BadgeTone.success);
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -260,9 +286,9 @@ class _TelemetryCard extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      snapshot.total == 0
-                          ? l10n.equipmentEmpty
-                          : l10n.onlineOfTotal(snapshot.online, snapshot.total),
+                      snapshot.devices == 0
+                          ? l10n.telemetryNoDevices
+                          : l10n.connectedOfTotal(snapshot.connected, snapshot.devices),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
@@ -272,9 +298,9 @@ class _TelemetryCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  Expanded(child: _MiniStat(label: l10n.onlineDevices, value: snapshot.online)),
-                  Expanded(child: _MiniStat(label: l10n.telemetryAttention, value: attention, alert: attention > 0)),
-                  Expanded(child: _MiniStat(label: l10n.withoutStatus, value: snapshot.total - snapshot.statuses.length)),
+                  Expanded(child: _MiniStat(label: l10n.iotDevices, value: snapshot.devices)),
+                  Expanded(child: _MiniStat(label: l10n.connected, value: snapshot.connected)),
+                  Expanded(child: _MiniStat(label: l10n.requiresReview, value: review, alert: review > 0)),
                 ],
               ),
             ],
@@ -301,10 +327,7 @@ class _MiniStat extends StatelessWidget {
         children: [
           Text(
             '$value',
-            style: AppTypography.metric.copyWith(
-              fontSize: 22,
-              color: alert ? AppColors.critical : AppColors.textPrimary,
-            ),
+            style: AppTypography.metric.copyWith(fontSize: 22, color: alert ? AppColors.critical : AppColors.textPrimary),
           ),
           Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
         ],
@@ -313,110 +336,29 @@ class _MiniStat extends StatelessWidget {
   }
 }
 
-class _RiskOverview extends StatelessWidget {
-  const _RiskOverview({required this.summary});
+class _RecentBatches extends StatelessWidget {
+  const _RecentBatches({required this.summary});
 
   final CommandCenterSummary summary;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final rows = <Widget>[];
-    final materials = summary.materials.value;
-    if (materials != null) {
-      rows.add(_RiskRow(
-        label: l10n.lowStock,
-        count: materials.where((m) => m.isBelowMinimum).length,
-        total: materials.length,
-        color: AppColors.warning,
-        caption: l10n.itemsCount(materials.where((m) => m.isBelowMinimum).length),
-      ));
-    }
-    final eq = summary.equipment.value;
-    if (eq != null) {
-      rows.add(_RiskRow(
-        label: l10n.equipmentMaintenance,
-        count: eq.maintenance,
-        total: eq.total,
-        color: AppColors.info,
-        caption: l10n.itemsCount(eq.maintenance),
-      ));
-    }
-    final alerts = summary.alerts.value;
-    if (alerts != null) {
-      rows.add(_RiskRow(
-        label: l10n.criticalOpen,
-        count: alerts.critical,
-        total: alerts.open,
-        color: AppColors.critical,
-        caption: l10n.criticalAlertsCount(alerts.critical),
-      ));
-    }
-    final kpi = summary.kpi.value;
-    if (kpi != null) {
-      rows.add(_RiskRow(
-        label: l10n.kpisAtRisk,
-        count: kpi.atRiskCount,
-        total: kpi.metrics.length,
-        color: AppColors.critical,
-        caption: l10n.itemsCount(kpi.atRiskCount),
-      ));
-    }
-    if (eq != null) {
-      rows.add(_RiskRow(
-        label: l10n.telemetryAttention,
-        count: eq.telemetryAttention,
-        total: eq.total,
-        color: AppColors.primary,
-        caption: l10n.itemsCount(eq.telemetryAttention),
-      ));
-    }
-    return InfoCard(
-      child: rows.isEmpty
-          ? Text(l10n.noInformation)
-          : Column(children: [for (final r in rows) Padding(padding: const EdgeInsets.only(bottom: AppSpacing.md), child: r)]),
-    );
-  }
-}
-
-class _RiskRow extends StatelessWidget {
-  const _RiskRow({
-    required this.label,
-    required this.count,
-    required this.total,
-    required this.color,
-    required this.caption,
-  });
-
-  final String label;
-  final int count;
-  final int total;
-  final Color color;
-  final String caption;
-
-  @override
-  Widget build(BuildContext context) {
-    final ratio = total <= 0 ? 0.0 : (count / total).clamp(0.0, 1.0);
-    return Semantics(
-      label: '$label: $caption',
-      excludeSemantics: true,
+    final part = summary.batches;
+    if (!part.isOk) return InfoCard(child: Text(failureMessage(context, part.failure!)));
+    final recent = part.value!.recent;
+    if (recent.isEmpty) return InfoCard(child: Text(l10n.batchesEmpty));
+    return Card(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
-              Text(caption, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12)),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          LinearProgressIndicator(
-            value: ratio,
-            color: color,
-            backgroundColor: AppColors.neutralContainer,
-            minHeight: 6,
-            borderRadius: BorderRadius.circular(6),
-          ),
+          for (final batch in recent)
+            ListTile(
+              leading: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
+              title: Text(batch.batchNumber),
+              subtitle: Text(batch.productName ?? '—', maxLines: 1, overflow: TextOverflow.ellipsis),
+              trailing: BatchStatusBadge(status: batch.status),
+              onTap: () => context.push('/batches/${batch.id}'),
+            ),
         ],
       ),
     );

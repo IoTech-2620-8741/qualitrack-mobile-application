@@ -9,14 +9,19 @@ import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/state_views.dart';
 import '../bloc/alerts_bloc.dart';
+import '../bloc/unread_notifications_controller.dart';
+import '../widgets/notification_bell.dart';
 import '../widgets/alert_widgets.dart';
 
 class AlertsPage extends StatelessWidget {
-  const AlertsPage({super.key});
+  const AlertsPage({super.key, required this.notifications});
+
+  final UnreadNotificationsController notifications;
 
   String _filterLabel(BuildContext context, AlertFilter filter) {
     final l10n = context.l10n;
     return switch (filter) {
+      AlertFilter.open => l10n.alertsOpen,
       AlertFilter.all => l10n.filterAll,
       AlertFilter.unresolved => l10n.alertUnresolved,
       AlertFilter.acknowledged => l10n.alertAcknowledged,
@@ -34,6 +39,7 @@ class AlertsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.alertsTitle),
         actions: [
+          NotificationBell(controller: notifications),
           IconButton(tooltip: l10n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
         ],
       ),
@@ -103,7 +109,8 @@ class AlertsPage extends StatelessWidget {
                     for (final alert in items) ...[
                       AlertCard(
                         alert: alert,
-                        equipmentName: data.equipmentNames[alert.equipmentId],
+                        deviceName: data.deviceNames[alert.equipmentId],
+                        environmentName: data.environmentNames[alert.environmentId],
                         onTap: () async {
                           await context.push('/alerts/${alert.id}');
                           reload();

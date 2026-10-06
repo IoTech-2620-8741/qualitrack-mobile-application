@@ -2,33 +2,39 @@ import 'package:equatable/equatable.dart';
 
 import '../../shared/domain/value_objects.dart';
 
-/// Inventory catalogue entry (`inventory.RawMaterialResource`). Stock values
-/// are derived by the backend from receipts.
+/// Raw material of an environment (`RawMaterialResource`). Stock values are
+/// derived by the backend from its lots.
 final class InventoryMaterial extends Equatable {
   const InventoryMaterial({
     required this.id,
     required this.laboratoryId,
+    required this.environmentId,
     required this.code,
     required this.name,
     required this.unit,
     required this.minimumStock,
     required this.usableStock,
     required this.physicalStock,
+    this.stockStatus,
     this.legacyId,
   });
 
   final int id;
   final int laboratoryId;
+  final int environmentId;
   final String code;
   final String name;
   final String unit;
   final double minimumStock;
   final double usableStock;
   final double physicalStock;
+
+  /// `LOW` or `SUFFICIENT`, classified by the backend (TS27).
+  final String? stockStatus;
   final int? legacyId;
 
   /// Same rule as the Web dashboard: usable stock below the minimum.
-  bool get isBelowMinimum => usableStock < minimumStock;
+  bool get isBelowMinimum => stockStatus == null ? usableStock < minimumStock : stockStatus == 'LOW';
 
   /// Physical stock exists but part of it is not usable (quarantine, observed,
   /// rejected or expired receipts).
@@ -41,7 +47,19 @@ final class InventoryMaterial extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, laboratoryId, code, name, unit, minimumStock, usableStock, physicalStock, legacyId];
+  List<Object?> get props => [
+    id,
+    laboratoryId,
+    environmentId,
+    code,
+    name,
+    unit,
+    minimumStock,
+    usableStock,
+    physicalStock,
+    stockStatus,
+    legacyId,
+  ];
 }
 
 enum ReceiptStatus {
@@ -63,7 +81,8 @@ enum ReceiptStatus {
   }
 }
 
-/// Supplier receipt (`ReceiptResource`).
+/// Lot received from a supplier (`ReceiptResource`). It starts in quarantine
+/// and can be consumed only once released and before it expires.
 final class InventoryReceipt extends Equatable {
   const InventoryReceipt({
     required this.id,
@@ -78,6 +97,8 @@ final class InventoryReceipt extends Equatable {
     this.receivedOn,
     this.expiresOn,
     this.availability,
+    this.expirationStatus,
+    this.containerMonitorId,
   });
 
   final int id;
@@ -91,7 +112,18 @@ final class InventoryReceipt extends Equatable {
   final DateTime? expiresOn;
   final ReceiptStatus status;
   final bool usable;
+
+  /// `EXPIRED`, `NOT_YET_RECEIVED`, `DEPLETED` or the lot status.
   final String? availability;
+
+  /// `VALID`, `NEAR_EXPIRY` or `EXPIRED`.
+  final String? expirationStatus;
+
+  /// Container monitor where the lot is stored, if any.
+  final int? containerMonitorId;
+
+  bool get isNearExpiry => expirationStatus == 'NEAR_EXPIRY';
+  bool get isExpired => expirationStatus == 'EXPIRED';
 
   @override
   List<Object?> get props => [
@@ -107,10 +139,13 @@ final class InventoryReceipt extends Equatable {
     status,
     usable,
     availability,
+    expirationStatus,
+    containerMonitorId,
   ];
 }
 
-/// Stock/review audit entry (`InventoryMovementResource`).
+/// Stock or review movement (`InventoryMovementResource`): `RECEIPT`,
+/// `REVIEW`, `STORAGE` or `CONSUMPTION`.
 final class InventoryMovement extends Equatable {
   const InventoryMovement({
     required this.id,
@@ -160,8 +195,32 @@ final class InventoryMovement extends Equatable {
   ];
 }
 
+/// Quantity of the material consumed by a product batch (TS: affected batches).
+final class MaterialUsage extends Equatable {
+  const MaterialUsage({
+    required this.id,
+    required this.batchId,
+    this.quantityUsed,
+    this.unit,
+    this.usageDate,
+    this.inventoryReceiptId,
+  });
+
+  final int id;
+  final int batchId;
+  final double? quantityUsed;
+  final String? unit;
+  final DateTime? usageDate;
+  final int? inventoryReceiptId;
+
+  @override
+  List<Object?> get props => [id, batchId, quantityUsed, unit, usageDate, inventoryReceiptId];
+}
+
 abstract interface class InventoryRepository {
-  Future<List<InventoryMaterial>> getMaterials(LaboratoryId laboratoryId);
-  Future<List<InventoryReceipt>> getReceipts(LaboratoryId laboratoryId, int materialId);
-  Future<List<InventoryMovement>> getMovements(LaboratoryId laboratoryId, int materialId);
+  Future<List<InventoryMaterial>> getMaterials(LaboratoryId laboratoryId, int environmentId);
+  Future<InventoryMaterial> getMaterial(LaboratoryId laboratoryId, int environmentId, int materialId);
+  Future<List<InventoryReceipt>> getReceipts(LaboratoryId laboratoryId, InventoryMaterial material);
+  Future<List<InventoryMovement>> getMovements(LaboratoryId laboratoryId, InventoryMaterial material);
+  Future<List<MaterialUsage>> getUsages(LaboratoryId laboratoryId, InventoryMaterial material);
 }

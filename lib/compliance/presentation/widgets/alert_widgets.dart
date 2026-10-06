@@ -7,6 +7,8 @@ import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../tracking/domain/telemetry.dart';
+import '../../../tracking/presentation/widgets/telemetry_labels.dart';
 import '../../domain/compliance.dart';
 
 extension AlertStatusPresentation on AlertStatus {
@@ -48,16 +50,21 @@ extension AlertSeverityPresentation on AlertSeverity {
   };
 }
 
+/// Localized name of the monitored variable of an alert (e.g. `TEMPERATURE`).
+String alertVariable(AppLocalizations l10n, String parameterName) =>
+    MonitoredMetric.fromCode(parameterName).label(l10n, raw: Formatters.humanize(parameterName));
+
 String formatAlertValue(double? value, String? unit, String locale) {
   if (value == null) return '—';
   return '${Formatters.number(value, locale)} ${unit ?? ''}'.trim();
 }
 
 class AlertCard extends StatelessWidget {
-  const AlertCard({super.key, required this.alert, this.equipmentName, this.onTap});
+  const AlertCard({super.key, required this.alert, this.deviceName, this.environmentName, this.onTap});
 
   final DeviationAlert alert;
-  final String? equipmentName;
+  final String? deviceName;
+  final String? environmentName;
   final VoidCallback? onTap;
 
   @override
@@ -87,7 +94,7 @@ class AlertCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(l10n.parameter.toUpperCase(), style: AppTypography.overline),
-                        Text(alert.parameterName, style: theme.textTheme.titleSmall),
+                        Text(alertVariable(l10n, alert.parameterName), style: theme.textTheme.titleSmall),
                       ],
                     ),
                   ),
@@ -104,16 +111,18 @@ class AlertCard extends StatelessWidget {
                     tone: alert.status.tone,
                     icon: alert.status.icon,
                   ),
+                  if (environmentName != null)
+                    StatusBadge(label: environmentName!, tone: BadgeTone.neutral, icon: Icons.meeting_room_outlined),
                   StatusBadge(
-                    label: equipmentName ?? l10n.equipmentNumber(alert.equipmentId),
+                    label: deviceName ?? l10n.equipmentNumber(alert.equipmentId),
                     tone: BadgeTone.neutral,
-                    icon: Icons.precision_manufacturing_outlined,
+                    icon: alert.origin == AlertOrigin.container ? Icons.kitchen_outlined : Icons.sensors_outlined,
                   ),
-                  if (alert.batchId != null)
+                  if (alert.deviationCount > 1)
                     StatusBadge(
-                      label: l10n.batchNumberShort(alert.batchId!),
+                      label: l10n.deviationsCount(alert.deviationCount),
                       tone: BadgeTone.neutral,
-                      icon: Icons.inventory_2_outlined,
+                      icon: Icons.repeat,
                     ),
                 ],
               ),
@@ -123,9 +132,7 @@ class AlertCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      alert.timestamp != null
-                          ? Formatters.dateTime(alert.timestamp, locale)
-                          : (alert.rawTimestamp ?? '—'),
+                      Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale),
                       style: theme.textTheme.bodySmall,
                     ),
                   ),

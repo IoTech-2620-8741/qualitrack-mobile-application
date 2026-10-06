@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND.
-// Source: l10n/strings.tsv — regenerate with `python tool/generate_l10n.py`.
+// Source: l10n/strings.tsv — regenerate with `dart run tool/generate_l10n.dart`.
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -51,7 +51,6 @@ class AppLocalizations {
   String get noInformation => _t('noInformation');
   String get noResults => _t('noResults');
   String get filterAll => _t('filterAll');
-  String get clearFilters => _t('clearFilters');
   String get previous => _t('previous');
   String get next => _t('next');
   String pageOf(int page, int total) => _t('pageOf')
@@ -70,14 +69,11 @@ class AppLocalizations {
   String get parameter => _t('parameter');
   String get active => _t('active');
   String get inactive => _t('inactive');
-  String get normal => _t('normal');
   String get startDate => _t('startDate');
   String get endDate => _t('endDate');
   String get generalInformation => _t('generalInformation');
   String updatedAt(String time) => _t('updatedAt')
       .replaceAll('{time}', time);
-  String calculatedAt(String date) => _t('calculatedAt')
-      .replaceAll('{date}', date);
   String get errorTitle => _t('errorTitle');
   String get errorNetwork => _t('errorNetwork');
   String get errorTimeout => _t('errorTimeout');
@@ -132,46 +128,24 @@ class AppLocalizations {
   String get aboutDescription => _t('aboutDescription');
   String get aboutWebScope => _t('aboutWebScope');
   String get laboratory => _t('laboratory');
-  String laboratoryNumber(String id) => _t('laboratoryNumber')
-      .replaceAll('{id}', id);
   String get ruc => _t('ruc');
   String get phone => _t('phone');
   String get address => _t('address');
   String get regulations => _t('regulations');
-  String get commandCenterTitle => _t('commandCenterTitle');
-  String get commandCenterSubtitle => _t('commandCenterSubtitle');
   String welcomeUser(String name) => _t('welcomeUser')
       .replaceAll('{name}', name);
   String get keyOperationalMetrics => _t('keyOperationalMetrics');
   String get openAlerts => _t('openAlerts');
-  String get rawMaterials => _t('rawMaterials');
   String operationalCount(int count) => _t('operationalCount')
       .replaceAll('{count}', '$count');
-  String pendingInProgress(int pending, int inProgress) => _t('pendingInProgress')
-      .replaceAll('{pending}', '$pending')
-      .replaceAll('{inProgress}', '$inProgress');
   String criticalCount(int count) => _t('criticalCount')
-      .replaceAll('{count}', '$count');
-  String lowStockCount(int count) => _t('lowStockCount')
       .replaceAll('{count}', '$count');
   String criticalAlertsCount(int count) => _t('criticalAlertsCount')
       .replaceAll('{count}', '$count');
   String get noCriticalAlerts => _t('noCriticalAlerts');
   String get liveTelemetry => _t('liveTelemetry');
   String get liveTelemetryHint => _t('liveTelemetryHint');
-  String onlineOfTotal(int online, int total) => _t('onlineOfTotal')
-      .replaceAll('{online}', '$online')
-      .replaceAll('{total}', '$total');
-  String get onlineDevices => _t('onlineDevices');
-  String get telemetryAttention => _t('telemetryAttention');
-  String get withoutStatus => _t('withoutStatus');
-  String get riskOverview => _t('riskOverview');
-  String get riskOverviewHint => _t('riskOverviewHint');
   String get lowStock => _t('lowStock');
-  String get kpisAtRisk => _t('kpisAtRisk');
-  String itemsCount(int count) => _t('itemsCount')
-      .replaceAll('{count}', '$count');
-  String get overallHealth => _t('overallHealth');
   String get equipmentTitle => _t('equipmentTitle');
   String get equipmentDetail => _t('equipmentDetail');
   String get equipmentEmpty => _t('equipmentEmpty');
@@ -183,69 +157,35 @@ class AppLocalizations {
   String get equipmentOperational => _t('equipmentOperational');
   String get equipmentMaintenance => _t('equipmentMaintenance');
   String get equipmentOutOfService => _t('equipmentOutOfService');
-  String get equipment => _t('equipment');
   String equipmentNumber(int id) => _t('equipmentNumber')
       .replaceAll('{id}', '$id');
   String get serialNumber => _t('serialNumber');
-  String get linkedSensor => _t('linkedSensor');
-  String get sensorLinked => _t('sensorLinked');
-  String get noSensor => _t('noSensor');
-  String get telemetryStatus => _t('telemetryStatus');
-  String get lastHeartbeat => _t('lastHeartbeat');
   String get viewTelemetry => _t('viewTelemetry');
   String get bpmLimits => _t('bpmLimits');
   String get bpmLimitsEmpty => _t('bpmLimitsEmpty');
   String get maintenanceHistory => _t('maintenanceHistory');
   String get maintenanceEmpty => _t('maintenanceEmpty');
-  String get deviationTrends => _t('deviationTrends');
-  String dataPointsCount(int count) => _t('dataPointsCount')
-      .replaceAll('{count}', '$count');
-  String get trendIncreasing => _t('trendIncreasing');
-  String get trendDecreasing => _t('trendDecreasing');
-  String get trendStable => _t('trendStable');
   String get complianceEvents => _t('complianceEvents');
   String get auditLog => _t('auditLog');
   String get telemetryTitle => _t('telemetryTitle');
   String get telemetrySubtitle => _t('telemetrySubtitle');
   String get liveUpdates => _t('liveUpdates');
-  String get selectEquipment => _t('selectEquipment');
-  String get telemetryOperational => _t('telemetryOperational');
-  String get telemetryWarning => _t('telemetryWarning');
-  String get telemetryCritical => _t('telemetryCritical');
-  String get telemetryOffline => _t('telemetryOffline');
   String get telemetryUnavailable => _t('telemetryUnavailable');
-  String get online => _t('online');
-  String get offline => _t('offline');
   String get connectionStatus => _t('connectionStatus');
-  String get detectedAnomalies => _t('detectedAnomalies');
   String eventsCount(int count) => _t('eventsCount')
       .replaceAll('{count}', '$count');
-  String get anomaliesLast24h => _t('anomaliesLast24h');
   String get liveTelemetryStream => _t('liveTelemetryStream');
   String get window15m => _t('window15m');
   String get window1h => _t('window1h');
   String get window6h => _t('window6h');
   String get window24h => _t('window24h');
-  String get anomaly => _t('anomaly');
   String get noHistoryInRange => _t('noHistoryInRange');
   String chartSemantics(int count, String unit) => _t('chartSemantics')
       .replaceAll('{count}', '$count')
       .replaceAll('{unit}', unit);
   String get currentReadings => _t('currentReadings');
-  String get noMeasurements => _t('noMeasurements');
-  String targetRange(String min, String max, String unit) => _t('targetRange')
-      .replaceAll('{min}', min)
-      .replaceAll('{max}', max)
-      .replaceAll('{unit}', unit);
-  String get withinLimits => _t('withinLimits');
-  String get outOfLimits => _t('outOfLimits');
-  String get activeTelemetryEvents => _t('activeTelemetryEvents');
-  String get noAnomalies => _t('noAnomalies');
-  String get bpmDeviation => _t('bpmDeviation');
   String get rawTelemetryLog => _t('rawTelemetryLog');
   String get rawTelemetrySubtitle => _t('rawTelemetrySubtitle');
-  String get dateRangeAll => _t('dateRangeAll');
-  String get onlyAnomalies => _t('onlyAnomalies');
   String liveEntries(int count) => _t('liveEntries')
       .replaceAll('{count}', '$count');
   String get recordedValue => _t('recordedValue');
@@ -318,7 +258,6 @@ class AppLocalizations {
       .replaceAll('{batch}', batch);
   String get batchReleasedMessage => _t('batchReleasedMessage');
   String get batchRejectedMessage => _t('batchRejectedMessage');
-  String get rawMaterialUsageHistory => _t('rawMaterialUsageHistory');
   String get rawMaterialsUsedEmpty => _t('rawMaterialsUsedEmpty');
   String materialNumber(int id) => _t('materialNumber')
       .replaceAll('{id}', '$id');
@@ -327,7 +266,6 @@ class AppLocalizations {
       .replaceAll('{after}', after);
   String receiptNumber(int id) => _t('receiptNumber')
       .replaceAll('{id}', '$id');
-  String get batchNoAlerts => _t('batchNoAlerts');
   String get inventoryTitle => _t('inventoryTitle');
   String get inventoryEmpty => _t('inventoryEmpty');
   String materialsCount(int count) => _t('materialsCount')
@@ -342,7 +280,6 @@ class AppLocalizations {
   String get physicalStock => _t('physicalStock');
   String get minimumStock => _t('minimumStock');
   String get materialDetail => _t('materialDetail');
-  String get receipts => _t('receipts');
   String get receiptsEmpty => _t('receiptsEmpty');
   String get supplier => _t('supplier');
   String get initialAmount => _t('initialAmount');
@@ -366,12 +303,6 @@ class AppLocalizations {
   String get reportsTitle => _t('reportsTitle');
   String get reportsSubtitle => _t('reportsSubtitle');
   String get reportsEmpty => _t('reportsEmpty');
-  String get kpiDashboard => _t('kpiDashboard');
-  String get kpiEmpty => _t('kpiEmpty');
-  String get kpiOnTrack => _t('kpiOnTrack');
-  String get kpiAtRisk => _t('kpiAtRisk');
-  String targetValue(String value) => _t('targetValue')
-      .replaceAll('{value}', value);
   String get reportHistory => _t('reportHistory');
   String get reportHistoryEmpty => _t('reportHistoryEmpty');
   String get billingTitle => _t('billingTitle');
@@ -391,6 +322,207 @@ class AppLocalizations {
   String get provider => _t('provider');
   String get subscriptionHistory => _t('subscriptionHistory');
   String get billingManagedOnWeb => _t('billingManagedOnWeb');
+  String get account => _t('account');
+  String get actionCoolingOff => _t('actionCoolingOff');
+  String get actionCoolingOn => _t('actionCoolingOn');
+  String get actionExecuted => _t('actionExecuted');
+  String get actionFailed => _t('actionFailed');
+  String get actionServoClose => _t('actionServoClose');
+  String get actionServoOpen => _t('actionServoOpen');
+  String get actionVentilationOff => _t('actionVentilationOff');
+  String get actionVentilationOn => _t('actionVentilationOn');
+  String get addPhoto => _t('addPhoto');
+  String get alertsOpen => _t('alertsOpen');
+  String get anEnvironment => _t('anEnvironment');
+  String get auditorReadOnly => _t('auditorReadOnly');
+  String get automaticActions => _t('automaticActions');
+  String get automaticActionsHint => _t('automaticActionsHint');
+  String get batchesInProgress => _t('batchesInProgress');
+  String get batchesThatUsedIt => _t('batchesThatUsedIt');
+  String get changePassword => _t('changePassword');
+  String get changePasswordForcedHint => _t('changePasswordForcedHint');
+  String get changePasswordTitle => _t('changePasswordTitle');
+  String get changePhoto => _t('changePhoto');
+  String conditionNormalized(String date) => _t('conditionNormalized')
+      .replaceAll('{date}', date);
+  String get confirmPassword => _t('confirmPassword');
+  String get connected => _t('connected');
+  String connectedOfTotal(int connected, int total) => _t('connectedOfTotal')
+      .replaceAll('{connected}', '$connected')
+      .replaceAll('{total}', '$total');
+  String get container => _t('container');
+  String get containerMonitor => _t('containerMonitor');
+  String get criticalRange => _t('criticalRange');
+  String criticalRangeValue(String range) => _t('criticalRangeValue')
+      .replaceAll('{range}', range);
+  String get currentPassword => _t('currentPassword');
+  String get deviationIndicators => _t('deviationIndicators');
+  String get deviationIndicators7d => _t('deviationIndicators7d');
+  String get deviations24h => _t('deviations24h');
+  String deviationsCount(int count) => _t('deviationsCount')
+      .replaceAll('{count}', '$count');
+  String get deviationsHint => _t('deviationsHint');
+  String get deviationsLabel => _t('deviationsLabel');
+  String deviationsSummary(int deviations, int critical) => _t('deviationsSummary')
+      .replaceAll('{deviations}', '$deviations')
+      .replaceAll('{critical}', '$critical');
+  String get deviceIdentifier => _t('deviceIdentifier');
+  String get digitalSignature => _t('digitalSignature');
+  String get dni => _t('dni');
+  String get dniInvalid => _t('dniInvalid');
+  String get edit => _t('edit');
+  String get email => _t('email');
+  String get emailNotifications => _t('emailNotifications');
+  String get emailNotificationsHint => _t('emailNotificationsHint');
+  String get environment => _t('environment');
+  String get environmentalDevice => _t('environmentalDevice');
+  String get equipmentUsed => _t('equipmentUsed');
+  String get firmware => _t('firmware');
+  String get firstDetected => _t('firstDetected');
+  String get fullName => _t('fullName');
+  String get fullNameInvalid => _t('fullNameInvalid');
+  String get history => _t('history');
+  String get inAppNotifications => _t('inAppNotifications');
+  String get inAppNotificationsHint => _t('inAppNotificationsHint');
+  String get iotDevices => _t('iotDevices');
+  String get iotRole => _t('iotRole');
+  String get lastCommunication => _t('lastCommunication');
+  String get location => _t('location');
+  String get locationInvalid => _t('locationInvalid');
+  String get lotDepleted => _t('lotDepleted');
+  String get lotExpired => _t('lotExpired');
+  String get lotNearExpiry => _t('lotNearExpiry');
+  String get lotNotYetReceived => _t('lotNotYetReceived');
+  String get markAllRead => _t('markAllRead');
+  String get materialLots => _t('materialLots');
+  String get measurementSummary => _t('measurementSummary');
+  String get metricAirQuality => _t('metricAirQuality');
+  String get metricHumidity => _t('metricHumidity');
+  String get metricLuminosity => _t('metricLuminosity');
+  String get metricMotion => _t('metricMotion');
+  String get metricRfidTag => _t('metricRfidTag');
+  String get metricTemperature => _t('metricTemperature');
+  String minMax(String min, String max) => _t('minMax')
+      .replaceAll('{min}', min)
+      .replaceAll('{max}', max);
+  String get minimumSeverity => _t('minimumSeverity');
+  String get minimumSeverityHint => _t('minimumSeverityHint');
+  String get motionDetected => _t('motionDetected');
+  String get movementConsumption => _t('movementConsumption');
+  String get movementReceipt => _t('movementReceipt');
+  String get movementReview => _t('movementReview');
+  String get movementStorage => _t('movementStorage');
+  String get neverCommunicated => _t('neverCommunicated');
+  String get newPassword => _t('newPassword');
+  String get noAutomaticActions => _t('noAutomaticActions');
+  String get noBatchesUsedIt => _t('noBatchesUsedIt');
+  String get noContainerAssigned => _t('noContainerAssigned');
+  String get noDeviations => _t('noDeviations');
+  String get noEquipmentUsed => _t('noEquipmentUsed');
+  String get noOpenAlerts => _t('noOpenAlerts');
+  String get noParticipatingStaff => _t('noParticipatingStaff');
+  String get noProfileConfigured => _t('noProfileConfigured');
+  String get noReadings24h => _t('noReadings24h');
+  String get noReadingsInPeriod => _t('noReadingsInPeriod');
+  String get normalRange => _t('normalRange');
+  String normalRangeValue(String range) => _t('normalRangeValue')
+      .replaceAll('{range}', range);
+  String get notEvaluated => _t('notEvaluated');
+  String get notLocated => _t('notLocated');
+  String noticeAlertAcknowledged(String actor, String variable, String environment) => _t('noticeAlertAcknowledged')
+      .replaceAll('{actor}', actor)
+      .replaceAll('{variable}', variable)
+      .replaceAll('{environment}', environment);
+  String noticeAlertEscalated(String variable, String environment, String level, String value, String unit) => _t('noticeAlertEscalated')
+      .replaceAll('{variable}', variable)
+      .replaceAll('{environment}', environment)
+      .replaceAll('{level}', level)
+      .replaceAll('{value}', value)
+      .replaceAll('{unit}', unit);
+  String noticeAlertOpened(String severity, String environment, String variable, String value, String unit) => _t('noticeAlertOpened')
+      .replaceAll('{severity}', severity)
+      .replaceAll('{environment}', environment)
+      .replaceAll('{variable}', variable)
+      .replaceAll('{value}', value)
+      .replaceAll('{unit}', unit);
+  String noticeAlertResolved(String actor, String variable, String environment) => _t('noticeAlertResolved')
+      .replaceAll('{actor}', actor)
+      .replaceAll('{variable}', variable)
+      .replaceAll('{environment}', environment);
+  String noticeBatchRejected(String actor, String batch, String note) => _t('noticeBatchRejected')
+      .replaceAll('{actor}', actor)
+      .replaceAll('{batch}', batch)
+      .replaceAll('{note}', note);
+  String noticeBatchReleased(String actor, String batch) => _t('noticeBatchReleased')
+      .replaceAll('{actor}', actor)
+      .replaceAll('{batch}', batch);
+  String get noticeLevelCritical => _t('noticeLevelCritical');
+  String get noticeLevelLow => _t('noticeLevelLow');
+  String get noticeLevelWarning => _t('noticeLevelWarning');
+  String get noticeSeverityCritical => _t('noticeSeverityCritical');
+  String get noticeSeverityLow => _t('noticeSeverityLow');
+  String get noticeSeverityWarning => _t('noticeSeverityWarning');
+  String get notificationPreferences => _t('notificationPreferences');
+  String get notificationsEmpty => _t('notificationsEmpty');
+  String get notificationsTitle => _t('notificationsTitle');
+  String notificationsUnread(int count) => _t('notificationsUnread')
+      .replaceAll('{count}', '$count');
+  String get onlyDeviations => _t('onlyDeviations');
+  String get openAlertsHint => _t('openAlertsHint');
+  String get participatingStaff => _t('participatingStaff');
+  String get passwordChanged => _t('passwordChanged');
+  String get passwordPolicyHint => _t('passwordPolicyHint');
+  String get passwordsDoNotMatch => _t('passwordsDoNotMatch');
+  String pendingCount(int count) => _t('pendingCount')
+      .replaceAll('{count}', '$count');
+  String get period24h => _t('period24h');
+  String get period31d => _t('period31d');
+  String get period7d => _t('period7d');
+  String get periodMax31Days => _t('periodMax31Days');
+  String get personalData => _t('personalData');
+  String get phoneInvalid => _t('phoneInvalid');
+  String get photoRemoved => _t('photoRemoved');
+  String get photoTooLarge => _t('photoTooLarge');
+  String get photoTypeNotAllowed => _t('photoTypeNotAllowed');
+  String get photoUpdated => _t('photoUpdated');
+  String get preferencesSaved => _t('preferencesSaved');
+  String get profileSaved => _t('profileSaved');
+  String profileVersion(String version) => _t('profileVersion')
+      .replaceAll('{version}', version);
+  String readingsCount(int count) => _t('readingsCount')
+      .replaceAll('{count}', '$count');
+  String get recentBatches => _t('recentBatches');
+  String get removePhoto => _t('removePhoto');
+  String get removePhotoConfirm => _t('removePhotoConfirm');
+  String renewalCancelled(String date) => _t('renewalCancelled')
+      .replaceAll('{date}', date);
+  String get reportBatchTraceability => _t('reportBatchTraceability');
+  String get reportCompliance => _t('reportCompliance');
+  String get reportEquipmentLog => _t('reportEquipmentLog');
+  String get reportInventory => _t('reportInventory');
+  String get reportKpiSummary => _t('reportKpiSummary');
+  String get reportsGeneratedOnWeb => _t('reportsGeneratedOnWeb');
+  String get requiresReview => _t('requiresReview');
+  String get roleAuditor => _t('roleAuditor');
+  String get save => _t('save');
+  String get selectDevice => _t('selectDevice');
+  String get signatureHash => _t('signatureHash');
+  String get signedAt => _t('signedAt');
+  String get signedBy => _t('signedBy');
+  String get someone => _t('someone');
+  String get stateCritical => _t('stateCritical');
+  String get stateNormal => _t('stateNormal');
+  String get stateWarning => _t('stateWarning');
+  String get telemetryNoDevices => _t('telemetryNoDevices');
+  String thresholdExceeded(String value) => _t('thresholdExceeded')
+      .replaceAll('{value}', value);
+  String timeInRange(String value) => _t('timeInRange')
+      .replaceAll('{value}', value);
+  String get unread => _t('unread');
+  String until(String date) => _t('until')
+      .replaceAll('{date}', date);
+  String get viewAll => _t('viewAll');
+  String get you => _t('you');
 }
 
 const Map<String, String> _en = {
@@ -407,7 +539,6 @@ const Map<String, String> _en = {
   'noInformation': 'No information available',
   'noResults': 'No results match the current filters',
   'filterAll': 'All',
-  'clearFilters': 'Clear filters',
   'previous': 'Previous',
   'next': 'Next',
   'pageOf': 'Page {page} of {total}',
@@ -424,12 +555,10 @@ const Map<String, String> _en = {
   'parameter': 'Parameter',
   'active': 'Active',
   'inactive': 'Inactive',
-  'normal': 'Normal',
   'startDate': 'Start date',
   'endDate': 'End date',
   'generalInformation': 'General information',
   'updatedAt': 'Updated at {time}',
-  'calculatedAt': 'Calculated: {date}',
   'errorTitle': 'Something went wrong',
   'errorNetwork': 'No connection to QualiTrack. Check your internet connection or the API address.',
   'errorTimeout': 'The server took too long to respond. Try again.',
@@ -483,35 +612,20 @@ const Map<String, String> _en = {
   'aboutDescription': 'QualiTrack Mobile is the monitoring and review companion of the QualiTrack pharmaceutical quality management platform: telemetry, deviation alerts, production batches, inventory and billing at a glance.',
   'aboutWebScope': 'Configuration and data registration (laboratories, products, materials, equipment, sensors, limits, batches, users and subscriptions) are performed in QualiTrack Web.',
   'laboratory': 'Laboratory',
-  'laboratoryNumber': 'Laboratory {id}',
   'ruc': 'RUC',
   'phone': 'Phone',
   'address': 'Address',
   'regulations': 'Applicable regulations',
-  'commandCenterTitle': 'Command Center',
-  'commandCenterSubtitle': 'Operational overview across laboratory, equipment, batches, reports and telemetry.',
   'welcomeUser': 'Hello, {name}',
   'keyOperationalMetrics': 'Key operational metrics',
   'openAlerts': 'Open alerts',
-  'rawMaterials': 'Raw materials',
   'operationalCount': '{count} operational',
-  'pendingInProgress': '{pending} pending · {inProgress} in progress',
   'criticalCount': '{count} critical',
-  'lowStockCount': '{count} low stock',
   'criticalAlertsCount': '{count} critical alerts open',
   'noCriticalAlerts': 'No critical alerts open',
   'liveTelemetry': 'Live telemetry',
-  'liveTelemetryHint': 'Latest equipment monitoring signal',
-  'onlineOfTotal': '{online} of {total} equipment online',
-  'onlineDevices': 'Online',
-  'telemetryAttention': 'Telemetry warnings',
-  'withoutStatus': 'No status',
-  'riskOverview': 'Risk overview',
-  'riskOverviewHint': 'Items that may require operational attention',
+  'liveTelemetryHint': 'Readings of the last 24 hours',
   'lowStock': 'Low stock',
-  'kpisAtRisk': 'KPIs at risk',
-  'itemsCount': '{count} items',
-  'overallHealth': 'Overall health',
   'equipmentTitle': 'Equipment',
   'equipmentDetail': 'Equipment detail',
   'equipmentEmpty': 'No equipment has been registered in QualiTrack Web yet.',
@@ -521,61 +635,31 @@ const Map<String, String> _en = {
   'equipmentOperational': 'Operational',
   'equipmentMaintenance': 'Maintenance',
   'equipmentOutOfService': 'Out of service',
-  'equipment': 'Equipment',
   'equipmentNumber': 'Equipment #{id}',
   'serialNumber': 'Serial number',
-  'linkedSensor': 'Linked sensor',
-  'sensorLinked': 'Sensor linked',
-  'noSensor': 'No sensor',
-  'telemetryStatus': 'Telemetry status',
-  'lastHeartbeat': 'Last heartbeat',
   'viewTelemetry': 'View telemetry',
   'bpmLimits': 'BPM limits',
   'bpmLimitsEmpty': 'No BPM limits configured.',
   'maintenanceHistory': 'Maintenance history',
   'maintenanceEmpty': 'No maintenance records.',
-  'deviationTrends': 'Deviation trends',
-  'dataPointsCount': '{count} data points',
-  'trendIncreasing': 'Increasing',
-  'trendDecreasing': 'Decreasing',
-  'trendStable': 'Stable',
   'complianceEvents': 'Compliance events',
   'auditLog': 'Audit log',
   'telemetryTitle': 'Telemetry Dashboard',
   'telemetrySubtitle': 'Real-time sensory data and parameter monitoring',
   'liveUpdates': 'Live · 15 s',
-  'selectEquipment': 'Select equipment',
-  'telemetryOperational': 'Operational',
-  'telemetryWarning': 'Warning',
-  'telemetryCritical': 'Critical',
-  'telemetryOffline': 'Offline',
   'telemetryUnavailable': 'Telemetry unavailable',
-  'online': 'Online',
-  'offline': 'Offline',
   'connectionStatus': 'Connection status',
-  'detectedAnomalies': 'Detected anomalies',
   'eventsCount': '{count} events',
-  'anomaliesLast24h': 'Anomalies in the last 24 h',
   'liveTelemetryStream': 'Live telemetry stream',
   'window15m': '15 min',
   'window1h': '1 h',
   'window6h': '6 h',
   'window24h': '24 h',
-  'anomaly': 'Anomaly',
   'noHistoryInRange': 'No telemetry history for this range',
   'chartSemantics': 'Telemetry chart with {count} readings {unit}',
   'currentReadings': 'Current sensor readings',
-  'noMeasurements': 'This equipment has not reported measurements yet.',
-  'targetRange': 'Target: {min} – {max} {unit}',
-  'withinLimits': 'Within limits',
-  'outOfLimits': 'Out of limits',
-  'activeTelemetryEvents': 'Active telemetry events',
-  'noAnomalies': 'No anomalies detected.',
-  'bpmDeviation': 'BPM deviation',
   'rawTelemetryLog': 'Raw telemetry data log',
   'rawTelemetrySubtitle': 'Sensory logs and BPM deviation records',
-  'dateRangeAll': 'Date range: all',
-  'onlyAnomalies': 'Only anomalies',
   'liveEntries': 'Entries ({count})',
   'recordedValue': 'Recorded value',
   'alertsTitle': 'Compliance Alerts',
@@ -604,7 +688,7 @@ const Map<String, String> _en = {
   'resolutionNotesHint': 'Describe the corrective action and verification',
   'resolutionNotesRequired': 'Resolution notes are required',
   'reviewActions': 'Review actions',
-  'reviewRestricted': 'Review actions are available to QA Managers and Administrators.',
+  'reviewRestricted': 'Only the quality manager releases or rejects batches.',
   'acknowledge': 'Acknowledge',
   'acknowledgeAlert': 'Acknowledge alert',
   'acknowledgeConfirm': 'Confirm that you have reviewed this deviation.',
@@ -642,12 +726,10 @@ const Map<String, String> _en = {
   'rejectConfirm': 'Reject batch {batch}? This action cannot be undone from the app.',
   'batchReleasedMessage': 'Batch released',
   'batchRejectedMessage': 'Batch rejected',
-  'rawMaterialUsageHistory': 'Raw material usage history',
   'rawMaterialsUsedEmpty': 'No raw materials were consumed by this batch.',
   'materialNumber': 'Material #{id}',
   'stockBeforeAfter': 'Stock {before} → {after}',
   'receiptNumber': 'Receipt #{id}',
-  'batchNoAlerts': 'No deviation alerts for this batch.',
   'inventoryTitle': 'Raw Materials Inventory',
   'inventoryEmpty': 'No raw materials have been registered in QualiTrack Web yet.',
   'materialsCount': '{count} materials',
@@ -660,7 +742,6 @@ const Map<String, String> _en = {
   'physicalStock': 'Physical stock',
   'minimumStock': 'Minimum stock',
   'materialDetail': 'Material detail',
-  'receipts': 'Supplier receipts',
   'receiptsEmpty': 'No receipts registered.',
   'supplier': 'Supplier',
   'initialAmount': 'Initial amount',
@@ -683,11 +764,6 @@ const Map<String, String> _en = {
   'reportsTitle': 'Reports & KPIs',
   'reportsSubtitle': 'KPI dashboard and generated reports',
   'reportsEmpty': 'No KPI dashboard or reports have been generated in QualiTrack Web yet.',
-  'kpiDashboard': 'KPI dashboard',
-  'kpiEmpty': 'No KPI dashboard has been calculated yet.',
-  'kpiOnTrack': 'On track',
-  'kpiAtRisk': 'At risk',
-  'targetValue': 'Target: {value}',
   'reportHistory': 'Report history',
   'reportHistoryEmpty': 'No reports generated.',
   'billingTitle': 'Billing Summary',
@@ -707,6 +783,168 @@ const Map<String, String> _en = {
   'provider': 'Provider',
   'subscriptionHistory': 'Subscription history',
   'billingManagedOnWeb': 'Plan changes, checkout and cancellation are managed in QualiTrack Web.',
+  'account': 'Account',
+  'actionCoolingOff': 'Cooling off',
+  'actionCoolingOn': 'Cooling on',
+  'actionExecuted': 'Executed',
+  'actionFailed': 'Failed',
+  'actionServoClose': 'Servo closed',
+  'actionServoOpen': 'Servo opened',
+  'actionVentilationOff': 'Ventilation off',
+  'actionVentilationOn': 'Ventilation on',
+  'addPhoto': 'Add photo',
+  'alertsOpen': 'Open',
+  'anEnvironment': 'an environment',
+  'auditorReadOnly': 'Auditors consult alerts without changing them.',
+  'automaticActions': 'Automatic actions',
+  'automaticActionsHint': 'Responses of the container in the last 24 hours',
+  'batchesInProgress': 'Batches in progress',
+  'batchesThatUsedIt': 'Batches that used it',
+  'changePassword': 'Change password',
+  'changePasswordForcedHint': 'You signed in with a temporary password. Choose your own password to continue.',
+  'changePasswordTitle': 'Choose your password',
+  'changePhoto': 'Change photo',
+  'conditionNormalized': 'The condition returned to normal on {date}; the alert stays open until someone resolves it.',
+  'confirmPassword': 'Confirm the new password',
+  'connected': 'Connected',
+  'connectedOfTotal': '{connected} of {total} devices connected',
+  'container': 'Container',
+  'containerMonitor': 'Container monitor',
+  'criticalRange': 'Critical range',
+  'criticalRangeValue': 'critical {range}',
+  'currentPassword': 'Current password',
+  'deviationIndicators': 'Deviation indicators',
+  'deviationIndicators7d': 'Deviation indicators (7 days)',
+  'deviations24h': 'Deviations (24 h)',
+  'deviationsCount': '{count} deviations',
+  'deviationsHint': 'Readings evaluated as warning or critical',
+  'deviationsLabel': 'Deviations',
+  'deviationsSummary': '{deviations} deviations · {critical} critical',
+  'deviceIdentifier': 'Device identifier',
+  'digitalSignature': 'Digital signature',
+  'dni': 'DNI',
+  'dniInvalid': 'The DNI must have 8 digits.',
+  'edit': 'Edit',
+  'email': 'E-mail',
+  'emailNotifications': 'E-mail',
+  'emailNotificationsHint': 'Receive alerts that reach the minimum severity by e-mail',
+  'environment': 'Environment',
+  'environmentalDevice': 'Environmental device',
+  'equipmentUsed': 'Equipment used',
+  'firmware': 'Firmware',
+  'firstDetected': 'First detected',
+  'fullName': 'Full name',
+  'fullNameInvalid': 'Enter between 2 and 120 characters.',
+  'history': 'History',
+  'inAppNotifications': 'In the app',
+  'inAppNotificationsHint': 'Show notices in the bell',
+  'iotDevices': 'IoT devices',
+  'iotRole': 'IoT role',
+  'lastCommunication': 'Last communication',
+  'location': 'Location',
+  'locationInvalid': 'Enter between 2 and 120 characters.',
+  'lotDepleted': 'Depleted',
+  'lotExpired': 'Expired',
+  'lotNearExpiry': 'Near expiry',
+  'lotNotYetReceived': 'Not received yet',
+  'markAllRead': 'Mark all as read',
+  'materialLots': 'Lots',
+  'measurementSummary': 'Measurement summary',
+  'metricAirQuality': 'Air quality',
+  'metricHumidity': 'Humidity',
+  'metricLuminosity': 'Luminosity',
+  'metricMotion': 'Motion',
+  'metricRfidTag': 'RFID tag',
+  'metricTemperature': 'Temperature',
+  'minMax': 'min {min} · max {max}',
+  'minimumSeverity': 'Minimum severity',
+  'minimumSeverityHint': 'Alerts below this severity do not notify you. Batch notices always arrive.',
+  'motionDetected': 'Detected',
+  'movementConsumption': 'Consumption',
+  'movementReceipt': 'Receipt',
+  'movementReview': 'Review',
+  'movementStorage': 'Storage',
+  'neverCommunicated': 'Never',
+  'newPassword': 'New password',
+  'noAutomaticActions': 'No automatic actions in the last 24 hours.',
+  'noBatchesUsedIt': 'No batch has used this material.',
+  'noContainerAssigned': 'The batch has no container assigned.',
+  'noDeviations': 'No deviations in the last 24 hours.',
+  'noEquipmentUsed': 'No equipment registered for this batch.',
+  'noOpenAlerts': 'There are no open alerts.',
+  'noParticipatingStaff': 'No staff registered for this batch.',
+  'noProfileConfigured': 'No ranges configured yet',
+  'noReadings24h': 'The device sent no readings in the last 24 hours.',
+  'noReadingsInPeriod': 'There are no readings in the period.',
+  'normalRange': 'Normal range',
+  'normalRangeValue': 'normal {range}',
+  'notEvaluated': 'Not evaluated',
+  'notLocated': 'Not located',
+  'noticeAlertAcknowledged': '{actor} is attending the alert of {variable} in {environment}.',
+  'noticeAlertEscalated': 'The alert of {variable} in {environment} rose to {level}: {value} {unit}.',
+  'noticeAlertOpened': 'New {severity} alert in {environment}: {variable} at {value} {unit}.',
+  'noticeAlertResolved': '{actor} resolved the alert of {variable} in {environment}.',
+  'noticeBatchRejected': '{actor} rejected batch {batch}: {note}',
+  'noticeBatchReleased': '{actor} released batch {batch}.',
+  'noticeLevelCritical': 'critical',
+  'noticeLevelLow': 'low',
+  'noticeLevelWarning': 'warning',
+  'noticeSeverityCritical': 'critical',
+  'noticeSeverityLow': 'low',
+  'noticeSeverityWarning': 'warning',
+  'notificationPreferences': 'Notification preferences',
+  'notificationsEmpty': 'You have no notifications yet.',
+  'notificationsTitle': 'Notifications',
+  'notificationsUnread': 'Notifications, {count} unread',
+  'onlyDeviations': 'Only deviations',
+  'openAlertsHint': 'Most urgent first',
+  'participatingStaff': 'Participating staff',
+  'passwordChanged': 'Your password was changed.',
+  'passwordPolicyHint': 'Between 8 and 72 characters, with letters and numbers.',
+  'passwordsDoNotMatch': 'The passwords do not match.',
+  'pendingCount': '{count} pending',
+  'period24h': '24 hours',
+  'period31d': '31 days',
+  'period7d': '7 days',
+  'periodMax31Days': 'Choose a period of up to 31 days',
+  'personalData': 'Personal data',
+  'phoneInvalid': 'Enter a phone with 6 to 15 digits.',
+  'photoRemoved': 'Your photo was removed.',
+  'photoTooLarge': 'The photo cannot exceed 2 MB.',
+  'photoTypeNotAllowed': 'Choose a JPG, PNG or WebP image.',
+  'photoUpdated': 'Your photo was updated.',
+  'preferencesSaved': 'Preferences saved.',
+  'profileSaved': 'Your data was saved.',
+  'profileVersion': 'Profile version {version}',
+  'readingsCount': '{count} readings',
+  'recentBatches': 'Recent batches',
+  'removePhoto': 'Remove photo',
+  'removePhotoConfirm': 'Your initials will be shown instead of the photo.',
+  'renewalCancelled': 'Renewal cancelled: access until {date}',
+  'reportBatchTraceability': 'Batch traceability',
+  'reportCompliance': 'Environmental compliance',
+  'reportEquipmentLog': 'Equipment log',
+  'reportInventory': 'Inventory',
+  'reportKpiSummary': 'Indicator summary',
+  'reportsGeneratedOnWeb': 'Reports are generated and downloaded in QualiTrack Web.',
+  'requiresReview': 'Requires review',
+  'roleAuditor': 'Auditor',
+  'save': 'Save',
+  'selectDevice': 'Device',
+  'signatureHash': 'SHA-256 hash',
+  'signedAt': 'Signed at',
+  'signedBy': 'Signed by',
+  'someone': 'Someone',
+  'stateCritical': 'Critical',
+  'stateNormal': 'Normal',
+  'stateWarning': 'Warning',
+  'telemetryNoDevices': 'There are no IoT devices located in an environment yet.',
+  'thresholdExceeded': 'Limit exceeded: {value}',
+  'timeInRange': '{value} in range',
+  'unread': 'Unread',
+  'until': 'until {date}',
+  'viewAll': 'View all',
+  'you': 'You',
 };
 
 const Map<String, String> _es = {
@@ -723,7 +961,6 @@ const Map<String, String> _es = {
   'noInformation': 'Sin información disponible',
   'noResults': 'No hay resultados para los filtros actuales',
   'filterAll': 'Todos',
-  'clearFilters': 'Limpiar filtros',
   'previous': 'Anterior',
   'next': 'Siguiente',
   'pageOf': 'Página {page} de {total}',
@@ -740,12 +977,10 @@ const Map<String, String> _es = {
   'parameter': 'Parámetro',
   'active': 'Activo',
   'inactive': 'Inactivo',
-  'normal': 'Normal',
   'startDate': 'Fecha de inicio',
   'endDate': 'Fecha de fin',
   'generalInformation': 'Información general',
   'updatedAt': 'Actualizado a las {time}',
-  'calculatedAt': 'Calculado: {date}',
   'errorTitle': 'Algo salió mal',
   'errorNetwork': 'Sin conexión con QualiTrack. Verifica tu conexión a internet o la dirección de la API.',
   'errorTimeout': 'El servidor tardó demasiado en responder. Inténtalo de nuevo.',
@@ -785,8 +1020,8 @@ const Map<String, String> _es = {
   'setupRequiredHint': 'Las suscripciones, laboratorios y usuarios se configuran desde la aplicación web. Vuelve cuando esté listo.',
   'checkAgain': 'Verificar de nuevo',
   'roleAdmin': 'Administrador',
-  'roleQaManager': 'QA Manager',
-  'roleLabOperator': 'Operador de laboratorio',
+  'roleQaManager': 'Responsable de calidad',
+  'roleLabOperator': 'Operario',
   'navHome': 'Inicio',
   'navTelemetry': 'Telemetría',
   'navAlerts': 'Alertas',
@@ -799,35 +1034,20 @@ const Map<String, String> _es = {
   'aboutDescription': 'QualiTrack Mobile es la app de monitoreo y revisión de la plataforma de gestión de calidad farmacéutica QualiTrack: telemetría, alertas de desviación, lotes de producción, inventario y facturación de un vistazo.',
   'aboutWebScope': 'La configuración y el registro de datos (laboratorios, productos, materiales, equipos, sensores, límites, lotes, usuarios y suscripciones) se realizan en QualiTrack Web.',
   'laboratory': 'Laboratorio',
-  'laboratoryNumber': 'Laboratorio {id}',
   'ruc': 'RUC',
   'phone': 'Teléfono',
   'address': 'Dirección',
   'regulations': 'Normativas aplicables',
-  'commandCenterTitle': 'Centro de Comando',
-  'commandCenterSubtitle': 'Vista operativa del laboratorio, equipos, lotes, reportes y telemetría.',
   'welcomeUser': 'Hola, {name}',
   'keyOperationalMetrics': 'Métricas operativas clave',
   'openAlerts': 'Alertas abiertas',
-  'rawMaterials': 'Materias primas',
   'operationalCount': '{count} operativos',
-  'pendingInProgress': '{pending} pendientes · {inProgress} en progreso',
   'criticalCount': '{count} críticas',
-  'lowStockCount': '{count} con stock bajo',
   'criticalAlertsCount': '{count} alertas críticas abiertas',
   'noCriticalAlerts': 'Sin alertas críticas abiertas',
   'liveTelemetry': 'Telemetría en vivo',
-  'liveTelemetryHint': 'Última señal de monitoreo de equipos',
-  'onlineOfTotal': '{online} de {total} equipos en línea',
-  'onlineDevices': 'En línea',
-  'telemetryAttention': 'Alertas de telemetría',
-  'withoutStatus': 'Sin estado',
-  'riskOverview': 'Resumen de riesgos',
-  'riskOverviewHint': 'Elementos que pueden requerir atención operativa',
+  'liveTelemetryHint': 'Lecturas de las últimas 24 horas',
   'lowStock': 'Stock bajo',
-  'kpisAtRisk': 'KPIs en riesgo',
-  'itemsCount': '{count} elementos',
-  'overallHealth': 'Salud general',
   'equipmentTitle': 'Equipos',
   'equipmentDetail': 'Detalle del equipo',
   'equipmentEmpty': 'Aún no se han registrado equipos en QualiTrack Web.',
@@ -837,61 +1057,31 @@ const Map<String, String> _es = {
   'equipmentOperational': 'Operativo',
   'equipmentMaintenance': 'Mantenimiento',
   'equipmentOutOfService': 'Fuera de servicio',
-  'equipment': 'Equipo',
   'equipmentNumber': 'Equipo #{id}',
   'serialNumber': 'N.° de serie',
-  'linkedSensor': 'Sensor vinculado',
-  'sensorLinked': 'Sensor vinculado',
-  'noSensor': 'Sin sensor',
-  'telemetryStatus': 'Estado de telemetría',
-  'lastHeartbeat': 'Última señal',
   'viewTelemetry': 'Ver telemetría',
   'bpmLimits': 'Límites BPM',
   'bpmLimitsEmpty': 'No hay límites BPM configurados.',
   'maintenanceHistory': 'Historial de mantenimiento',
   'maintenanceEmpty': 'Sin registros de mantenimiento.',
-  'deviationTrends': 'Tendencias de desviación',
-  'dataPointsCount': '{count} puntos de datos',
-  'trendIncreasing': 'En aumento',
-  'trendDecreasing': 'En descenso',
-  'trendStable': 'Estable',
   'complianceEvents': 'Eventos de cumplimiento',
   'auditLog': 'Registro de auditoría',
   'telemetryTitle': 'Panel de Telemetría',
   'telemetrySubtitle': 'Datos sensoriales y monitoreo de parámetros en tiempo real',
   'liveUpdates': 'En vivo · 15 s',
-  'selectEquipment': 'Seleccionar equipo',
-  'telemetryOperational': 'Operativo',
-  'telemetryWarning': 'Advertencia',
-  'telemetryCritical': 'Crítico',
-  'telemetryOffline': 'Fuera de línea',
   'telemetryUnavailable': 'Telemetría no disponible',
-  'online': 'En línea',
-  'offline': 'Fuera de línea',
   'connectionStatus': 'Estado de conexión',
-  'detectedAnomalies': 'Anomalías detectadas',
   'eventsCount': '{count} eventos',
-  'anomaliesLast24h': 'Anomalías en las últimas 24 h',
   'liveTelemetryStream': 'Flujo de telemetría en vivo',
   'window15m': '15 min',
   'window1h': '1 h',
   'window6h': '6 h',
   'window24h': '24 h',
-  'anomaly': 'Anomalía',
   'noHistoryInRange': 'Sin historial de telemetría para este rango',
   'chartSemantics': 'Gráfico de telemetría con {count} lecturas {unit}',
   'currentReadings': 'Lecturas actuales de sensores',
-  'noMeasurements': 'Este equipo aún no ha reportado mediciones.',
-  'targetRange': 'Objetivo: {min} – {max} {unit}',
-  'withinLimits': 'Dentro de límites',
-  'outOfLimits': 'Fuera de límites',
-  'activeTelemetryEvents': 'Eventos de telemetría activos',
-  'noAnomalies': 'No se detectaron anomalías.',
-  'bpmDeviation': 'Desviación BPM',
   'rawTelemetryLog': 'Registro de telemetría',
   'rawTelemetrySubtitle': 'Registros sensoriales y desviaciones BPM',
-  'dateRangeAll': 'Rango de fechas: todo',
-  'onlyAnomalies': 'Solo anomalías',
   'liveEntries': 'Registros ({count})',
   'recordedValue': 'Valor registrado',
   'alertsTitle': 'Alertas de Cumplimiento',
@@ -920,7 +1110,7 @@ const Map<String, String> _es = {
   'resolutionNotesHint': 'Describe la acción correctiva y su verificación',
   'resolutionNotesRequired': 'Las notas de resolución son obligatorias',
   'reviewActions': 'Acciones de revisión',
-  'reviewRestricted': 'Las acciones de revisión están disponibles para QA Managers y Administradores.',
+  'reviewRestricted': 'Solo el responsable de calidad libera o rechaza lotes.',
   'acknowledge': 'Reconocer',
   'acknowledgeAlert': 'Reconocer alerta',
   'acknowledgeConfirm': 'Confirma que revisaste esta desviación.',
@@ -958,12 +1148,10 @@ const Map<String, String> _es = {
   'rejectConfirm': '¿Rechazar el lote {batch}? Esta acción no se puede deshacer desde la app.',
   'batchReleasedMessage': 'Lote liberado',
   'batchRejectedMessage': 'Lote rechazado',
-  'rawMaterialUsageHistory': 'Historial de uso de materias primas',
   'rawMaterialsUsedEmpty': 'Este lote no registra consumo de materias primas.',
   'materialNumber': 'Material #{id}',
   'stockBeforeAfter': 'Stock {before} → {after}',
   'receiptNumber': 'Recepción #{id}',
-  'batchNoAlerts': 'No hay alertas de desviación para este lote.',
   'inventoryTitle': 'Inventario de Materias Primas',
   'inventoryEmpty': 'Aún no se han registrado materias primas en QualiTrack Web.',
   'materialsCount': '{count} materiales',
@@ -976,7 +1164,6 @@ const Map<String, String> _es = {
   'physicalStock': 'Stock físico',
   'minimumStock': 'Stock mínimo',
   'materialDetail': 'Detalle del material',
-  'receipts': 'Recepciones de proveedor',
   'receiptsEmpty': 'No hay recepciones registradas.',
   'supplier': 'Proveedor',
   'initialAmount': 'Cantidad inicial',
@@ -999,11 +1186,6 @@ const Map<String, String> _es = {
   'reportsTitle': 'Reportes y KPIs',
   'reportsSubtitle': 'Panel de KPIs y reportes generados',
   'reportsEmpty': 'Aún no se han generado KPIs ni reportes en QualiTrack Web.',
-  'kpiDashboard': 'Panel de KPIs',
-  'kpiEmpty': 'Aún no se ha calculado un panel de KPIs.',
-  'kpiOnTrack': 'En objetivo',
-  'kpiAtRisk': 'En riesgo',
-  'targetValue': 'Objetivo: {value}',
   'reportHistory': 'Historial de reportes',
   'reportHistoryEmpty': 'No hay reportes generados.',
   'billingTitle': 'Resumen de Facturación',
@@ -1023,6 +1205,168 @@ const Map<String, String> _es = {
   'provider': 'Proveedor',
   'subscriptionHistory': 'Historial de suscripciones',
   'billingManagedOnWeb': 'Los cambios de plan, pagos y cancelaciones se gestionan en QualiTrack Web.',
+  'account': 'Cuenta',
+  'actionCoolingOff': 'Refrigeración apagada',
+  'actionCoolingOn': 'Refrigeración encendida',
+  'actionExecuted': 'Ejecutada',
+  'actionFailed': 'Fallida',
+  'actionServoClose': 'Servo cerrado',
+  'actionServoOpen': 'Servo abierto',
+  'actionVentilationOff': 'Ventilación apagada',
+  'actionVentilationOn': 'Ventilación encendida',
+  'addPhoto': 'Agregar foto',
+  'alertsOpen': 'Abiertas',
+  'anEnvironment': 'un ambiente',
+  'auditorReadOnly': 'Los auditores consultan las alertas sin modificarlas.',
+  'automaticActions': 'Acciones automáticas',
+  'automaticActionsHint': 'Respuestas del contenedor en las últimas 24 horas',
+  'batchesInProgress': 'Lotes en proceso',
+  'batchesThatUsedIt': 'Lotes que la usaron',
+  'changePassword': 'Cambiar contraseña',
+  'changePasswordForcedHint': 'Ingresaste con una contraseña temporal. Elige tu propia contraseña para continuar.',
+  'changePasswordTitle': 'Elige tu contraseña',
+  'changePhoto': 'Cambiar foto',
+  'conditionNormalized': 'La condición volvió a la normalidad el {date}; la alerta sigue abierta hasta que alguien la resuelva.',
+  'confirmPassword': 'Confirma la nueva contraseña',
+  'connected': 'Conectado',
+  'connectedOfTotal': '{connected} de {total} dispositivos conectados',
+  'container': 'Contenedor',
+  'containerMonitor': 'Monitor de contenedor',
+  'criticalRange': 'Rango crítico',
+  'criticalRangeValue': 'crítico {range}',
+  'currentPassword': 'Contraseña actual',
+  'deviationIndicators': 'Indicadores de desviaciones',
+  'deviationIndicators7d': 'Indicadores de desviaciones (7 días)',
+  'deviations24h': 'Desviaciones (24 h)',
+  'deviationsCount': '{count} desviaciones',
+  'deviationsHint': 'Lecturas evaluadas como advertencia o críticas',
+  'deviationsLabel': 'Desviaciones',
+  'deviationsSummary': '{deviations} desviaciones · {critical} críticas',
+  'deviceIdentifier': 'Identificador del dispositivo',
+  'digitalSignature': 'Firma digital',
+  'dni': 'DNI',
+  'dniInvalid': 'El DNI debe tener 8 dígitos.',
+  'edit': 'Editar',
+  'email': 'Correo',
+  'emailNotifications': 'Correo',
+  'emailNotificationsHint': 'Recibir por correo las alertas que alcancen la severidad mínima',
+  'environment': 'Ambiente',
+  'environmentalDevice': 'Dispositivo ambiental',
+  'equipmentUsed': 'Equipos usados',
+  'firmware': 'Firmware',
+  'firstDetected': 'Primera detección',
+  'fullName': 'Nombre completo',
+  'fullNameInvalid': 'Ingresa entre 2 y 120 caracteres.',
+  'history': 'Historial',
+  'inAppNotifications': 'En la aplicación',
+  'inAppNotificationsHint': 'Mostrar los avisos en la campanita',
+  'iotDevices': 'Dispositivos IoT',
+  'iotRole': 'Rol IoT',
+  'lastCommunication': 'Última comunicación',
+  'location': 'Ubicación',
+  'locationInvalid': 'Ingresa entre 2 y 120 caracteres.',
+  'lotDepleted': 'Agotado',
+  'lotExpired': 'Vencido',
+  'lotNearExpiry': 'Próximo a vencer',
+  'lotNotYetReceived': 'Aún no recibido',
+  'markAllRead': 'Marcar todas como leídas',
+  'materialLots': 'Lotes',
+  'measurementSummary': 'Resumen de mediciones',
+  'metricAirQuality': 'Calidad del aire',
+  'metricHumidity': 'Humedad',
+  'metricLuminosity': 'Luminosidad',
+  'metricMotion': 'Movimiento',
+  'metricRfidTag': 'Etiqueta RFID',
+  'metricTemperature': 'Temperatura',
+  'minMax': 'mín {min} · máx {max}',
+  'minimumSeverity': 'Severidad mínima',
+  'minimumSeverityHint': 'Las alertas por debajo de esta severidad no te avisan. Los avisos de lotes siempre llegan.',
+  'motionDetected': 'Detectado',
+  'movementConsumption': 'Consumo',
+  'movementReceipt': 'Recepción',
+  'movementReview': 'Revisión',
+  'movementStorage': 'Almacenamiento',
+  'neverCommunicated': 'Nunca',
+  'newPassword': 'Nueva contraseña',
+  'noAutomaticActions': 'Sin acciones automáticas en las últimas 24 horas.',
+  'noBatchesUsedIt': 'Ningún lote ha usado este material.',
+  'noContainerAssigned': 'El lote no tiene contenedor asignado.',
+  'noDeviations': 'Sin desviaciones en las últimas 24 horas.',
+  'noEquipmentUsed': 'No hay equipos registrados para este lote.',
+  'noOpenAlerts': 'No hay alertas abiertas.',
+  'noParticipatingStaff': 'No hay personal registrado para este lote.',
+  'noProfileConfigured': 'Aún no hay rangos configurados',
+  'noReadings24h': 'El dispositivo no envió lecturas en las últimas 24 horas.',
+  'noReadingsInPeriod': 'No hay lecturas en el periodo.',
+  'normalRange': 'Rango normal',
+  'normalRangeValue': 'normal {range}',
+  'notEvaluated': 'Sin evaluar',
+  'notLocated': 'Sin ubicar',
+  'noticeAlertAcknowledged': '{actor} está atendiendo la alerta de {variable} en {environment}.',
+  'noticeAlertEscalated': 'La alerta de {variable} en {environment} pasó a {level}: {value} {unit}.',
+  'noticeAlertOpened': 'Nueva alerta {severity} en {environment}: {variable} en {value} {unit}.',
+  'noticeAlertResolved': '{actor} resolvió la alerta de {variable} en {environment}.',
+  'noticeBatchRejected': '{actor} rechazó el lote {batch}: {note}',
+  'noticeBatchReleased': '{actor} liberó el lote {batch}.',
+  'noticeLevelCritical': 'crítica',
+  'noticeLevelLow': 'leve',
+  'noticeLevelWarning': 'advertencia',
+  'noticeSeverityCritical': 'crítica',
+  'noticeSeverityLow': 'leve',
+  'noticeSeverityWarning': 'de advertencia',
+  'notificationPreferences': 'Preferencias de notificación',
+  'notificationsEmpty': 'Aún no tienes notificaciones.',
+  'notificationsTitle': 'Notificaciones',
+  'notificationsUnread': 'Notificaciones, {count} sin leer',
+  'onlyDeviations': 'Solo desviaciones',
+  'openAlertsHint': 'Las más urgentes primero',
+  'participatingStaff': 'Personal participante',
+  'passwordChanged': 'Tu contraseña se cambió.',
+  'passwordPolicyHint': 'Entre 8 y 72 caracteres, con letras y números.',
+  'passwordsDoNotMatch': 'Las contraseñas no coinciden.',
+  'pendingCount': '{count} pendientes',
+  'period24h': '24 horas',
+  'period31d': '31 días',
+  'period7d': '7 días',
+  'periodMax31Days': 'Elige un periodo de hasta 31 días',
+  'personalData': 'Datos personales',
+  'phoneInvalid': 'Ingresa un teléfono de 6 a 15 dígitos.',
+  'photoRemoved': 'Se quitó tu foto.',
+  'photoTooLarge': 'La foto no puede superar 2 MB.',
+  'photoTypeNotAllowed': 'Elige una imagen JPG, PNG o WebP.',
+  'photoUpdated': 'Se actualizó tu foto.',
+  'preferencesSaved': 'Preferencias guardadas.',
+  'profileSaved': 'Se guardaron tus datos.',
+  'profileVersion': 'Perfil versión {version}',
+  'readingsCount': '{count} lecturas',
+  'recentBatches': 'Lotes recientes',
+  'removePhoto': 'Quitar foto',
+  'removePhotoConfirm': 'Se mostrarán tus iniciales en lugar de la foto.',
+  'renewalCancelled': 'Renovación cancelada: acceso hasta el {date}',
+  'reportBatchTraceability': 'Trazabilidad de lote',
+  'reportCompliance': 'Cumplimiento ambiental',
+  'reportEquipmentLog': 'Bitácora de equipo',
+  'reportInventory': 'Inventario',
+  'reportKpiSummary': 'Resumen de indicadores',
+  'reportsGeneratedOnWeb': 'Los reportes se generan y descargan en QualiTrack Web.',
+  'requiresReview': 'Requiere revisión',
+  'roleAuditor': 'Auditor',
+  'save': 'Guardar',
+  'selectDevice': 'Dispositivo',
+  'signatureHash': 'Huella SHA-256',
+  'signedAt': 'Firmado el',
+  'signedBy': 'Firmado por',
+  'someone': 'Alguien',
+  'stateCritical': 'Crítico',
+  'stateNormal': 'Normal',
+  'stateWarning': 'Advertencia',
+  'telemetryNoDevices': 'Aún no hay dispositivos IoT ubicados en un ambiente.',
+  'thresholdExceeded': 'Límite superado: {value}',
+  'timeInRange': '{value} en rango',
+  'unread': 'Sin leer',
+  'until': 'hasta el {date}',
+  'viewAll': 'Ver todas',
+  'you': 'Tú',
 };
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

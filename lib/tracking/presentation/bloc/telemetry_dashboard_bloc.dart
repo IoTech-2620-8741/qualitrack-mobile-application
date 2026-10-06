@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../equipment/application/equipment_queries.dart';
 import '../../../equipment/domain/equipment.dart';
+import '../../../laboratory/application/laboratory_queries.dart';
+import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
 import '../../../shared/infrastructure/http/api_exception_mapper.dart';
@@ -13,66 +15,79 @@ import '../../../shared/presentation/view_status.dart';
 import '../../application/telemetry_queries.dart';
 import '../../domain/telemetry.dart';
 
-/// Telemetry of one equipment at a point in time.
-final class TelemetrySnapshot extends Equatable {
-  const TelemetrySnapshot({
-    required this.equipmentId,
-    required this.status,
-    required this.readings,
-    required this.history,
-    required this.limits,
-    required this.fetchedAt,
-    this.historyFailure,
-  });
+/// IoT devices of the laboratory with the environments where they are located.
+final class DeviceCatalog extends Equatable {
+  const DeviceCatalog({required this.devices, required this.environments});
 
-  final int equipmentId;
-  final EquipmentTelemetryStatus status;
-  final List<ParameterReading> readings;
-  final List<TelemetryHistoryPoint> history;
-  final List<BpmParameterConfig> limits;
-  final DateTime fetchedAt;
-  final Failure? historyFailure;
+  final List<Equipment> devices;
+  final List<LabEnvironment> environments;
 
-  List<TelemetryHistoryPoint> get anomalies => TelemetryAnalysis.anomalies(history);
-
-  List<String> get chartParameters {
-    final fromHistory = TelemetryAnalysis.parameters(history);
-    return fromHistory;
-  }
-
-  BpmParameterConfig? limitFor(String parameter) {
-    for (final limit in limits) {
-      if (limit.appliesTo(parameter)) return limit;
+  LabEnvironment? environmentOf(Equipment device) {
+    for (final environment in environments) {
+      if (environment.id == device.environmentId) return environment;
     }
     return null;
   }
 
-  String? unitFor(String parameter) {
-    for (final r in readings) {
-      if (r.latest.parameterName == parameter) return r.latest.unit;
+  @override
+  List<Object?> get props => [devices, environments];
+}
+
+/// Telemetry of one device: connection, readings of the last 24 hours, the
+/// profile in force and, for container monitors, the automatic actions.
+final class TelemetrySnapshot extends Equatable {
+  const TelemetrySnapshot({
+    required this.target,
+    required this.connection,
+    required this.history,
+    required this.fetchedAt,
+    this.profile,
+    this.actuations = const [],
+    this.actuationsFailure,
+  });
+
+  final TelemetryTarget target;
+  final DeviceConnection connection;
+  final List<Measurement> history;
+  final EnvironmentalProfile? profile;
+  final List<ActuationEvent> actuations;
+  final Failure? actuationsFailure;
+  final DateTime fetchedAt;
+
+  List<MetricReading> get readings => TelemetryAnalysis.latestByMetric(history);
+
+  List<Measurement> get deviations => TelemetryAnalysis.deviations(history);
+
+  List<MonitoredMetric> get chartMetrics => TelemetryAnalysis.chartMetrics(history);
+
+  MetricThreshold? thresholdFor(MonitoredMetric metric) => profile?.thresholdFor(metric);
+
+  String? unitFor(MonitoredMetric metric) {
+    for (final reading in readings) {
+      if (reading.latest.metric == metric) return reading.latest.unit;
     }
-    return limitFor(parameter)?.unit;
+    return thresholdFor(metric)?.unit;
   }
 
   TelemetrySnapshot copyWith({
-    EquipmentTelemetryStatus? status,
-    List<ParameterReading>? readings,
-    List<TelemetryHistoryPoint>? history,
+    DeviceConnection? connection,
+    List<Measurement>? history,
+    List<ActuationEvent>? actuations,
+    Failure? actuationsFailure,
+    bool clearActuationsFailure = false,
     DateTime? fetchedAt,
-    Failure? historyFailure,
-    bool clearHistoryFailure = false,
   }) => TelemetrySnapshot(
-    equipmentId: equipmentId,
-    status: status ?? this.status,
-    readings: readings ?? this.readings,
+    target: target,
+    connection: connection ?? this.connection,
     history: history ?? this.history,
-    limits: limits,
+    profile: profile,
+    actuations: actuations ?? this.actuations,
+    actuationsFailure: clearActuationsFailure ? null : (actuationsFailure ?? this.actuationsFailure),
     fetchedAt: fetchedAt ?? this.fetchedAt,
-    historyFailure: clearHistoryFailure ? null : (historyFailure ?? this.historyFailure),
   );
 
   @override
-  List<Object?> get props => [equipmentId, status, readings, history, limits, fetchedAt, historyFailure];
+  List<Object?> get props => [target, connection, history, profile, actuations, actuationsFailure, fetchedAt];
 }
 
 sealed class TelemetryEvent extends Equatable {
@@ -83,21 +98,21 @@ sealed class TelemetryEvent extends Equatable {
 }
 
 final class TelemetryStarted extends TelemetryEvent {
-  const TelemetryStarted({this.equipmentId});
+  const TelemetryStarted({this.deviceId});
 
-  final int? equipmentId;
+  final int? deviceId;
 
   @override
-  List<Object?> get props => [equipmentId];
+  List<Object?> get props => [deviceId];
 }
 
-final class TelemetryEquipmentSelected extends TelemetryEvent {
-  const TelemetryEquipmentSelected(this.equipmentId);
+final class TelemetryDeviceSelected extends TelemetryEvent {
+  const TelemetryDeviceSelected(this.deviceId);
 
-  final int equipmentId;
+  final int deviceId;
 
   @override
-  List<Object?> get props => [equipmentId];
+  List<Object?> get props => [deviceId];
 }
 
 final class TelemetryRefreshRequested extends TelemetryEvent {
@@ -116,13 +131,13 @@ final class TelemetryPollingResumed extends TelemetryEvent {
   const TelemetryPollingResumed();
 }
 
-final class TelemetryParameterSelected extends TelemetryEvent {
-  const TelemetryParameterSelected(this.parameter);
+final class TelemetryMetricSelected extends TelemetryEvent {
+  const TelemetryMetricSelected(this.metric);
 
-  final String parameter;
+  final MonitoredMetric metric;
 
   @override
-  List<Object?> get props => [parameter];
+  List<Object?> get props => [metric];
 }
 
 final class TelemetryWindowSelected extends TelemetryEvent {
@@ -136,40 +151,40 @@ final class TelemetryWindowSelected extends TelemetryEvent {
 
 final class TelemetryState extends Equatable {
   const TelemetryState({
-    this.equipments = const RemoteState(),
-    this.selectedEquipmentId,
+    this.catalog = const RemoteState(),
+    this.selectedDeviceId,
     this.snapshot = const RemoteState(),
-    this.selectedParameter,
+    this.selectedMetric,
     this.window = TelemetryWindow.oneHour,
     this.polling = false,
   });
 
-  final RemoteState<List<Equipment>> equipments;
-  final int? selectedEquipmentId;
+  final RemoteState<DeviceCatalog> catalog;
+  final int? selectedDeviceId;
   final RemoteState<TelemetrySnapshot> snapshot;
-  final String? selectedParameter;
+  final MonitoredMetric? selectedMetric;
   final TelemetryWindow window;
   final bool polling;
 
-  Equipment? get selectedEquipment {
-    for (final e in equipments.data ?? const <Equipment>[]) {
-      if (e.id == selectedEquipmentId) return e;
+  Equipment? get selectedDevice {
+    for (final device in catalog.data?.devices ?? const <Equipment>[]) {
+      if (device.id == selectedDeviceId) return device;
     }
     return null;
   }
 
-  /// Parameter shown in the chart (explicit selection or the first available).
-  String? get chartParameter {
-    final params = snapshot.data?.chartParameters ?? const <String>[];
-    if (params.isEmpty) return null;
-    return params.contains(selectedParameter) ? selectedParameter : params.first;
+  /// Metric shown in the chart (explicit selection or the first available).
+  MonitoredMetric? get chartMetric {
+    final metrics = snapshot.data?.chartMetrics ?? const <MonitoredMetric>[];
+    if (metrics.isEmpty) return null;
+    return metrics.contains(selectedMetric) ? selectedMetric : metrics.first;
   }
 
   List<TelemetryWindow> get availableWindows {
     final data = snapshot.data;
-    final parameter = chartParameter;
-    if (data == null || parameter == null) return const [];
-    return TelemetryAnalysis.availableWindows(data.history, parameter);
+    final metric = chartMetric;
+    if (data == null || metric == null) return const [];
+    return TelemetryAnalysis.availableWindows(data.history, metric);
   }
 
   TelemetryWindow? get effectiveWindow {
@@ -178,60 +193,68 @@ final class TelemetryState extends Equatable {
     return windows.contains(window) ? window : windows.last;
   }
 
-  List<TelemetryHistoryPoint> get chartSeries {
+  List<Measurement> get chartSeries {
     final data = snapshot.data;
-    final parameter = chartParameter;
+    final metric = chartMetric;
     final w = effectiveWindow;
-    if (data == null || parameter == null || w == null) return const [];
-    return TelemetryAnalysis.series(data.history, parameter, w);
+    if (data == null || metric == null || w == null) return const [];
+    return TelemetryAnalysis.series(data.history, metric, w);
   }
 
   TelemetryState copyWith({
-    RemoteState<List<Equipment>>? equipments,
-    int? selectedEquipmentId,
+    RemoteState<DeviceCatalog>? catalog,
+    int? selectedDeviceId,
     RemoteState<TelemetrySnapshot>? snapshot,
-    String? selectedParameter,
+    MonitoredMetric? selectedMetric,
     TelemetryWindow? window,
     bool? polling,
   }) => TelemetryState(
-    equipments: equipments ?? this.equipments,
-    selectedEquipmentId: selectedEquipmentId ?? this.selectedEquipmentId,
+    catalog: catalog ?? this.catalog,
+    selectedDeviceId: selectedDeviceId ?? this.selectedDeviceId,
     snapshot: snapshot ?? this.snapshot,
-    selectedParameter: selectedParameter ?? this.selectedParameter,
+    selectedMetric: selectedMetric ?? this.selectedMetric,
     window: window ?? this.window,
     polling: polling ?? this.polling,
   );
 
   @override
-  List<Object?> get props => [equipments, selectedEquipmentId, snapshot, selectedParameter, window, polling];
+  List<Object?> get props => [catalog, selectedDeviceId, snapshot, selectedMetric, window, polling];
 }
 
-/// Live telemetry with responsible polling: status and latest measurements
-/// every [pollInterval]; history every [historyEveryTicks] ticks. The timer is
-/// cancelled when the BLoC is closed or polling is paused.
+/// Live telemetry with responsible polling: the first load reads the last
+/// [lookback]; every [pollInterval] only the connection and the readings of
+/// the last [pollOverlap] are downloaded and merged. Automatic actions are
+/// refreshed every [actuationsEveryTicks] ticks. The timer is cancelled when
+/// the BLoC is closed or polling is paused (app in background).
 class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
   TelemetryDashboardBloc({
     required GetEquipments getEquipments,
-    required GetTelemetryStatus getStatus,
-    required GetLatestTelemetry getLatest,
-    required GetTelemetryHistory getHistory,
-    required GetBpmConfigs getBpmConfigs,
+    required GetEnvironments getEnvironments,
+    required GetDeviceConnection getConnection,
+    required GetMeasurements getMeasurements,
+    required GetEnvironmentalProfile getProfile,
+    required GetActuationEvents getActuations,
     required LaboratoryId Function() laboratoryId,
     DateTime Function()? clock,
     this.pollInterval = const Duration(seconds: 15),
-    this.historyEveryTicks = 4,
-    this.historyLookback = const Duration(hours: 24),
+    this.pollOverlap = const Duration(minutes: 5),
+    this.actuationsEveryTicks = 4,
+    this.lookback = const Duration(hours: 24),
   }) : _getEquipments = getEquipments,
-       _getStatus = getStatus,
-       _getLatest = getLatest,
-       _getHistory = getHistory,
-       _getBpmConfigs = getBpmConfigs,
+       _getEnvironments = getEnvironments,
+       _getConnection = getConnection,
+       _getMeasurements = getMeasurements,
+       _getProfile = getProfile,
+       _getActuations = getActuations,
        _laboratoryId = laboratoryId,
        _clock = clock ?? DateTime.now,
        super(const TelemetryState()) {
     on<TelemetryStarted>(_onStarted);
-    on<TelemetryEquipmentSelected>(_onEquipmentSelected);
-    on<TelemetryRefreshRequested>((event, emit) => _refresh(emit, includeHistory: true));
+    on<TelemetryDeviceSelected>(_onDeviceSelected);
+    on<TelemetryRefreshRequested>((event, emit) async {
+      final deviceId = state.selectedDeviceId;
+      if (deviceId != null && !state.snapshot.status.isLoading) await _select(deviceId, emit, keepData: true);
+    });
     on<TelemetryPollTicked>(_onTick);
     on<TelemetryPollingPaused>((event, emit) {
       _paused = true;
@@ -240,25 +263,26 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
     });
     on<TelemetryPollingResumed>((event, emit) async {
       _paused = false;
-      if (state.selectedEquipmentId == null) return;
-      _startTimer();
-      emit(state.copyWith(polling: true));
-      await _refresh(emit, includeHistory: true);
+      final deviceId = state.selectedDeviceId;
+      if (deviceId == null) return;
+      await _select(deviceId, emit, keepData: true);
     });
-    on<TelemetryParameterSelected>((e, emit) => emit(state.copyWith(selectedParameter: e.parameter)));
+    on<TelemetryMetricSelected>((e, emit) => emit(state.copyWith(selectedMetric: e.metric)));
     on<TelemetryWindowSelected>((e, emit) => emit(state.copyWith(window: e.window)));
   }
 
   final GetEquipments _getEquipments;
-  final GetTelemetryStatus _getStatus;
-  final GetLatestTelemetry _getLatest;
-  final GetTelemetryHistory _getHistory;
-  final GetBpmConfigs _getBpmConfigs;
+  final GetEnvironments _getEnvironments;
+  final GetDeviceConnection _getConnection;
+  final GetMeasurements _getMeasurements;
+  final GetEnvironmentalProfile _getProfile;
+  final GetActuationEvents _getActuations;
   final LaboratoryId Function() _laboratoryId;
   final DateTime Function() _clock;
   final Duration pollInterval;
-  final int historyEveryTicks;
-  final Duration historyLookback;
+  final Duration pollOverlap;
+  final int actuationsEveryTicks;
+  final Duration lookback;
 
   Timer? _timer;
   int _ticks = 0;
@@ -266,107 +290,119 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
   bool _busy = false;
 
   Future<void> _onStarted(TelemetryStarted event, Emitter<TelemetryState> emit) async {
-    emit(state.copyWith(equipments: state.equipments.loading()));
+    emit(state.copyWith(catalog: state.catalog.loading()));
     try {
-      final equipments = await _getEquipments(_laboratoryId());
-      emit(state.copyWith(equipments: state.equipments.success(equipments, empty: equipments.isEmpty)));
-      if (equipments.isEmpty) return;
-      final requested = event.equipmentId;
-      final initial = equipments.any((e) => e.id == requested) ? requested! : equipments.first.id;
+      final laboratoryId = _laboratoryId();
+      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _getEnvironments(laboratoryId)]);
+      final catalog = DeviceCatalog(
+        devices: telemetryDevices(results[0] as List<Equipment>),
+        environments: results[1] as List<LabEnvironment>,
+      );
+      emit(state.copyWith(catalog: state.catalog.success(catalog, empty: catalog.devices.isEmpty)));
+      if (catalog.devices.isEmpty) return;
+      final requested = event.deviceId;
+      final initial = catalog.devices.any((e) => e.id == requested) ? requested! : catalog.devices.first.id;
       await _select(initial, emit);
     } catch (error) {
-      emit(state.copyWith(equipments: state.equipments.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(catalog: state.catalog.failed(ApiExceptionMapper.map(error))));
     }
   }
 
-  Future<void> _onEquipmentSelected(TelemetryEquipmentSelected event, Emitter<TelemetryState> emit) async {
-    final known = state.equipments.data?.any((e) => e.id == event.equipmentId) ?? false;
-    if (!known || event.equipmentId == state.selectedEquipmentId) return;
-    await _select(event.equipmentId, emit);
+  Future<void> _onDeviceSelected(TelemetryDeviceSelected event, Emitter<TelemetryState> emit) async {
+    final known = state.catalog.data?.devices.any((e) => e.id == event.deviceId) ?? false;
+    if (!known || event.deviceId == state.selectedDeviceId) return;
+    await _select(event.deviceId, emit);
   }
 
-  Future<void> _select(int equipmentId, Emitter<TelemetryState> emit) async {
+  Future<void> _select(int deviceId, Emitter<TelemetryState> emit, {bool keepData = false}) async {
+    TelemetryTarget? target;
+    for (final device in state.catalog.data?.devices ?? const <Equipment>[]) {
+      if (device.id == deviceId) target = targetOf(device);
+    }
+    if (target == null) return;
     _stopTimer();
-    emit(TelemetryState(
-      equipments: state.equipments,
-      selectedEquipmentId: equipmentId,
-      snapshot: const RemoteState<TelemetrySnapshot>().loading(),
-      window: state.window,
-    ));
+    if (keepData && state.snapshot.hasData && state.selectedDeviceId == deviceId) {
+      emit(state.copyWith(snapshot: state.snapshot.refreshingState()));
+    } else {
+      emit(TelemetryState(
+        catalog: state.catalog,
+        selectedDeviceId: deviceId,
+        snapshot: const RemoteState<TelemetrySnapshot>().loading(),
+        window: state.window,
+      ));
+    }
     try {
+      final laboratoryId = _laboratoryId();
       final now = _clock();
-      final results = await Future.wait<Object>([
-        _getStatus(equipmentId),
-        _getLatest(equipmentId),
-        _getBpmConfigs(equipmentId),
+      final from = now.subtract(lookback);
+      final results = await Future.wait<Object?>([
+        _getConnection(laboratoryId, target),
+        _getMeasurements(laboratoryId, target, from: from, to: now),
+        _getProfile(laboratoryId, target),
       ]);
-      Failure? historyFailure;
-      var history = const <TelemetryHistoryPoint>[];
+      Failure? actuationsFailure;
+      var actuations = const <ActuationEvent>[];
       try {
-        history = await _getHistory(equipmentId, from: now.subtract(historyLookback), to: now);
+        actuations = await _getActuations(laboratoryId, target, from: from, to: now);
       } on UnauthorizedFailure {
         rethrow;
       } on Failure catch (failure) {
-        historyFailure = failure;
+        actuationsFailure = failure;
       }
-      if (state.selectedEquipmentId != equipmentId) return;
+      if (state.selectedDeviceId != deviceId) return;
       final snapshot = TelemetrySnapshot(
-        equipmentId: equipmentId,
-        status: results[0] as EquipmentTelemetryStatus,
-        readings: results[1] as List<ParameterReading>,
-        limits: results[2] as List<BpmParameterConfig>,
-        history: history,
-        historyFailure: historyFailure,
+        target: target,
+        connection: results[0]! as DeviceConnection,
+        history: results[1]! as List<Measurement>,
+        profile: results[2] as EnvironmentalProfile?,
+        actuations: actuations,
+        actuationsFailure: actuationsFailure,
         fetchedAt: now,
       );
-      final empty = snapshot.readings.isEmpty && snapshot.history.isEmpty;
-      emit(state.copyWith(snapshot: state.snapshot.success(snapshot, empty: empty), polling: !_paused));
+      emit(state.copyWith(
+        snapshot: const RemoteState<TelemetrySnapshot>().success(snapshot, empty: snapshot.history.isEmpty),
+        polling: !_paused,
+      ));
       if (!_paused) _startTimer();
     } catch (error) {
-      if (state.selectedEquipmentId != equipmentId) return;
+      if (state.selectedDeviceId != deviceId) return;
       emit(state.copyWith(snapshot: state.snapshot.failed(ApiExceptionMapper.map(error))));
     }
   }
 
   Future<void> _onTick(TelemetryPollTicked event, Emitter<TelemetryState> emit) async {
-    _ticks++;
-    await _refresh(emit, includeHistory: _ticks % historyEveryTicks == 0, silent: true);
-  }
-
-  Future<void> _refresh(
-    Emitter<TelemetryState> emit, {
-    required bool includeHistory,
-    bool silent = false,
-  }) async {
-    final equipmentId = state.selectedEquipmentId;
     final current = state.snapshot.data;
-    if (equipmentId == null || _busy || state.snapshot.status.isLoading) return;
-    if (current == null) {
-      await _select(equipmentId, emit);
-      return;
-    }
+    final deviceId = state.selectedDeviceId;
+    if (current == null || deviceId == null || _busy || state.snapshot.status.isLoading) return;
+    _ticks++;
     _busy = true;
-    if (!silent) emit(state.copyWith(snapshot: state.snapshot.refreshingState()));
     try {
+      final laboratoryId = _laboratoryId();
       final now = _clock();
-      final status = await _getStatus(equipmentId);
-      final readings = await _getLatest(equipmentId);
-      var next = current.copyWith(status: status, readings: readings, fetchedAt: now);
-      if (includeHistory) {
+      final target = current.target;
+      final connection = await _getConnection(laboratoryId, target);
+      final recent = await _getMeasurements(laboratoryId, target, from: now.subtract(pollOverlap), to: now);
+      var next = current.copyWith(
+        connection: connection,
+        history: TelemetryAnalysis.merge(current.history, recent, now.subtract(lookback)),
+        fetchedAt: now,
+      );
+      if (target.containerMonitor && _ticks % actuationsEveryTicks == 0) {
         try {
-          final history = await _getHistory(equipmentId, from: now.subtract(historyLookback), to: now);
-          next = next.copyWith(history: history, clearHistoryFailure: true);
+          final actuations = await _getActuations(laboratoryId, target, from: now.subtract(lookback), to: now);
+          next = next.copyWith(actuations: actuations, clearActuationsFailure: true);
         } on UnauthorizedFailure {
           rethrow;
         } on Failure catch (failure) {
-          next = next.copyWith(historyFailure: failure);
+          next = next.copyWith(actuationsFailure: failure);
         }
       }
-      if (state.selectedEquipmentId != equipmentId) return;
-      final empty = next.readings.isEmpty && next.history.isEmpty;
-      emit(state.copyWith(snapshot: const RemoteState<TelemetrySnapshot>().success(next, empty: empty)));
+      if (state.selectedDeviceId != deviceId) return;
+      emit(state.copyWith(
+        snapshot: const RemoteState<TelemetrySnapshot>().success(next, empty: next.history.isEmpty),
+      ));
     } catch (error) {
-      if (state.selectedEquipmentId != equipmentId) return;
+      if (state.selectedDeviceId != deviceId) return;
       emit(state.copyWith(snapshot: state.snapshot.failed(ApiExceptionMapper.map(error))));
       if (error is UnauthorizedFailure) _stopTimer();
     } finally {

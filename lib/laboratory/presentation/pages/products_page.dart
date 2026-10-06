@@ -25,7 +25,7 @@ class ProductsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.productsTitle)),
       body: BlocBuilder<ProductsBloc, ProductsState>(
-        builder: (context, state) => RemoteStateView<List<PharmaceuticalProduct>>(
+        builder: (context, state) => RemoteStateView<ProductCatalog>(
           state: state.remote,
           onRetry: () => _reload(context),
           emptyIcon: Icons.medication_outlined,
@@ -39,7 +39,7 @@ class ProductsPage extends StatelessWidget {
                 children: [
                   PageHeader(
                     title: l10n.productsTitle,
-                    subtitle: l10n.productsCount(state.remote.data?.length ?? 0),
+                    subtitle: l10n.productsCount(state.remote.data?.products.length ?? 0),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   SearchField(
@@ -51,7 +51,10 @@ class ProductsPage extends StatelessWidget {
                     SizedBox(height: 240, child: EmptyView(title: l10n.noResults))
                   else
                     for (final product in items) ...[
-                      _ProductTile(product: product),
+                      _ProductTile(
+                        product: product,
+                        environment: state.remote.data?.environment(product.environmentId),
+                      ),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                 ],
@@ -65,9 +68,10 @@ class ProductsPage extends StatelessWidget {
 }
 
 class _ProductTile extends StatelessWidget {
-  const _ProductTile({required this.product});
+  const _ProductTile({required this.product, this.environment});
 
   final PharmaceuticalProduct product;
+  final LabEnvironment? environment;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +81,7 @@ class _ProductTile extends StatelessWidget {
         onTap: () => context.push('/products/${product.id}'),
         title: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis),
         subtitle: Text(
-          product.specifications ?? product.description ?? '',
+          environment?.displayName ?? product.description ?? '',
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
@@ -110,7 +114,7 @@ class ProductDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.productDetail)),
       body: BlocBuilder<ProductsBloc, ProductsState>(
-        builder: (context, state) => RemoteStateView<List<PharmaceuticalProduct>>(
+        builder: (context, state) => RemoteStateView<ProductCatalog>(
           state: state.remote,
           onRetry: () => context.read<ProductsBloc>().add(const ProductsRequested()),
           builder: (context, _) {
@@ -127,6 +131,10 @@ class ProductDetailPage extends StatelessWidget {
                     runSpacing: AppSpacing.lg,
                     children: [
                       KeyValue(label: l10n.code, value: product.code),
+                      KeyValue(
+                        label: l10n.environment,
+                        value: state.remote.data?.environment(product.environmentId)?.displayName ?? '—',
+                      ),
                       KeyValue(
                         label: l10n.status,
                         value: product.active ? l10n.active : l10n.inactive,

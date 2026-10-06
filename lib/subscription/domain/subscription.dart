@@ -14,6 +14,7 @@ final class Subscription extends Equatable {
     this.currentPeriodStart,
     this.currentPeriodEnd,
     this.cancelledAt,
+    this.cancelAtPeriodEnd = false,
   });
 
   final int id;
@@ -24,6 +25,9 @@ final class Subscription extends Equatable {
   final DateTime? currentPeriodStart;
   final DateTime? currentPeriodEnd;
   final DateTime? cancelledAt;
+
+  /// The renewal was cancelled: access continues until [currentPeriodEnd].
+  final bool cancelAtPeriodEnd;
 
   bool get isActive => status == 'ACTIVE';
 
@@ -37,6 +41,7 @@ final class Subscription extends Equatable {
     currentPeriodStart,
     currentPeriodEnd,
     cancelledAt,
+    cancelAtPeriodEnd,
   ];
 }
 
@@ -91,9 +96,7 @@ final class SubscriptionPlan extends Equatable {
 }
 
 abstract interface class SubscriptionRepository {
-  /// Null when the laboratory has no ACTIVE subscription (HTTP 404).
-  Future<Subscription?> getActive(LaboratoryId laboratoryId);
-  Future<List<Subscription>> getBillingSummary(LaboratoryId laboratoryId);
+  Future<List<Subscription>> getSubscriptions(LaboratoryId laboratoryId);
   Future<List<SubscriptionPayment>> getPayments(int subscriptionId);
   Future<List<SubscriptionPlan>> getPlans();
 }

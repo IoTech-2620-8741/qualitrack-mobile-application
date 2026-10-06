@@ -3,21 +3,38 @@ import 'package:qualitrack_mobile/batch/domain/batch.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
 import 'package:qualitrack_mobile/iam/domain/iam_repositories.dart';
+import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
+import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
+import 'package:qualitrack_mobile/profile/domain/profile.dart';
+import 'package:qualitrack_mobile/reporting/domain/reporting.dart';
 import 'package:qualitrack_mobile/shared/infrastructure/http/api_client.dart';
 import 'package:qualitrack_mobile/shared/infrastructure/storage/secure_key_value_store.dart';
+import 'package:qualitrack_mobile/subscription/domain/subscription.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockSessionRepository extends Mock implements SessionRepository {}
 
+class MockLaboratoryRepository extends Mock implements LaboratoryRepository {}
+
 class MockComplianceRepository extends Mock implements ComplianceRepository {}
+
+class MockNotificationRepository extends Mock implements NotificationRepository {}
 
 class MockBatchRepository extends Mock implements BatchRepository {}
 
 class MockEquipmentRepository extends Mock implements EquipmentRepository {}
 
 class MockTelemetryRepository extends Mock implements TelemetryRepository {}
+
+class MockInventoryRepository extends Mock implements InventoryRepository {}
+
+class MockReportingRepository extends Mock implements ReportingRepository {}
+
+class MockSubscriptionRepository extends Mock implements SubscriptionRepository {}
+
+class MockProfileRepository extends Mock implements ProfileRepository {}
 
 class MockApiClient extends Mock implements ApiClient {}
 
