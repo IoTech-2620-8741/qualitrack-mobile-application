@@ -25,3 +25,20 @@ extension InventoryMaterialPresentation on InventoryMaterial {
 
   String stockLabel(AppLocalizations l10n) => isBelowMinimum ? l10n.belowMinimum : l10n.stockOk;
 }
+
+/// `RECEIPT`, `REVIEW`, `STORAGE` or `CONSUMPTION`.
+String movementTypeLabel(AppLocalizations l10n, String type) => switch (type) {
+  'RECEIPT' => l10n.movementReceipt,
+  'REVIEW' => l10n.movementReview,
+  'STORAGE' => l10n.movementStorage,
+  'CONSUMPTION' => l10n.movementConsumption,
+  _ => type,
+};
+
+/// Why a lot cannot be consumed: expired, not received yet, depleted or its status.
+String lotAvailabilityLabel(AppLocalizations l10n, String? availability) => switch (availability) {
+  'EXPIRED' => l10n.lotExpired,
+  'NOT_YET_RECEIVED' => l10n.lotNotYetReceived,
+  'DEPLETED' => l10n.lotDepleted,
+  _ => ReceiptStatus.fromCode(availability).label(l10n),
+};

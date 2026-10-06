@@ -94,7 +94,7 @@ class InventoryPage extends StatelessWidget {
                     SizedBox(height: 200, child: EmptyView(title: l10n.noResults))
                   else
                     for (final m in items) ...[
-                      _MaterialCard(material: m),
+                      _MaterialCard(material: m, environmentName: state.environmentNames[m.environmentId]),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                 ],
@@ -108,9 +108,10 @@ class InventoryPage extends StatelessWidget {
 }
 
 class _MaterialCard extends StatelessWidget {
-  const _MaterialCard({required this.material});
+  const _MaterialCard({required this.material, this.environmentName});
 
   final InventoryMaterial material;
+  final String? environmentName;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +122,7 @@ class _MaterialCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => context.push('/inventory/${material.id}'),
+        onTap: () => context.push('/inventory/${material.id}?environmentId=${material.environmentId}'),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
@@ -135,7 +136,7 @@ class _MaterialCard extends StatelessWidget {
                       children: [
                         Text(material.name, style: theme.textTheme.titleSmall),
                         Text(
-                          material.code,
+                          [material.code, environmentName].whereType<String>().join(' · '),
                           style: theme.textTheme.bodySmall?.copyWith(fontFamily: AppTypography.monospace),
                         ),
                       ],
