@@ -71,8 +71,8 @@ setupGeneric	Your account setup is not complete.	La configuración de tu cuenta 
 setupRequiredHint	Subscriptions, laboratories and users are configured from the web application. Come back once it is done.	Las suscripciones, laboratorios y usuarios se configuran desde la aplicación web. Vuelve cuando esté listo.
 checkAgain	Check again	Verificar de nuevo
 roleAdmin	Administrator	Administrador
-roleQaManager	QA Manager	QA Manager
-roleLabOperator	Lab Operator	Operador de laboratorio
+roleQaManager	QA Manager	Responsable de calidad
+roleLabOperator	Lab Operator	Operario
 navHome	Home	Inicio
 navTelemetry	Telemetry	Telemetría
 navAlerts	Alerts	Alertas
