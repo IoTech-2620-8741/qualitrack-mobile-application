@@ -145,7 +145,7 @@ class _NotificationTile extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(Formatters.dateTime(n.occurredAt, locale), style: theme.textTheme.bodySmall),
-              if (!n.isRead) StatusBadge(label: l10n.unread, tone: BadgeTone.brand),
+              if (!n.isRead) StatusBadge(label: l10n.unread, tone: BadgeTone.info, icon: Icons.fiber_manual_record),
             ],
           ),
         ),
