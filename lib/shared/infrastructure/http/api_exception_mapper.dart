@@ -60,6 +60,8 @@ abstract final class ApiExceptionMapper {
     }
 
     if (status == 400) return BadRequestFailure(message: message, code: code);
+    if (status == 413) return BadRequestFailure(message: message, code: 'PAYLOAD_TOO_LARGE');
+    if (status == 415) return BadRequestFailure(message: message, code: 'UNSUPPORTED_MEDIA_TYPE');
     if (status == 401) return UnauthorizedFailure(message: message, code: code);
     if (status == 403) {
       if (code == 'ONBOARDING_REQUIRED') {

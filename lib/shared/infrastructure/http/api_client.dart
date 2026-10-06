@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import '../../domain/failure.dart';
@@ -49,8 +51,39 @@ class ApiClient {
     );
   }
 
-  Future<Object?> patch(String path, {Object? body}) {
-    return _send(() => _dio.patch<Object?>(path, data: body));
+  Future<Object?> put(String path, {Object? body}) {
+    return _send(() => _dio.put<Object?>(path, data: body));
+  }
+
+  Future<Object?> delete(String path) {
+    return _send(() => _dio.delete<Object?>(path));
+  }
+
+  /// Downloads a binary resource (e.g. a profile photo).
+  Future<Uint8List> getBytes(String path) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        path,
+        options: Options(responseType: ResponseType.bytes, headers: const {'Accept': '*/*'}),
+      );
+      return Uint8List.fromList(response.data ?? const []);
+    } catch (error) {
+      throw ApiExceptionMapper.map(error);
+    }
+  }
+
+  /// Sends a binary body with its media type (e.g. `image/jpeg`).
+  Future<Object?> putBytes(String path, Uint8List bytes, {required String contentType}) {
+    return _send(
+      () => _dio.put<Object?>(
+        path,
+        data: Stream.fromIterable([bytes]),
+        options: Options(
+          contentType: contentType,
+          headers: {Headers.contentLengthHeader: bytes.length},
+        ),
+      ),
+    );
   }
 
   Future<Object?> _send(Future<Response<Object?>> Function() request) async {

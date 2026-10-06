@@ -80,3 +80,8 @@ abstract final class Json {
     return DateTime.tryParse(value);
   }
 }
+
+/// `2026-06-14T15:50:00.000Z`, identical to JavaScript `Date.toISOString()`,
+/// the format QualiTrack Web sends in `from`/`to` query parameters.
+String toIsoMillis(DateTime value) =>
+    DateTime.fromMillisecondsSinceEpoch(value.millisecondsSinceEpoch, isUtc: true).toIso8601String();
