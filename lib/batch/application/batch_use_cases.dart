@@ -17,60 +17,66 @@ class GetBatches {
   }
 }
 
-class GetBatchDetail {
-  const GetBatchDetail(this._repository);
+/// Traceability of a batch of the laboratory. The batch routes depend on its
+/// environment and product, so the batch is looked up in the laboratory list
+/// first (notices and alerts only carry the batch id).
+class GetBatchTraceability {
+  const GetBatchTraceability(this._repository);
 
   final BatchRepository _repository;
 
-  Future<ProductionBatch> call(int batchId) => _repository.getById(batchId);
+  Future<BatchTraceability> call(LaboratoryId laboratoryId, int batchId) async {
+    final batch = await findBatch(_repository, laboratoryId, batchId);
+    return _repository.getTraceability(laboratoryId, batch);
+  }
 }
 
-class GetBatchRawMaterials {
-  const GetBatchRawMaterials(this._repository);
-
-  final BatchRepository _repository;
-
-  Future<List<RawMaterialUsage>> call(int batchId) => _repository.getRawMaterialUsage(batchId);
+Future<ProductionBatch> findBatch(BatchRepository repository, LaboratoryId laboratoryId, int batchId) async {
+  for (final batch in await repository.getByLaboratory(laboratoryId)) {
+    if (batch.id == batchId && batch.environmentId != null) return batch;
+  }
+  throw const NotFoundFailure(code: 'BATCH_NOT_FOUND');
 }
 
-/// Formats a date as `yyyy-MM-dd`, the format used by Web and stored by the
-/// batch aggregate as `endDate`.
+/// Formats a date as `yyyy-MM-dd`, the format used by Web.
 String isoDate(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-'
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
 
-/// Command: release an EXISTING batch. Only the fields required by
-/// `PATCH /batches/{id}` are sent; transition rules stay in the backend.
-class ReleaseExistingBatch {
-  const ReleaseExistingBatch(this._repository);
+/// Command: release a batch that meets its specifications. The backend signs
+/// the decision (user, time and SHA-256 hash) and notifies the staff.
+class ReleaseBatch {
+  const ReleaseBatch(this._repository);
 
   final BatchRepository _repository;
 
-  Future<ProductionBatch> call({
-    required int batchId,
+  Future<void> call(
+    LaboratoryId laboratoryId,
+    ProductionBatch batch, {
     required DateTime releaseDate,
     required String notes,
   }) {
     final text = notes.trim();
     if (text.isEmpty) throw const BadRequestFailure(code: 'RELEASE_NOTES_REQUIRED');
-    return _repository.release(batchId: batchId, releaseDate: isoDate(releaseDate), notes: text);
+    return _repository.release(laboratoryId, batch, releaseDate: isoDate(releaseDate), notes: text);
   }
 }
 
-/// Command: reject an EXISTING batch with a mandatory reason.
-class RejectExistingBatch {
-  const RejectExistingBatch(this._repository);
+/// Command: reject a batch with a mandatory reason.
+class RejectBatch {
+  const RejectBatch(this._repository);
 
   final BatchRepository _repository;
 
-  Future<ProductionBatch> call({
-    required int batchId,
+  Future<void> call(
+    LaboratoryId laboratoryId,
+    ProductionBatch batch, {
     required DateTime rejectionDate,
     required String reason,
   }) {
     final text = reason.trim();
     if (text.isEmpty) throw const BadRequestFailure(code: 'REJECTION_REASON_REQUIRED');
-    return _repository.reject(batchId: batchId, rejectionDate: isoDate(rejectionDate), reason: text);
+    return _repository.reject(laboratoryId, batch, rejectionDate: isoDate(rejectionDate), reason: text);
   }
 }
