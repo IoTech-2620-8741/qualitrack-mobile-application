@@ -3,20 +3,35 @@ import '../../shared/infrastructure/http/api_client.dart';
 import '../../shared/infrastructure/http/json_utils.dart';
 import '../domain/reporting.dart';
 
+/// `KpiDashboardResource {laboratoryId, timestamp, overallHealthScore, from, to,
+/// metrics[], measurementSummaries[]}`.
 class KpiDashboardDto {
   const KpiDashboardDto(this.json);
 
   final Map<String, dynamic> json;
 
   KpiDashboard toDomain() => KpiDashboard(
-    id: Json.requireInt(json, 'id'),
     laboratoryId: Json.requireInt(json, 'laboratoryId'),
     overallHealthScore: Json.optDouble(json, 'overallHealthScore'),
     timestamp: Json.optDateTime(json, 'timestamp'),
-    metrics: json['metrics'] == null
-        ? const []
-        : Json.asList(json['metrics']).map(_metric).toList(growable: false),
+    metrics: [for (final m in _list('metrics')) _metric(m)],
+    measurementSummaries: [
+      for (final s in _list('measurementSummaries'))
+        MeasurementSummary(
+          environmentId: Json.requireInt(s, 'environmentId'),
+          deviceId: Json.requireInt(s, 'deviceId'),
+          metric: Json.requireString(s, 'metric'),
+          unit: Json.optString(s, 'unit'),
+          readings: Json.optInt(s, 'readings') ?? 0,
+          average: Json.optDouble(s, 'average'),
+          minimum: Json.optDouble(s, 'minimum'),
+          maximum: Json.optDouble(s, 'maximum'),
+          lastMeasuredAt: Json.optDateTime(s, 'lastMeasuredAt'),
+        ),
+    ],
   );
+
+  List<Map<String, dynamic>> _list(String key) => json[key] == null ? const [] : Json.asList(json[key]);
 
   static KpiMetric _metric(Map<String, dynamic> m) => KpiMetric(
     id: Json.optInt(m, 'id'),
@@ -48,27 +63,24 @@ class AuditReportDto {
   );
 }
 
+/// `DeviationTrendResource {parameterName, equipmentId, environmentId, unit,
+/// trendDirection, evaluatedReadings, timeInRangePercent, deviationCount,
+/// criticalDeviationCount, dataPoints}`.
 class DeviationTrendDto {
   const DeviationTrendDto(this.json);
 
   final Map<String, dynamic> json;
 
   DeviationTrend toDomain() => DeviationTrend(
-    id: Json.requireInt(json, 'id'),
     parameterName: Json.requireString(json, 'parameterName'),
+    equipmentId: Json.requireInt(json, 'equipmentId'),
+    environmentId: Json.optInt(json, 'environmentId'),
+    unit: Json.optString(json, 'unit'),
     direction: TrendDirection.fromCode(Json.optString(json, 'trendDirection')),
-    dataPoints: json['dataPoints'] == null
-        ? const []
-        : Json.asList(json['dataPoints'])
-              .map(
-                (p) => TrendDataPoint(
-                  timestamp: Json.optDateTime(p, 'timestamp'),
-                  recordedValue: Json.optDouble(p, 'recordedValue'),
-                  upperThreshold: Json.optDouble(p, 'upperThreshold'),
-                  lowerThreshold: Json.optDouble(p, 'lowerThreshold'),
-                ),
-              )
-              .toList(growable: false),
+    evaluatedReadings: Json.optInt(json, 'evaluatedReadings') ?? 0,
+    timeInRangePercent: Json.optDouble(json, 'timeInRangePercent'),
+    deviationCount: Json.optInt(json, 'deviationCount') ?? 0,
+    criticalDeviationCount: Json.optInt(json, 'criticalDeviationCount') ?? 0,
   );
 }
 
@@ -94,25 +106,27 @@ class ReportingRemoteDataSource {
 
   final ApiClient _client;
 
-  Future<KpiDashboardDto?> getKpiDashboard(int labId) => nullOnNotFound(
-    () async => KpiDashboardDto(Json.asMap(await _client.get('/laboratories/$labId/kpi-dashboards'))),
-  );
+  Future<KpiDashboardDto> getKpiDashboard(int labId, {required String from, required String to, int? environmentId}) async =>
+      KpiDashboardDto(Json.asMap(await _client.get(
+        '/laboratories/$labId/kpi-dashboards',
+        query: {'from': from, 'to': to, 'environmentId': environmentId},
+      )));
 
-  Future<List<AuditReportDto>> getLaboratoryReports(int labId) async => Json.asList(
-    await _client.get('/laboratories/$labId/reports'),
-  ).map(AuditReportDto.new).toList();
+  Future<List<AuditReportDto>> getLaboratoryReports(int labId) async =>
+      Json.asList(await _client.get('/laboratories/$labId/reports')).map(AuditReportDto.new).toList();
 
-  Future<List<DeviationTrendDto>> getTrends(int equipmentId) async => Json.asList(
-    await _client.get('/equipments/$equipmentId/deviation-trends'),
-  ).map(DeviationTrendDto.new).toList();
+  Future<List<DeviationTrendDto>> getTrends(int labId, int environmentId, {required String from, required String to}) async =>
+      Json.asList(await _client.get(
+        '/laboratories/$labId/environments/$environmentId/deviation-trends',
+        query: {'from': from, 'to': to},
+      )).map(DeviationTrendDto.new).toList();
 
-  Future<List<AuditLogEntryDto>> getEquipmentAuditLogs(int equipmentId) async => Json.asList(
-    await _client.get('/equipments/$equipmentId/audit-logs'),
+  Future<List<AuditLogEntryDto>> getEquipmentAuditLogs(int labId, int equipmentId) async => Json.asList(
+    await _client.get('/laboratories/$labId/equipments/$equipmentId/audit-logs'),
   ).map(AuditLogEntryDto.new).toList();
 
-  Future<List<AuditLogEntryDto>> getBatchAuditLogs(int batchId) async => Json.asList(
-    await _client.get('/batches/$batchId/audit-logs'),
-  ).map(AuditLogEntryDto.new).toList();
+  Future<List<AuditLogEntryDto>> getBatchAuditLogs(int batchId) async =>
+      Json.asList(await _client.get('/batches/$batchId/audit-logs')).map(AuditLogEntryDto.new).toList();
 }
 
 class ReportingRepositoryImpl implements ReportingRepository {
@@ -121,20 +135,38 @@ class ReportingRepositoryImpl implements ReportingRepository {
   final ReportingRemoteDataSource _remote;
 
   @override
-  Future<KpiDashboard?> getKpiDashboard(LaboratoryId laboratoryId) async =>
-      (await _remote.getKpiDashboard(laboratoryId.value))?.toDomain();
+  Future<KpiDashboard> getKpiDashboard(
+    LaboratoryId laboratoryId, {
+    required DateTime from,
+    required DateTime to,
+    int? environmentId,
+  }) async => (await _remote.getKpiDashboard(
+    laboratoryId.value,
+    from: toIsoMillis(from),
+    to: toIsoMillis(to),
+    environmentId: environmentId,
+  )).toDomain();
 
   @override
   Future<List<AuditReport>> getLaboratoryReports(LaboratoryId laboratoryId) async =>
       (await _remote.getLaboratoryReports(laboratoryId.value)).map((d) => d.toDomain()).toList();
 
   @override
-  Future<List<DeviationTrend>> getDeviationTrends(int equipmentId) async =>
-      (await _remote.getTrends(equipmentId)).map((d) => d.toDomain()).toList();
+  Future<List<DeviationTrend>> getDeviationTrends(
+    LaboratoryId laboratoryId,
+    int environmentId, {
+    required DateTime from,
+    required DateTime to,
+  }) async => (await _remote.getTrends(
+    laboratoryId.value,
+    environmentId,
+    from: toIsoMillis(from),
+    to: toIsoMillis(to),
+  )).map((d) => d.toDomain()).toList();
 
   @override
-  Future<List<AuditLogEntry>> getEquipmentAuditLogs(int equipmentId) async =>
-      (await _remote.getEquipmentAuditLogs(equipmentId)).map((d) => d.toDomain()).toList();
+  Future<List<AuditLogEntry>> getEquipmentAuditLogs(LaboratoryId laboratoryId, int equipmentId) async =>
+      (await _remote.getEquipmentAuditLogs(laboratoryId.value, equipmentId)).map((d) => d.toDomain()).toList();
 
   @override
   Future<List<AuditLogEntry>> getBatchAuditLogs(int batchId) async =>
