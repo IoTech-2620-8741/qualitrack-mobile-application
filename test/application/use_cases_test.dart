@@ -300,6 +300,13 @@ void main() {
       expect(summary.active, active);
       expect(summary.plan?.name, 'Standard Lab');
       expect(summary.subscriptions.first, active);
+      expect(summary.planNameOf(old), 'Standard Lab');
+      expect(
+        summary.planNameOf(
+          const Subscription(id: 3, laboratoryId: 7, planCode: 'PRO', billingCycle: 'YEARLY', status: 'CANCELLED'),
+        ),
+        'PRO',
+      );
     });
   });
 }

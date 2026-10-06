@@ -145,7 +145,7 @@ class _BillingBody extends StatelessWidget {
           title: l10n.subscriptionHistory,
           section: Section(summary.subscriptions),
           itemBuilder: (context, s) => SectionRow(
-            title: '${s.planCode} · ${Formatters.humanize(s.billingCycle)}',
+            title: '${summary.planNameOf(s)} · ${Formatters.humanize(s.billingCycle)}',
             subtitle:
                 '${Formatters.date(s.currentPeriodStart, locale)} – ${Formatters.date(s.currentPeriodEnd, locale)}',
             trailing: StatusBadge(label: Formatters.humanize(s.status), tone: subscriptionTone(s.status)),
