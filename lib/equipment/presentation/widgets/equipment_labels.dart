@@ -24,3 +24,10 @@ extension EquipmentLabel on Equipment {
   String statusLabel(AppLocalizations l10n) =>
       status == EquipmentStatus.unknown && rawStatus != null ? rawStatus! : status.label(l10n);
 }
+
+extension IotDeviceTypePresentation on IotDeviceType {
+  String label(AppLocalizations l10n) => switch (this) {
+    IotDeviceType.environmentalDevice => l10n.environmentalDevice,
+    IotDeviceType.containerMonitor => l10n.containerMonitor,
+  };
+}

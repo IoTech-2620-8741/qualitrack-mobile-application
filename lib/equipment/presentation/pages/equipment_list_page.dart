@@ -21,6 +21,7 @@ class EquipmentListPage extends StatelessWidget {
     return switch (filter) {
       EquipmentFilter.all => l10n.filterAll,
       EquipmentFilter.attention => l10n.needsAttention,
+      EquipmentFilter.iotDevices => l10n.iotDevices,
       EquipmentFilter.operational => l10n.equipmentOperational,
       EquipmentFilter.maintenance => l10n.equipmentMaintenance,
       EquipmentFilter.outOfService => l10n.equipmentOutOfService,
@@ -117,7 +118,7 @@ class EquipmentCard extends StatelessWidget {
                       children: [
                         Text(e.name, style: theme.textTheme.titleSmall),
                         Text(
-                          [e.type, e.model].whereType<String>().join(' · '),
+                          [e.type, item.environmentName].whereType<String>().join(' · '),
                           style: theme.textTheme.bodySmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -134,13 +135,10 @@ class EquipmentCard extends StatelessWidget {
                 runSpacing: AppSpacing.xs,
                 children: [
                   StatusBadge(label: e.statusLabel(l10n), tone: e.status.tone),
-                  TelemetryStatusBadge(status: item.telemetry),
-                  if (item.telemetry != null) OnlineBadge(online: item.telemetry!.isOnline),
-                  StatusBadge(
-                    label: e.hasSensor ? l10n.sensorLinked : l10n.noSensor,
-                    tone: e.hasSensor ? BadgeTone.info : BadgeTone.neutral,
-                    icon: e.hasSensor ? Icons.sensors : Icons.sensors_off_outlined,
-                  ),
+                  if (e.deviceType != null) ...[
+                    StatusBadge(label: e.deviceType!.label(l10n), tone: BadgeTone.info, icon: Icons.sensors),
+                    if (e.environmentId != null) ConnectionBadge(connection: item.connection),
+                  ],
                 ],
               ),
               if (e.serialNumber != null) ...[
