@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../iam/domain/user_session.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
+import '../../profile/presentation/bloc/current_profile_controller.dart';
+import '../../profile/presentation/widgets/profile_avatar.dart';
 import '../../shared/presentation/l10n/app_localizations.dart';
 import '../../shared/presentation/widgets/confirm_dialog.dart';
 import '../theme/app_colors.dart';
@@ -11,9 +13,10 @@ import 'app_routes.dart';
 
 /// "Navigation Menu" mockup: secondary destinations of the app.
 class MorePage extends StatelessWidget {
-  const MorePage({super.key, required this.session, required this.onSignOut});
+  const MorePage({super.key, required this.session, required this.currentProfile, required this.onSignOut});
 
   final UserSession session;
+  final CurrentProfileController currentProfile;
   final Future<void> Function() onSignOut;
 
   @override
@@ -24,7 +27,9 @@ class MorePage extends StatelessWidget {
       (Icons.precision_manufacturing_outlined, l10n.equipmentTitle, AppRoutes.equipment),
       (Icons.medication_outlined, l10n.productsTitle, AppRoutes.products),
       (Icons.insights_outlined, l10n.reportsTitle, AppRoutes.reports),
-      (Icons.receipt_long_outlined, l10n.billingTitle, AppRoutes.billing),
+      // The subscription belongs to the quality manager, as in Web.
+      if (session.canManageQuality) (Icons.receipt_long_outlined, l10n.billingTitle, AppRoutes.billing),
+      (Icons.notifications_outlined, l10n.notificationsTitle, AppRoutes.notifications),
       (Icons.person_outline, l10n.profile, AppRoutes.profile),
       (Icons.info_outline, l10n.about, AppRoutes.about),
     ];
@@ -33,16 +38,20 @@ class MorePage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
-          ListTile(
-            leading: CircleAvatar(
-              backgroundColor: AppColors.primaryContainer,
-              child: Text(
-                session.username.isEmpty ? '?' : session.username[0].toUpperCase(),
-                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
-              ),
-            ),
-            title: Text(session.username, maxLines: 1, overflow: TextOverflow.ellipsis),
-            subtitle: Text(session.primaryRole?.label(l10n) ?? '—'),
+          ListenableBuilder(
+            listenable: currentProfile,
+            builder: (context, _) {
+              final profile = currentProfile.profile;
+              return ListTile(
+                leading: ProfileAvatar(
+                  photo: currentProfile.photo,
+                  initials: profile?.initials ?? (session.username.isEmpty ? '?' : session.username[0].toUpperCase()),
+                ),
+                title: Text(profile?.displayName ?? session.username, maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text(session.primaryRole?.label(l10n) ?? '—'),
+                onTap: () => context.push(AppRoutes.profile),
+              );
+            },
           ),
           const Divider(),
           for (final (icon, label, route) in entries)

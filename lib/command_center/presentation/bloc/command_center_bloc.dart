@@ -19,8 +19,10 @@ class CommandCenterBloc extends Bloc<CommandCenterRequested, RemoteState<Command
   CommandCenterBloc({
     required GetCommandCenterSummary getSummary,
     required LaboratoryId Function() laboratoryId,
+    required bool includeSubscription,
   }) : _getSummary = getSummary,
        _laboratoryId = laboratoryId,
+       _includeSubscription = includeSubscription,
        super(const RemoteState()) {
     on<CommandCenterRequested>(_onRequested);
   }
@@ -28,13 +30,13 @@ class CommandCenterBloc extends Bloc<CommandCenterRequested, RemoteState<Command
   final GetCommandCenterSummary _getSummary;
   final LaboratoryId Function() _laboratoryId;
 
-  Future<void> _onRequested(
-    CommandCenterRequested event,
-    Emitter<RemoteState<CommandCenterSummary>> emit,
-  ) async {
+  /// Only quality managers see the subscription, as in QualiTrack Web.
+  final bool _includeSubscription;
+
+  Future<void> _onRequested(CommandCenterRequested event, Emitter<RemoteState<CommandCenterSummary>> emit) async {
     emit(event.refresh && state.hasData ? state.refreshingState() : state.loading());
     try {
-      emit(state.success(await _getSummary(_laboratoryId())));
+      emit(state.success(await _getSummary(_laboratoryId(), includeSubscription: _includeSubscription)));
     } catch (error) {
       emit(state.failed(ApiExceptionMapper.map(error)));
     }

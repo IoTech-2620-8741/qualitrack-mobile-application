@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'app/app.dart';
 import 'app/dependency_injection/injection.dart';
+import 'compliance/presentation/bloc/unread_notifications_controller.dart';
 import 'iam/application/session_controller.dart';
+import 'profile/presentation/bloc/current_profile_controller.dart';
 import 'shared/infrastructure/configuration/api_config.dart';
 
 Future<void> main() async {
@@ -13,7 +15,11 @@ Future<void> main() async {
     runApp(const _MissingConfigurationApp());
     return;
   }
-  runApp(QualiTrackApp(session: sl<SessionController>()));
+  runApp(QualiTrackApp(
+    session: sl<SessionController>(),
+    notifications: sl<UnreadNotificationsController>(),
+    currentProfile: sl<CurrentProfileController>(),
+  ));
 }
 
 /// Shown when the app was built without `--dart-define=API_BASE_URL=...`.
