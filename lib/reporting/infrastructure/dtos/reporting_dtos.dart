@@ -1,13 +1,8 @@
-import '../../shared/domain/value_objects.dart';
-import '../../shared/infrastructure/http/api_client.dart';
-import '../../shared/infrastructure/http/json_utils.dart';
-import '../domain/reporting.dart';
+import '../../../../shared/infrastructure/http/json_utils.dart';
+import '../../domain/entities/reporting_entities.dart';
 
-/// `KpiDashboardResource {laboratoryId, timestamp, overallHealthScore, from, to,
-/// metrics[], measurementSummaries[]}`.
 class KpiDashboardDto {
   const KpiDashboardDto(this.json);
-
   final Map<String, dynamic> json;
 
   KpiDashboard toDomain() => KpiDashboard(
@@ -46,7 +41,6 @@ class KpiDashboardDto {
 
 class AuditReportDto {
   const AuditReportDto(this.json);
-
   final Map<String, dynamic> json;
 
   AuditReport toDomain() => AuditReport(
@@ -63,12 +57,8 @@ class AuditReportDto {
   );
 }
 
-/// `DeviationTrendResource {parameterName, equipmentId, environmentId, unit,
-/// trendDirection, evaluatedReadings, timeInRangePercent, deviationCount,
-/// criticalDeviationCount, dataPoints}`.
 class DeviationTrendDto {
   const DeviationTrendDto(this.json);
-
   final Map<String, dynamic> json;
 
   DeviationTrend toDomain() => DeviationTrend(
@@ -86,7 +76,6 @@ class DeviationTrendDto {
 
 class AuditLogEntryDto {
   const AuditLogEntryDto(this.json);
-
   final Map<String, dynamic> json;
 
   AuditLogEntry toDomain() => AuditLogEntry(
@@ -99,76 +88,4 @@ class AuditLogEntryDto {
     rawTimestamp: Json.optString(json, 'timestamp'),
     details: Json.optString(json, 'details'),
   );
-}
-
-class ReportingRemoteDataSource {
-  const ReportingRemoteDataSource(this._client);
-
-  final ApiClient _client;
-
-  Future<KpiDashboardDto> getKpiDashboard(int labId, {required String from, required String to, int? environmentId}) async =>
-      KpiDashboardDto(Json.asMap(await _client.get(
-        '/laboratories/$labId/kpi-dashboards',
-        query: {'from': from, 'to': to, 'environmentId': environmentId},
-      )));
-
-  Future<List<AuditReportDto>> getLaboratoryReports(int labId) async =>
-      Json.asList(await _client.get('/laboratories/$labId/reports')).map(AuditReportDto.new).toList();
-
-  Future<List<DeviationTrendDto>> getTrends(int labId, int environmentId, {required String from, required String to}) async =>
-      Json.asList(await _client.get(
-        '/laboratories/$labId/environments/$environmentId/deviation-trends',
-        query: {'from': from, 'to': to},
-      )).map(DeviationTrendDto.new).toList();
-
-  Future<List<AuditLogEntryDto>> getEquipmentAuditLogs(int labId, int equipmentId) async => Json.asList(
-    await _client.get('/laboratories/$labId/equipments/$equipmentId/audit-logs'),
-  ).map(AuditLogEntryDto.new).toList();
-
-  Future<List<AuditLogEntryDto>> getBatchAuditLogs(int batchId) async =>
-      Json.asList(await _client.get('/batches/$batchId/audit-logs')).map(AuditLogEntryDto.new).toList();
-}
-
-class ReportingRepositoryImpl implements ReportingRepository {
-  const ReportingRepositoryImpl(this._remote);
-
-  final ReportingRemoteDataSource _remote;
-
-  @override
-  Future<KpiDashboard> getKpiDashboard(
-    LaboratoryId laboratoryId, {
-    required DateTime from,
-    required DateTime to,
-    int? environmentId,
-  }) async => (await _remote.getKpiDashboard(
-    laboratoryId.value,
-    from: toIsoMillis(from),
-    to: toIsoMillis(to),
-    environmentId: environmentId,
-  )).toDomain();
-
-  @override
-  Future<List<AuditReport>> getLaboratoryReports(LaboratoryId laboratoryId) async =>
-      (await _remote.getLaboratoryReports(laboratoryId.value)).map((d) => d.toDomain()).toList();
-
-  @override
-  Future<List<DeviationTrend>> getDeviationTrends(
-    LaboratoryId laboratoryId,
-    int environmentId, {
-    required DateTime from,
-    required DateTime to,
-  }) async => (await _remote.getTrends(
-    laboratoryId.value,
-    environmentId,
-    from: toIsoMillis(from),
-    to: toIsoMillis(to),
-  )).map((d) => d.toDomain()).toList();
-
-  @override
-  Future<List<AuditLogEntry>> getEquipmentAuditLogs(LaboratoryId laboratoryId, int equipmentId) async =>
-      (await _remote.getEquipmentAuditLogs(laboratoryId.value, equipmentId)).map((d) => d.toDomain()).toList();
-
-  @override
-  Future<List<AuditLogEntry>> getBatchAuditLogs(int batchId) async =>
-      (await _remote.getBatchAuditLogs(batchId)).map((d) => d.toDomain()).toList();
 }
