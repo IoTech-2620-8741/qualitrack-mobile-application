@@ -1,8 +1,9 @@
 import '../../shared/application/bounded_concurrency.dart';
 import '../../shared/domain/value_objects.dart';
-import '../domain/reporting.dart';
+import '../domain/entities/reporting_entities.dart';
+import '../domain/logic/reporting_logic.dart';
+import '../domain/repositories/reporting_repository.dart';
 
-/// Indicators of the laboratory (or of one environment) in a period ending now.
 class GetKpiDashboard {
   const GetKpiDashboard(this._repository, {DateTime Function()? clock}) : _clock = clock ?? DateTime.now;
 
@@ -27,19 +28,10 @@ class GetReportHistory {
 
   Future<List<AuditReport>> call(LaboratoryId laboratoryId) async {
     final reports = await _repository.getLaboratoryReports(laboratoryId);
-    return [...reports]..sort((a, b) {
-      final left = a.generatedAt;
-      final right = b.generatedAt;
-      if (left == null && right == null) return b.id.compareTo(a.id);
-      if (left == null) return 1;
-      if (right == null) return -1;
-      return right.compareTo(left);
-    });
+    return sortReportsNewestFirst(reports);
   }
 }
 
-/// Deviation indicators of every given environment in a period ending now
-/// (the backend calculates them per environment).
 class GetDeviationTrends {
   const GetDeviationTrends(this._repository, {DateTime Function()? clock}) : _clock = clock ?? DateTime.now;
 
@@ -51,7 +43,7 @@ class GetDeviationTrends {
     final from = to.subtract(period.duration);
     return loadAll(
       environmentIds,
-      (environmentId) => _repository.getDeviationTrends(laboratoryId, environmentId, from: from, to: to),
+          (environmentId) => _repository.getDeviationTrends(laboratoryId, environmentId, from: from, to: to),
     );
   }
 }
@@ -62,7 +54,7 @@ class GetEquipmentAuditLogs {
   final ReportingRepository _repository;
 
   Future<List<AuditLogEntry>> call(LaboratoryId laboratoryId, int equipmentId) async =>
-      _newestFirst(await _repository.getEquipmentAuditLogs(laboratoryId, equipmentId));
+      sortAuditLogsNewestFirst(await _repository.getEquipmentAuditLogs(laboratoryId, equipmentId));
 }
 
 class GetBatchAuditLogs {
@@ -70,15 +62,6 @@ class GetBatchAuditLogs {
 
   final ReportingRepository _repository;
 
-  Future<List<AuditLogEntry>> call(int batchId) async => _newestFirst(await _repository.getBatchAuditLogs(batchId));
+  Future<List<AuditLogEntry>> call(int batchId) async =>
+      sortAuditLogsNewestFirst(await _repository.getBatchAuditLogs(batchId));
 }
-
-List<AuditLogEntry> _newestFirst(List<AuditLogEntry> entries) => [...entries]
-  ..sort((a, b) {
-    final left = a.timestamp;
-    final right = b.timestamp;
-    if (left == null && right == null) return b.id.compareTo(a.id);
-    if (left == null) return 1;
-    if (right == null) return -1;
-    return right.compareTo(left);
-  });
