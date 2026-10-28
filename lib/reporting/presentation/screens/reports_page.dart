@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../compliance/presentation/widgets/alert_widgets.dart';
@@ -12,7 +11,8 @@ import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/section_card.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../domain/reporting.dart';
+import '../../domain/entities/reporting_entities.dart';
+import '../../application/reporting_facade_service.dart';
 import '../bloc/reports_bloc.dart';
 
 String reportPeriodLabel(AppLocalizations l10n, ReportPeriod period) => switch (period) {
