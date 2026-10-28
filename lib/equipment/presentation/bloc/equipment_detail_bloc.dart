@@ -5,7 +5,7 @@ import '../../../compliance/application/compliance_queries.dart';
 import '../../../compliance/domain/compliance.dart';
 import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../reporting/application/reporting_queries.dart';
-import '../../../reporting/domain/reporting.dart';
+import '../../../reporting/domain/entities/reporting_entities.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
 import '../../../shared/infrastructure/http/api_exception_mapper.dart';

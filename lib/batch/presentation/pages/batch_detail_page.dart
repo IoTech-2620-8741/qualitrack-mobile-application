@@ -6,7 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
 import '../../../compliance/domain/compliance.dart';
-import '../../../reporting/domain/reporting.dart';
+import '../../../reporting/domain/entities/reporting_entities.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';

@@ -42,9 +42,11 @@ import '../../profile/domain/profile.dart';
 import '../../profile/infrastructure/profile_infrastructure.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
+import '../../reporting/application/reporting_facade_service.dart';
 import '../../reporting/application/reporting_queries.dart';
-import '../../reporting/domain/reporting.dart';
-import '../../reporting/infrastructure/reporting_infrastructure.dart';
+import '../../reporting/domain/repositories/reporting_repository.dart';
+import '../../reporting/infrastructure/data_sources/reporting_remote_data_source.dart';
+import '../../reporting/infrastructure/repositories/reporting_repository_impl.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
 import '../../shared/domain/failure.dart';
 import '../../shared/domain/value_objects.dart';
@@ -162,6 +164,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => GetReportHistory(sl()));
   sl.registerLazySingleton(() => GetEquipmentAuditLogs(sl()));
   sl.registerLazySingleton(() => GetBatchAuditLogs(sl()));
+  sl.registerLazySingleton(() => ReportingFacadeService(getKpiDashboard: sl(), getDeviationTrends: sl(), getReportHistory: sl(), getEnvironments: sl(), getEquipments: sl(),),);
 
   // Payments & Subscriptions
   sl.registerLazySingleton(() => SubscriptionRemoteDataSource(sl()));
@@ -314,15 +317,26 @@ void _registerBlocs() {
       laboratoryId: _laboratoryId,
     ),
   );
+
+  // ANTES:
+  // sl.registerFactory(
+  //   () => ReportsBloc(
+  //     getKpiDashboard: sl(),
+  //     getDeviationTrends: sl(),
+  //     getReportHistory: sl(),
+  //     getEnvironments: sl(),
+  //     getEquipments: sl(),
+  //     laboratoryId: _laboratoryId,
+  //   ),
+  // );
+
+  // AHORA:
   sl.registerFactory(
-    () => ReportsBloc(
-      getKpiDashboard: sl(),
-      getDeviationTrends: sl(),
-      getReportHistory: sl(),
-      getEnvironments: sl(),
-      getEquipments: sl(),
+        () => ReportsBloc(
+      reportingFacade: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
+
   sl.registerFactory(() => BillingBloc(getBillingSummary: sl(), laboratoryId: _laboratoryId));
 }
