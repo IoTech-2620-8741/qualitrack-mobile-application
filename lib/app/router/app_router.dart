@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../batch/presentation/bloc/batch_detail_bloc.dart';
-import '../../batch/presentation/bloc/batches_bloc.dart';
-import '../../batch/presentation/pages/batch_detail_page.dart';
-import '../../batch/presentation/pages/batches_page.dart';
+import '../../batch/presentation/batch_detail/batch_detail_screen.dart';
+import '../../batch/presentation/batch_detail/bloc/bloc.dart';
+import '../../batch/presentation/batch_list/batch_list_screen.dart';
+import '../../batch/presentation/batch_list/bloc/bloc.dart';
 import '../../command_center/presentation/bloc/command_center_bloc.dart';
 import '../../command_center/presentation/pages/command_center_page.dart';
 import '../../compliance/presentation/bloc/alert_detail_bloc.dart';
@@ -142,7 +142,7 @@ GoRouter createRouter(
           if (id == null) return _invalidId(context);
           return BlocProvider(
             create: (_) => sl<BatchDetailBloc>(param1: id)..add(const BatchDetailRequested()),
-            child: BatchDetailPage(
+            child: BatchDetailScreen(
               canReview: session.session?.canManageQuality ?? false,
               currentUserId: currentUserId(),
             ),
@@ -314,8 +314,8 @@ GoRouter createRouter(
               GoRoute(
                 path: AppRoutes.batches,
                 builder: (context, state) => BlocProvider(
-                  create: (_) => sl<BatchesBloc>()..add(const BatchesRequested()),
-                  child: const BatchesPage(),
+                  create: (_) => sl<BatchListBloc>()..add(const BatchListRequested()),
+                  child: const BatchListScreen(),
                 ),
               ),
             ],
