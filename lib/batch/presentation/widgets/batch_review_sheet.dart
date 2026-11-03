@@ -6,8 +6,8 @@ import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/confirm_dialog.dart';
-import '../../domain/batch.dart';
-import '../bloc/batch_detail_bloc.dart';
+import '../../domain/entities/production_batch.dart';
+import '../batch_detail/bloc/batch_detail_state.dart';
 
 final class BatchReviewInput {
   const BatchReviewInput({required this.date, required this.text});

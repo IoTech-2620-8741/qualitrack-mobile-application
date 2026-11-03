@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../domain/batch.dart';
+import '../../domain/entities/batch_status.dart';
 
 extension BatchStatusPresentation on BatchStatus {
   BadgeTone get tone => switch (this) {

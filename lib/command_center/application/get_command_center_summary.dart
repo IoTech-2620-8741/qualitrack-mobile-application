@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../batch/application/batch_use_cases.dart';
-import '../../batch/domain/batch.dart';
+import '../../batch/api/index.dart';
 import '../../compliance/application/compliance_queries.dart';
 import '../../compliance/domain/compliance.dart';
 import '../../equipment/application/equipment_queries.dart';
@@ -107,7 +106,7 @@ class GetCommandCenterSummary {
     required GetEnvironments getEnvironments,
     required GetEquipments getEquipments,
     required GetDeviceConnections getConnections,
-    required GetBatches getBatches,
+    required BatchApi batchApi,
     required GetLaboratoryAlerts getAlerts,
     required GetInventoryMaterials getMaterials,
     required GetBillingSummary getBilling,
@@ -115,7 +114,7 @@ class GetCommandCenterSummary {
        _getEnvironments = getEnvironments,
        _getEquipments = getEquipments,
        _getConnections = getConnections,
-       _getBatches = getBatches,
+       _batchApi = batchApi,
        _getAlerts = getAlerts,
        _getMaterials = getMaterials,
        _getBilling = getBilling;
@@ -124,7 +123,7 @@ class GetCommandCenterSummary {
   final GetEnvironments _getEnvironments;
   final GetEquipments _getEquipments;
   final GetDeviceConnections _getConnections;
-  final GetBatches _getBatches;
+  final BatchApi _batchApi;
   final GetLaboratoryAlerts _getAlerts;
   final GetInventoryMaterials _getMaterials;
   final GetBillingSummary _getBilling;
@@ -144,7 +143,7 @@ class GetCommandCenterSummary {
         return EquipmentSnapshot(equipments: equipments, connections: await _getConnections(lab, targets));
       }),
       _part(() async {
-        final batches = await _getBatches(lab);
+        final batches = await _batchApi.getBatches(lab);
         final recent = [...batches]..sort((a, b) => b.id.compareTo(a.id));
         return BatchOverview(summary: BatchSummary.of(batches), recent: recent.take(4).toList());
       }),

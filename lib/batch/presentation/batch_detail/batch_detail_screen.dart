@@ -15,15 +15,15 @@ import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/section_card.dart';
 import '../../../shared/presentation/section.dart';
-import '../../domain/batch.dart';
-import '../bloc/batch_detail_bloc.dart';
+import '../../domain/entities/batch_traceability.dart';
 import '../widgets/batch_labels.dart';
 import '../widgets/batch_review_sheet.dart';
+import 'bloc/bloc.dart';
 
 /// Batch detail with its traceability. Only quality managers release or
 /// reject a batch ([canReview]); the backend validates the decision.
-class BatchDetailPage extends StatelessWidget {
-  const BatchDetailPage({super.key, required this.canReview, required this.currentUserId});
+class BatchDetailScreen extends StatelessWidget {
+  const BatchDetailScreen({super.key, required this.canReview, required this.currentUserId});
 
   final bool canReview;
   final int? currentUserId;

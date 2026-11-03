@@ -1,10 +1,12 @@
 import 'package:get_it/get_it.dart';
 
-import '../../batch/application/batch_use_cases.dart';
-import '../../batch/domain/batch.dart';
-import '../../batch/infrastructure/batch_infrastructure.dart';
-import '../../batch/presentation/bloc/batch_detail_bloc.dart';
-import '../../batch/presentation/bloc/batches_bloc.dart';
+import '../../batch/api/index.dart';
+import '../../batch/application/batch_facade_service.dart';
+import '../../batch/domain/interfaces/batch_interface.dart';
+import '../../batch/infrastructure/data_sources/batch_remote_data_provider.dart';
+import '../../batch/infrastructure/repositories/batch_repository.dart';
+import '../../batch/presentation/batch_detail/bloc/batch_detail_bloc.dart';
+import '../../batch/presentation/batch_list/bloc/batch_list_bloc.dart';
 import '../../command_center/application/get_command_center_summary.dart';
 import '../../command_center/presentation/bloc/command_center_bloc.dart';
 import '../../compliance/application/compliance_queries.dart';
@@ -138,12 +140,10 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => UnreadNotificationsController(getUnreadCount: sl()));
 
   // Product Batch Management
-  sl.registerLazySingleton(() => BatchRemoteDataSource(sl()));
-  sl.registerLazySingleton<BatchRepository>(() => BatchRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetBatches(sl()));
-  sl.registerLazySingleton(() => GetBatchTraceability(sl()));
-  sl.registerLazySingleton(() => ReleaseBatch(sl()));
-  sl.registerLazySingleton(() => RejectBatch(sl()));
+  sl.registerLazySingleton(() => BatchRemoteDataProvider(sl()));
+  sl.registerLazySingleton<BatchInterface>(() => BatchRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => BatchFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => BatchApi(sl()));
 
   // Inventory Management
   sl.registerLazySingleton(() => InventoryRemoteDataSource(sl()));
@@ -185,7 +185,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
       getEnvironments: sl(),
       getEquipments: sl(),
       getConnections: sl(),
-      getBatches: sl(),
+      batchApi: sl(),
       getAlerts: sl(),
       getMaterials: sl(),
       getBilling: sl(),
@@ -287,16 +287,14 @@ void _registerBlocs() {
     ),
   );
   sl.registerFactory(() => NotificationPreferencesBloc(getPreferences: sl(), updatePreferences: sl()));
-  sl.registerFactory(() => BatchesBloc(getBatches: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => BatchListBloc(batchService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactoryParam<BatchDetailBloc, int, void>(
     (id, _) => BatchDetailBloc(
       batchId: id,
-      getTraceability: sl(),
+      batchService: sl(),
       getEvents: sl(),
       getAuditLogs: sl(),
       getUserDirectory: sl(),
-      release: sl(),
-      reject: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
