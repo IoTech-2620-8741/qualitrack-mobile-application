@@ -10,11 +10,13 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/laboratory.dart';
+import '../../domain/entities/lab_environment.dart';
+import '../../domain/entities/pharmaceutical_product.dart';
+import '../../domain/entities/product_catalog.dart';
 import '../bloc/products_bloc.dart';
 
-class ProductsPage extends StatelessWidget {
-  const ProductsPage({super.key});
+class ProductsScreen extends StatelessWidget {
+  const ProductsScreen({super.key});
 
   void _reload(BuildContext context) =>
       context.read<ProductsBloc>().add(const ProductsRequested(refresh: true));
