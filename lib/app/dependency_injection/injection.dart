@@ -12,10 +12,8 @@ import '../../command_center/presentation/bloc/command_center_bloc.dart';
 import '../../compliance/api/index.dart';
 import '../../compliance/application/compliance_facade_service.dart';
 import '../../compliance/domain/interfaces/compliance_interface.dart';
-import '../../compliance/domain/interfaces/notification_interface.dart';
 import '../../compliance/infrastructure/data_sources/compliance_remote_data_provider.dart';
 import '../../compliance/infrastructure/repositories/compliance_repository.dart';
-import '../../compliance/infrastructure/repositories/notification_repository.dart';
 import '../../compliance/presentation/bloc/alert_detail_bloc.dart';
 import '../../compliance/presentation/bloc/alerts_bloc.dart';
 import '../../compliance/presentation/bloc/notification_preferences_bloc.dart';
@@ -132,10 +130,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   // Compliance & Alerting (alerts and in-app notifications)
   sl.registerLazySingleton(() => ComplianceRemoteDataProvider(sl()));
   sl.registerLazySingleton<ComplianceInterface>(() => ComplianceRepository(remoteDataProvider: sl()));
-  sl.registerLazySingleton<NotificationInterface>(() => NotificationRepository(remoteDataProvider: sl()));
-  sl.registerLazySingleton(
-    () => ComplianceFacadeService(complianceRepository: sl(), notificationRepository: sl()),
-  );
+  sl.registerLazySingleton(() => ComplianceFacadeService(repository: sl()));
   sl.registerLazySingleton(() => ComplianceApi(sl()));
   sl.registerLazySingleton(() => UnreadNotificationsController(complianceService: sl()));
 
