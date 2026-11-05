@@ -39,7 +39,7 @@ initial analysis is in [`docs/analysis.md`](docs/analysis.md).
 lib/
 ├── main.dart
 ├── app/            # composition root: theme, router, DI, MaterialApp
-├── shared/         # failures, ApiClient, secure storage, l10n, widgets
+├── common/         # failures, ApiClient, secure storage, l10n, widgets
 ├── iam/            # Identity & Access Management
 ├── laboratory/     # Laboratory Management (lab, products)
 ├── equipment/      # Equipment Management
