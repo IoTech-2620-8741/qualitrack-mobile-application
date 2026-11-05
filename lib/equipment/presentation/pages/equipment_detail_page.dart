@@ -6,7 +6,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../compliance/domain/compliance.dart';
 import '../../../compliance/presentation/widgets/alert_widgets.dart';
 import '../../../reporting/domain/entities/reporting_entities.dart';
-import '../../../reporting/presentation/screens/reports_page.dart';
+import '../../../reporting/presentation/widgets/severity_tone.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
@@ -123,7 +123,7 @@ class _DetailBody extends StatelessWidget {
                 subtitle: l10n.deviationsSummary(t.deviationCount, t.criticalDeviationCount),
                 trailing: StatusBadge(
                   label: percent == null ? '—' : l10n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
-                  tone: timeInRangeTone(percent),
+                  tone: timeInRangeToneFromSeverity(t.severity),
                 ),
               );
             },
