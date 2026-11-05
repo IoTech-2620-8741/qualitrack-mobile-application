@@ -7,7 +7,7 @@ import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
 import 'package:qualitrack_mobile/iam/domain/access_token.dart';
 import 'package:qualitrack_mobile/iam/domain/user_role.dart';
 import 'package:qualitrack_mobile/iam/domain/user_session.dart';
-import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
+import 'package:qualitrack_mobile/inventory/domain/entities/inventory_material.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/environment_usage.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/lab_environment.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';

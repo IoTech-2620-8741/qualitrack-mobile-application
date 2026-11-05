@@ -1,6 +1,7 @@
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/inventory.dart';
+import '../../domain/entities/inventory_material.dart';
+import '../../domain/entities/receipt_status.dart';
 
 extension ReceiptStatusPresentation on ReceiptStatus {
   BadgeTone get tone => switch (this) {

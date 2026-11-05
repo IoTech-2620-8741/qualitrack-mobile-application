@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../laboratory/api/index.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../application/inventory_queries.dart';
-import '../../domain/inventory.dart';
+import '../../application/inventory_facade_service.dart';
+import '../../domain/entities/inventory_material.dart';
 
 enum InventoryFilter { all, belowMinimum, blockedStock }
 
@@ -95,10 +95,10 @@ final class InventoryState extends Equatable {
 class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
   InventoryBloc({
     required LaboratoryApi laboratoryApi,
-    required GetInventoryMaterials getMaterials,
+    required InventoryFacadeService inventoryService,
     required LaboratoryId Function() laboratoryId,
   }) : _laboratoryApi = laboratoryApi,
-       _getMaterials = getMaterials,
+       _inventoryService = inventoryService,
        _laboratoryId = laboratoryId,
        super(const InventoryState()) {
     on<InventoryRequested>(_onRequested);
@@ -107,7 +107,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
   }
 
   final LaboratoryApi _laboratoryApi;
-  final GetInventoryMaterials _getMaterials;
+  final InventoryFacadeService _inventoryService;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(InventoryRequested event, Emitter<InventoryState> emit) async {
@@ -118,7 +118,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
     try {
       final lab = _laboratoryId();
       final environments = await _laboratoryApi.getEnvironments(lab);
-      final materials = await _getMaterials(lab, environments.map((e) => e.id));
+      final materials = await _inventoryService.getMaterials(lab, environments.map((e) => e.id));
       emit(state.copyWith(
         remote: state.remote.success(materials, empty: materials.isEmpty),
         environmentNames: {for (final e in environments) e.id: e.name},

@@ -13,12 +13,12 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/inventory.dart';
+import '../../domain/entities/inventory_material.dart';
 import '../bloc/inventory_bloc.dart';
 import '../widgets/inventory_labels.dart';
 
-class InventoryPage extends StatelessWidget {
-  const InventoryPage({super.key});
+class InventoryScreen extends StatelessWidget {
+  const InventoryScreen({super.key});
 
   String _filterLabel(BuildContext context, InventoryFilter f) => switch (f) {
     InventoryFilter.all => context.i18n.filterAll,

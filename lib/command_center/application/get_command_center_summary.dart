@@ -102,14 +102,14 @@ class GetCommandCenterSummary {
     required GetDeviceConnections getConnections,
     required BatchApi batchApi,
     required GetLaboratoryAlerts getAlerts,
-    required GetInventoryMaterials getMaterials,
+    required InventoryApi inventoryApi,
     required SubscriptionApi subscriptionApi,
   }) : _laboratoryApi = laboratoryApi,
        _getEquipments = getEquipments,
        _getConnections = getConnections,
        _batchApi = batchApi,
        _getAlerts = getAlerts,
-       _getMaterials = getMaterials,
+       _inventoryApi = inventoryApi,
        _subscriptionApi = subscriptionApi;
 
   final LaboratoryApi _laboratoryApi;
@@ -117,7 +117,7 @@ class GetCommandCenterSummary {
   final GetDeviceConnections _getConnections;
   final BatchApi _batchApi;
   final GetLaboratoryAlerts _getAlerts;
-  final GetInventoryMaterials _getMaterials;
+  final InventoryApi _inventoryApi;
   final SubscriptionApi _subscriptionApi;
 
   Future<CommandCenterSummary> call(LaboratoryId lab, {required bool includeSubscription}) async {
@@ -144,7 +144,7 @@ class GetCommandCenterSummary {
         final open = alerts.where((a) => a.isOpen).toList();
         return AlertOverview(summary: AlertSummary.of(alerts), open: open);
       }),
-      perEnvironment((ids) => _getMaterials(lab, ids)),
+      perEnvironment((ids) => _inventoryApi.getMaterials(lab, ids)),
       includeSubscription ? _part(() => _subscriptionApi.getBillingSummary(lab)) : Future<Part<BillingSummary>?>.value(),
     ]);
 
