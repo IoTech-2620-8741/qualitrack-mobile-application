@@ -11,10 +11,7 @@ abstract final class ApiExceptionMapper {
     if (error is Failure) return error;
     if (error is DioException) return _fromDio(error);
     if (error is SocketException) return NetworkFailure(message: error.message);
-    if (error is FormatException || error is TypeError) {
-      return ParsingFailure(message: error.toString());
-    }
-    return UnexpectedFailure(message: error.toString());
+    return Failure.from(error);
   }
 
   static Failure _fromDio(DioException error) {
