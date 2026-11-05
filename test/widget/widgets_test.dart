@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
-import 'package:qualitrack_mobile/compliance/presentation/pages/alert_detail_page.dart';
-import 'package:qualitrack_mobile/compliance/presentation/pages/alerts_page.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/alert_detail_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/alerts_screen.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
@@ -200,9 +200,9 @@ void main() {
     late UnreadNotificationsController bell;
 
     setUp(() {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       when(() => repo.getUnreadCount()).thenAnswer((_) async => 2);
-      bell = UnreadNotificationsController(getUnreadCount: GetUnreadNotificationCount(repo));
+      bell = UnreadNotificationsController(complianceService: complianceFacade(repo));
     });
 
     tearDown(() => bell.dispose());
@@ -224,7 +224,7 @@ void main() {
         ),
       );
 
-      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: AlertsPage(notifications: bell)));
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: AlertsScreen(notifications: bell)));
 
       expect(find.text('Temperature'), findsWidgets);
       expect(find.text('Cold storage'), findsWidgets);
@@ -248,7 +248,7 @@ void main() {
     });
 
     Future<void> pump(WidgetTester tester, {required bool canAttend}) => tester.pumpLocalized(
-      BlocProvider<AlertDetailBloc>.value(value: bloc, child: AlertDetailPage(canAttend: canAttend, currentUserId: 42)),
+      BlocProvider<AlertDetailBloc>.value(value: bloc, child: AlertDetailScreen(canAttend: canAttend, currentUserId: 42)),
       size: const Size(390, 844),
     );
 

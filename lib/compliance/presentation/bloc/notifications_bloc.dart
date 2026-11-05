@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/domain/failure.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../application/compliance_queries.dart';
-import '../../domain/compliance.dart';
+import '../../application/compliance_facade_service.dart';
+import '../../domain/entities/app_notification.dart';
 
 sealed class NotificationsEvent extends Equatable {
   const NotificationsEvent();
@@ -59,13 +59,9 @@ final class NotificationsState extends Equatable {
 /// Notices of the signed-in user (alert lifecycle and batch decisions).
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   NotificationsBloc({
-    required GetNotifications getNotifications,
-    required MarkNotificationRead markRead,
-    required MarkAllNotificationsRead markAllRead,
+    required ComplianceFacadeService complianceService,
     required Future<void> Function() onReadChanged,
-  }) : _getNotifications = getNotifications,
-       _markRead = markRead,
-       _markAllRead = markAllRead,
+  }) : _complianceService = complianceService,
        _onReadChanged = onReadChanged,
        super(const NotificationsState()) {
     on<NotificationsRequested>(_onRequested);
@@ -73,16 +69,14 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     on<NotificationsAllRead>(_onAllRead);
   }
 
-  final GetNotifications _getNotifications;
-  final MarkNotificationRead _markRead;
-  final MarkAllNotificationsRead _markAllRead;
+  final ComplianceFacadeService _complianceService;
   final Future<void> Function() _onReadChanged;
 
   Future<void> _onRequested(NotificationsRequested event, Emitter<NotificationsState> emit) async {
     final current = state.remote;
     emit(state.copyWith(remote: event.refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
-      final items = await _getNotifications();
+      final items = await _complianceService.getNotifications();
       emit(state.copyWith(remote: state.remote.success(items, empty: items.isEmpty)));
     } catch (error) {
       emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
@@ -92,7 +86,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   Future<void> _onOpened(NotificationOpened event, Emitter<NotificationsState> emit) async {
     if (event.notification.isRead) return;
     try {
-      await _markRead(event.notification.id);
+      await _complianceService.markNotificationRead(event.notification.id);
       await _reload(emit);
     } catch (error) {
       emit(state.copyWith(actionFailure: Failure.from(error)));
@@ -102,7 +96,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   Future<void> _onAllRead(NotificationsAllRead event, Emitter<NotificationsState> emit) async {
     emit(state.copyWith(clearActionFailure: true));
     try {
-      await _markAllRead();
+      await _complianceService.markAllNotificationsRead();
       await _reload(emit);
     } catch (error) {
       emit(state.copyWith(actionFailure: Failure.from(error)));
@@ -110,7 +104,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   }
 
   Future<void> _reload(Emitter<NotificationsState> emit) async {
-    final items = await _getNotifications();
+    final items = await _complianceService.getNotifications();
     emit(state.copyWith(remote: state.remote.success(items, empty: items.isEmpty), clearActionFailure: true));
     await _onReadChanged();
   }

@@ -101,14 +101,14 @@ class GetCommandCenterSummary {
     required EquipmentApi equipmentApi,
     required TelemetryApi telemetryApi,
     required BatchApi batchApi,
-    required GetLaboratoryAlerts getAlerts,
+    required ComplianceApi complianceApi,
     required InventoryApi inventoryApi,
     required SubscriptionApi subscriptionApi,
   }) : _laboratoryApi = laboratoryApi,
        _equipmentApi = equipmentApi,
        _telemetryApi = telemetryApi,
        _batchApi = batchApi,
-       _getAlerts = getAlerts,
+       _complianceApi = complianceApi,
        _inventoryApi = inventoryApi,
        _subscriptionApi = subscriptionApi;
 
@@ -116,7 +116,7 @@ class GetCommandCenterSummary {
   final EquipmentApi _equipmentApi;
   final TelemetryApi _telemetryApi;
   final BatchApi _batchApi;
-  final GetLaboratoryAlerts _getAlerts;
+  final ComplianceApi _complianceApi;
   final InventoryApi _inventoryApi;
   final SubscriptionApi _subscriptionApi;
 
@@ -140,7 +140,7 @@ class GetCommandCenterSummary {
         return BatchOverview(summary: BatchSummary.of(batches), recent: recent.take(4).toList());
       }),
       perEnvironment((ids) async {
-        final alerts = await _getAlerts(lab, ids);
+        final alerts = await _complianceApi.getLaboratoryAlerts(lab, ids);
         final open = alerts.where((a) => a.isOpen).toList();
         return AlertOverview(summary: AlertSummary.of(alerts), open: open);
       }),

@@ -6,8 +6,9 @@ import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
 import 'package:qualitrack_mobile/batch/presentation/batch_detail/bloc/bloc.dart';
 import 'package:qualitrack_mobile/batch/presentation/batch_list/bloc/bloc.dart';
-import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/api/index.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/notifications_bloc.dart';
@@ -214,7 +215,7 @@ void main() {
     AlertsBloc build() => AlertsBloc(
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
-      getAlerts: GetLaboratoryAlerts(complianceRepo),
+      complianceService: complianceFacade(complianceRepo),
       laboratoryId: () => lab,
     );
 
@@ -271,11 +272,9 @@ void main() {
 
     AlertDetailBloc build() => AlertDetailBloc(
       alertId: 1,
-      getAlert: GetAlertDetail(repo),
+      complianceService: complianceFacade(repo),
       equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
-      acknowledge: AcknowledgeAlert(repo),
-      resolve: ResolveAlert(repo),
       laboratoryId: () => lab,
     );
 
@@ -366,7 +365,7 @@ void main() {
         return BatchDetailBloc(
           batchId: 3,
           batchService: BatchFacadeService(repository: repo),
-          getEvents: GetBatchComplianceEvents(compliance),
+          complianceApi: ComplianceApi(complianceFacade(compliance)),
           getAuditLogs: GetBatchAuditLogs(reporting),
           laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
           laboratoryId: () => lab,
@@ -469,7 +468,7 @@ void main() {
 
   group('Notifications', () {
     test('opening an unread notice marks it as read and refreshes the bell', () async {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       var read = false;
       const unread = AppNotification(id: 1, type: NotificationType.alertOpened, subjectType: 'ALERT', subjectId: 9);
       final readNotice = AppNotification(
@@ -482,14 +481,12 @@ void main() {
       when(() => repo.getNotifications(limit: 50)).thenAnswer((_) async => [if (read) readNotice else unread]);
       when(() => repo.markRead(1)).thenAnswer((_) async => read = true);
       when(() => repo.getUnreadCount()).thenAnswer((_) async => read ? 0 : 1);
-      final bell = UnreadNotificationsController(getUnreadCount: GetUnreadNotificationCount(repo));
+      final bell = UnreadNotificationsController(complianceService: complianceFacade(repo));
       await bell.refresh();
       expect(bell.count, 1);
 
       final bloc = NotificationsBloc(
-        getNotifications: GetNotifications(repo),
-        markRead: MarkNotificationRead(repo),
-        markAllRead: MarkAllNotificationsRead(repo),
+        complianceService: complianceFacade(repo),
         onReadChanged: bell.refresh,
       )..add(const NotificationsRequested());
       await Future<void>.delayed(const Duration(milliseconds: 10));

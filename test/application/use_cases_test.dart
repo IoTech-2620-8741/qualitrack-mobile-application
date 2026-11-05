@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/batch/application/batch_facade_service.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
-import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_preferences.dart';
 import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
 import 'package:qualitrack_mobile/inventory/application/inventory_facade_service.dart';
 import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
@@ -129,21 +129,21 @@ void main() {
         ],
       );
 
-      final alerts = await GetLaboratoryAlerts(repo)(lab, [3, 4]);
+      final alerts = await complianceFacade(repo).getLaboratoryAlerts(lab, [3, 4]);
 
       expect(alerts.map((a) => a.id), [2, 1]);
     });
 
     test('resolve requires notes before calling the backend', () {
       final repo = MockComplianceRepository();
-      expect(() => ResolveAlert(repo)(1, '  '), throwsA(isA<BadRequestFailure>()));
+      expect(() => complianceFacade(repo).resolveAlert(1, '  '), throwsA(isA<BadRequestFailure>()));
       verifyNoMoreInteractions(repo);
     });
 
     test('preferences only accept warning or critical as minimum severity', () {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       expect(
-        () => UpdateNotificationPreferences(repo)(
+        () => complianceFacade(repo).updatePreferences(
           const NotificationPreferences(inAppEnabled: true, emailEnabled: false, minimumSeverity: AlertSeverity.low),
         ),
         throwsA(isA<BadRequestFailure>()),

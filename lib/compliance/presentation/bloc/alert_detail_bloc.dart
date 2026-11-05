@@ -6,8 +6,8 @@ import '../../../laboratory/api/index.dart';
 import '../../../common/domain/failure.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../application/compliance_queries.dart';
-import '../../domain/compliance.dart';
+import '../../application/compliance_facade_service.dart';
+import '../../domain/entities/deviation_alert.dart';
 
 enum ReviewActionStatus { idle, submitting, success, failure }
 
@@ -90,17 +90,13 @@ final class AlertDetailState extends Equatable {
 class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
   AlertDetailBloc({
     required this.alertId,
-    required GetAlertDetail getAlert,
+    required ComplianceFacadeService complianceService,
     required EquipmentApi equipmentApi,
     required LaboratoryApi laboratoryApi,
-    required AcknowledgeAlert acknowledge,
-    required ResolveAlert resolve,
     required LaboratoryId Function() laboratoryId,
-  }) : _getAlert = getAlert,
+  }) : _complianceService = complianceService,
        _equipmentApi = equipmentApi,
        _laboratoryApi = laboratoryApi,
-       _acknowledge = acknowledge,
-       _resolve = resolve,
        _laboratoryId = laboratoryId,
        super(const AlertDetailState()) {
     on<AlertDetailRequested>(_onRequested);
@@ -109,17 +105,15 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
   }
 
   final int alertId;
-  final GetAlertDetail _getAlert;
+  final ComplianceFacadeService _complianceService;
   final EquipmentApi _equipmentApi;
   final LaboratoryApi _laboratoryApi;
-  final AcknowledgeAlert _acknowledge;
-  final ResolveAlert _resolve;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(AlertDetailRequested event, Emitter<AlertDetailState> emit) async {
     emit(state.copyWith(alert: state.alert.loading()));
     try {
-      final alert = await _getAlert(alertId);
+      final alert = await _complianceService.getAlert(alertId);
       emit(state.copyWith(alert: state.alert.success(alert)));
       emit(state.copyWith(context: await _loadContext(alert)));
     } catch (error) {
@@ -152,10 +146,10 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
   }
 
   Future<void> _onAcknowledge(AlertAcknowledgeSubmitted event, Emitter<AlertDetailState> emit) =>
-      _run(emit, AlertReviewAction.acknowledge, () => _acknowledge(alertId));
+      _run(emit, AlertReviewAction.acknowledge, () => _complianceService.acknowledgeAlert(alertId));
 
   Future<void> _onResolve(AlertResolveSubmitted event, Emitter<AlertDetailState> emit) =>
-      _run(emit, AlertReviewAction.resolve, () => _resolve(alertId, event.notes));
+      _run(emit, AlertReviewAction.resolve, () => _complianceService.resolveAlert(alertId, event.notes));
 
   Future<void> _run(
     Emitter<AlertDetailState> emit,
@@ -167,7 +161,7 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
     try {
       await command();
       // The detail includes the related automatic actions; the command result does not.
-      final updated = await _getAlert(alertId);
+      final updated = await _complianceService.getAlert(alertId);
       emit(state.copyWith(alert: state.alert.success(updated), actionStatus: ReviewActionStatus.success));
     } catch (error) {
       emit(state.copyWith(actionStatus: ReviewActionStatus.failure, actionFailure: Failure.from(error)));

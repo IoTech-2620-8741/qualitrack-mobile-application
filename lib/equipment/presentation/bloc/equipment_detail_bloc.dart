@@ -71,14 +71,14 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
     required LaboratoryApi laboratoryApi,
     required TelemetryApi telemetryApi,
     required GetDeviationTrends getTrends,
-    required GetEquipmentComplianceEvents getEvents,
+    required ComplianceApi complianceApi,
     required GetEquipmentAuditLogs getAuditLogs,
     required LaboratoryId Function() laboratoryId,
   }) : _equipmentService = equipmentService,
        _laboratoryApi = laboratoryApi,
        _telemetryApi = telemetryApi,
        _getTrends = getTrends,
-       _getEvents = getEvents,
+       _complianceApi = complianceApi,
        _getAuditLogs = getAuditLogs,
        _laboratoryId = laboratoryId,
        super(const RemoteState()) {
@@ -90,7 +90,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
   final LaboratoryApi _laboratoryApi;
   final TelemetryApi _telemetryApi;
   final GetDeviationTrends _getTrends;
-  final GetEquipmentComplianceEvents _getEvents;
+  final ComplianceApi _complianceApi;
   final GetEquipmentAuditLogs _getAuditLogs;
   final LaboratoryId Function() _laboratoryId;
 
@@ -116,7 +116,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
           final trends = await _getTrends(lab, [target.environmentId], ReportPeriod.last7Days);
           return trends.where((t) => t.equipmentId == equipmentId).toList();
         }),
-        Section.load(() => _getEvents(lab, equipmentId)),
+        Section.load(() => _complianceApi.getEquipmentEvents(lab, equipmentId)),
         Section.load(() => _getAuditLogs(lab, equipmentId)),
         _optional(() => _laboratoryApi.getUserDirectory(lab)),
       ]);

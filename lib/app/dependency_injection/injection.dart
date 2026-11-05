@@ -9,9 +9,11 @@ import '../../batch/presentation/batch_detail/bloc/batch_detail_bloc.dart';
 import '../../batch/presentation/batch_list/bloc/batch_list_bloc.dart';
 import '../../command_center/application/get_command_center_summary.dart';
 import '../../command_center/presentation/bloc/command_center_bloc.dart';
-import '../../compliance/application/compliance_queries.dart';
-import '../../compliance/domain/compliance.dart';
-import '../../compliance/infrastructure/compliance_infrastructure.dart';
+import '../../compliance/api/index.dart';
+import '../../compliance/application/compliance_facade_service.dart';
+import '../../compliance/domain/interfaces/compliance_interface.dart';
+import '../../compliance/infrastructure/data_sources/compliance_remote_data_provider.dart';
+import '../../compliance/infrastructure/repositories/compliance_repository.dart';
 import '../../compliance/presentation/bloc/alert_detail_bloc.dart';
 import '../../compliance/presentation/bloc/alerts_bloc.dart';
 import '../../compliance/presentation/bloc/notification_preferences_bloc.dart';
@@ -126,22 +128,11 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => TelemetryApi(sl()));
 
   // Compliance & Alerting (alerts and in-app notifications)
-  sl.registerLazySingleton(() => ComplianceRemoteDataSource(sl()));
-  sl.registerLazySingleton<ComplianceRepository>(() => ComplianceRepositoryImpl(sl()));
-  sl.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetLaboratoryAlerts(sl()));
-  sl.registerLazySingleton(() => GetAlertDetail(sl()));
-  sl.registerLazySingleton(() => AcknowledgeAlert(sl()));
-  sl.registerLazySingleton(() => ResolveAlert(sl()));
-  sl.registerLazySingleton(() => GetEquipmentComplianceEvents(sl()));
-  sl.registerLazySingleton(() => GetBatchComplianceEvents(sl()));
-  sl.registerLazySingleton(() => GetNotifications(sl()));
-  sl.registerLazySingleton(() => GetUnreadNotificationCount(sl()));
-  sl.registerLazySingleton(() => MarkNotificationRead(sl()));
-  sl.registerLazySingleton(() => MarkAllNotificationsRead(sl()));
-  sl.registerLazySingleton(() => GetNotificationPreferences(sl()));
-  sl.registerLazySingleton(() => UpdateNotificationPreferences(sl()));
-  sl.registerLazySingleton(() => UnreadNotificationsController(getUnreadCount: sl()));
+  sl.registerLazySingleton(() => ComplianceRemoteDataProvider(sl()));
+  sl.registerLazySingleton<ComplianceInterface>(() => ComplianceRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => ComplianceFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => ComplianceApi(sl()));
+  sl.registerLazySingleton(() => UnreadNotificationsController(complianceService: sl()));
 
   // Product Batch Management
   sl.registerLazySingleton(() => BatchRemoteDataProvider(sl()));
@@ -183,7 +174,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
       equipmentApi: sl(),
       telemetryApi: sl(),
       batchApi: sl(),
-      getAlerts: sl(),
+      complianceApi: sl(),
       inventoryApi: sl(),
       subscriptionApi: sl(),
     ),
@@ -229,7 +220,7 @@ void _registerBlocs() {
       laboratoryApi: sl(),
       telemetryApi: sl(),
       getTrends: sl(),
-      getEvents: sl(),
+      complianceApi: sl(),
       getAuditLogs: sl(),
       laboratoryId: _laboratoryId,
     ),
@@ -251,34 +242,30 @@ void _registerBlocs() {
     ),
   );
   sl.registerFactory(
-    () => AlertsBloc(laboratoryApi: sl(), equipmentApi: sl(), getAlerts: sl(), laboratoryId: _laboratoryId),
+    () => AlertsBloc(laboratoryApi: sl(), equipmentApi: sl(), complianceService: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<AlertDetailBloc, int, void>(
     (id, _) => AlertDetailBloc(
       alertId: id,
-      getAlert: sl(),
+      complianceService: sl(),
       equipmentApi: sl(),
       laboratoryApi: sl(),
-      acknowledge: sl(),
-      resolve: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
     () => NotificationsBloc(
-      getNotifications: sl(),
-      markRead: sl(),
-      markAllRead: sl(),
+      complianceService: sl(),
       onReadChanged: () => sl<UnreadNotificationsController>().refresh(),
     ),
   );
-  sl.registerFactory(() => NotificationPreferencesBloc(getPreferences: sl(), updatePreferences: sl()));
+  sl.registerFactory(() => NotificationPreferencesBloc(complianceService: sl()));
   sl.registerFactory(() => BatchListBloc(batchService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactoryParam<BatchDetailBloc, int, void>(
     (id, _) => BatchDetailBloc(
       batchId: id,
       batchService: sl(),
-      getEvents: sl(),
+      complianceApi: sl(),
       getAuditLogs: sl(),
       laboratoryApi: sl(),
       laboratoryId: _laboratoryId,

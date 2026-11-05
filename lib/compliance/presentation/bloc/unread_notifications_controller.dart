@@ -3,18 +3,18 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../common/domain/failure.dart';
-import '../../application/compliance_queries.dart';
+import '../../application/compliance_facade_service.dart';
 
 /// Unread count of the bell, shared by every screen. It refreshes every
 /// [interval] while [start]ed (app in foreground with a ready session) and
 /// whenever notifications are read.
 class UnreadNotificationsController extends ChangeNotifier {
   UnreadNotificationsController({
-    required GetUnreadNotificationCount getUnreadCount,
+    required ComplianceFacadeService complianceService,
     this.interval = const Duration(seconds: 60),
-  }) : _getUnreadCount = getUnreadCount;
+  }) : _complianceService = complianceService;
 
-  final GetUnreadNotificationCount _getUnreadCount;
+  final ComplianceFacadeService _complianceService;
   final Duration interval;
 
   Timer? _timer;
@@ -42,7 +42,7 @@ class UnreadNotificationsController extends ChangeNotifier {
 
   Future<void> refresh() async {
     try {
-      _set(await _getUnreadCount());
+      _set(await _complianceService.getUnreadCount());
     } on Failure {
       // The bell keeps the last known count; screens show their own errors.
     }
