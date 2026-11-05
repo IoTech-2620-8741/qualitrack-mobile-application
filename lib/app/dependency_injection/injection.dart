@@ -17,9 +17,11 @@ import '../../compliance/presentation/bloc/alerts_bloc.dart';
 import '../../compliance/presentation/bloc/notification_preferences_bloc.dart';
 import '../../compliance/presentation/bloc/notifications_bloc.dart';
 import '../../compliance/presentation/bloc/unread_notifications_controller.dart';
-import '../../equipment/application/equipment_queries.dart';
-import '../../equipment/domain/equipment.dart';
-import '../../equipment/infrastructure/equipment_infrastructure.dart';
+import '../../equipment/api/index.dart';
+import '../../equipment/application/equipment_facade_service.dart';
+import '../../equipment/domain/interfaces/equipment_interface.dart';
+import '../../equipment/infrastructure/data_sources/equipment_remote_data_provider.dart';
+import '../../equipment/infrastructure/repositories/equipment_repository.dart';
 import '../../equipment/presentation/bloc/equipment_detail_bloc.dart';
 import '../../equipment/presentation/bloc/equipment_list_bloc.dart';
 import '../../iam/application/iam_use_cases.dart';
@@ -110,12 +112,10 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => LaboratoryApi(sl()));
 
   // Equipment Management
-  sl.registerLazySingleton(() => EquipmentRemoteDataSource(sl()));
-  sl.registerLazySingleton<EquipmentRepository>(() => EquipmentRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetEquipments(sl()));
-  sl.registerLazySingleton(() => GetEquipment(sl()));
-  sl.registerLazySingleton(() => GetMaintenanceHistory(sl()));
-  sl.registerLazySingleton(() => GetBpmConfigs(sl()));
+  sl.registerLazySingleton(() => EquipmentRemoteDataProvider(sl()));
+  sl.registerLazySingleton<EquipmentInterface>(() => EquipmentRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => EquipmentFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => EquipmentApi(sl()));
 
   // Tracking & Telemetry
   sl.registerLazySingleton(() => TelemetryRemoteDataSource(sl()));
@@ -181,7 +181,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(
     () => GetCommandCenterSummary(
       laboratoryApi: sl(),
-      getEquipments: sl(),
+      equipmentApi: sl(),
       getConnections: sl(),
       batchApi: sl(),
       getAlerts: sl(),
@@ -221,16 +221,14 @@ void _registerBlocs() {
   );
   sl.registerFactory(() => ProductsBloc(laboratoryService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactory(
-    () => EquipmentListBloc(getEquipments: sl(), laboratoryApi: sl(), getConnections: sl(), laboratoryId: _laboratoryId),
+    () => EquipmentListBloc(equipmentService: sl(), laboratoryApi: sl(), getConnections: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<EquipmentDetailBloc, int, void>(
     (id, _) => EquipmentDetailBloc(
       equipmentId: id,
-      getEquipment: sl(),
+      equipmentService: sl(),
       laboratoryApi: sl(),
       getConnection: sl(),
-      getBpmConfigs: sl(),
-      getMaintenance: sl(),
       getTrends: sl(),
       getEvents: sl(),
       getAuditLogs: sl(),
@@ -239,7 +237,7 @@ void _registerBlocs() {
   );
   sl.registerFactory(
     () => TelemetryDashboardBloc(
-      getEquipments: sl(),
+      equipmentApi: sl(),
       laboratoryApi: sl(),
       getConnection: sl(),
       getMeasurements: sl(),
@@ -250,20 +248,20 @@ void _registerBlocs() {
   );
   sl.registerFactory(
     () => TelemetryHistoryBloc(
-      getEquipments: sl(),
+      equipmentApi: sl(),
       laboratoryApi: sl(),
       getMeasurements: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
-    () => AlertsBloc(laboratoryApi: sl(), getEquipments: sl(), getAlerts: sl(), laboratoryId: _laboratoryId),
+    () => AlertsBloc(laboratoryApi: sl(), equipmentApi: sl(), getAlerts: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<AlertDetailBloc, int, void>(
     (id, _) => AlertDetailBloc(
       alertId: id,
       getAlert: sl(),
-      getEquipment: sl(),
+      equipmentApi: sl(),
       laboratoryApi: sl(),
       acknowledge: sl(),
       resolve: sl(),
@@ -306,7 +304,7 @@ void _registerBlocs() {
       getDeviationTrends: sl(),
       getReportHistory: sl(),
       laboratoryApi: sl(),
-      getEquipments: sl(),
+      equipmentApi: sl(),
       laboratoryId: _laboratoryId,
     ),
   );

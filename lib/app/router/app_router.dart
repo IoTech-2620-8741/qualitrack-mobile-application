@@ -21,8 +21,8 @@ import '../../compliance/presentation/pages/notification_preferences_page.dart';
 import '../../compliance/presentation/pages/notifications_page.dart';
 import '../../equipment/presentation/bloc/equipment_detail_bloc.dart';
 import '../../equipment/presentation/bloc/equipment_list_bloc.dart';
-import '../../equipment/presentation/pages/equipment_detail_page.dart';
-import '../../equipment/presentation/pages/equipment_list_page.dart';
+import '../../equipment/presentation/screens/equipment_detail_screen.dart';
+import '../../equipment/presentation/screens/equipment_list_screen.dart';
 import '../../iam/application/session_controller.dart';
 import '../../iam/presentation/bloc/change_password_bloc.dart';
 import '../../iam/presentation/bloc/sign_in_bloc.dart';
@@ -162,7 +162,7 @@ GoRouter createRouter(
         path: AppRoutes.equipment,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<EquipmentListBloc>()..add(const EquipmentListRequested()),
-          child: const EquipmentListPage(),
+          child: const EquipmentListScreen(),
         ),
         routes: [
           GoRoute(
@@ -172,7 +172,7 @@ GoRouter createRouter(
               if (id == null) return _invalidId(context);
               return BlocProvider(
                 create: (_) => sl<EquipmentDetailBloc>(param1: id)..add(const EquipmentDetailRequested()),
-                child: EquipmentDetailPage(currentUserId: currentUserId()),
+                child: EquipmentDetailScreen(currentUserId: currentUserId()),
               );
             },
           ),
