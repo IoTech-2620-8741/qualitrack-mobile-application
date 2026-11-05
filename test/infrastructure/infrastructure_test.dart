@@ -9,8 +9,10 @@ import 'package:qualitrack_mobile/batch/infrastructure/models/batch_traceability
 import 'package:qualitrack_mobile/batch/infrastructure/repositories/batch_repository.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/compliance/infrastructure/compliance_infrastructure.dart';
-import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
-import 'package:qualitrack_mobile/equipment/infrastructure/equipment_infrastructure.dart';
+import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
+import 'package:qualitrack_mobile/equipment/infrastructure/data_sources/equipment_remote_data_provider.dart';
+import 'package:qualitrack_mobile/equipment/infrastructure/models/equipment_model.dart';
+import 'package:qualitrack_mobile/equipment/infrastructure/repositories/equipment_repository.dart';
 import 'package:qualitrack_mobile/iam/domain/user_role.dart';
 import 'package:qualitrack_mobile/iam/infrastructure/iam_dtos.dart';
 import 'package:qualitrack_mobile/iam/infrastructure/iam_repositories_impl.dart';
@@ -188,14 +190,14 @@ void main() {
     });
 
     test('equipment, batch traceability and notifications', () {
-      final equipment = const EquipmentDto({
+      final equipment = EquipmentModel.fromJson(const {
         'id': 5,
         'laboratoryId': 7,
         'environmentId': null,
         'name': 'Balance',
         'status': 'CALIBRATING',
         'deviceType': null,
-      }).toDomain();
+      });
       expect(equipment.rawStatus, 'CALIBRATING');
       expect(equipment.isIotDevice, isFalse);
 
@@ -288,7 +290,7 @@ void main() {
 
       expect(await ComplianceRepositoryImpl(ComplianceRemoteDataSource(client)).getEnvironmentAlerts(lab, 3), hasLength(1));
       expect(
-        (await EquipmentRepositoryImpl(EquipmentRemoteDataSource(client)).getByLaboratory(lab)).map((e) => e.id),
+        (await EquipmentRepository(remoteDataProvider: EquipmentRemoteDataProvider(client)).getByLaboratory(lab)).map((e) => e.id),
         [1],
       );
       expect(await BatchRepository(remoteDataProvider: BatchRemoteDataProvider(client)).getByLaboratory(lab), isEmpty);
@@ -297,7 +299,7 @@ void main() {
     test('maintenance is read in the environment of the equipment', () async {
       when(() => client.get('/laboratories/7/environments/3/equipments/10/maintenance-records'))
           .thenAnswer((_) async => <Object>[]);
-      final repo = EquipmentRepositoryImpl(EquipmentRemoteDataSource(client));
+      final repo = EquipmentRepository(remoteDataProvider: EquipmentRemoteDataProvider(client));
       expect(await repo.getMaintenance(lab, 3, 10), isEmpty);
       expect(EquipmentStatus.fromCode('MAINTENANCE'), EquipmentStatus.maintenance);
     });

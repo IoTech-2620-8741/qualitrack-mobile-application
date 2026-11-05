@@ -12,7 +12,8 @@ import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/notifications_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
-import 'package:qualitrack_mobile/equipment/application/equipment_queries.dart';
+import 'package:qualitrack_mobile/equipment/api/index.dart';
+import 'package:qualitrack_mobile/equipment/application/equipment_facade_service.dart';
 import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
 import 'package:qualitrack_mobile/iam/application/session_controller.dart';
 import 'package:qualitrack_mobile/iam/domain/onboarding_state.dart';
@@ -210,7 +211,7 @@ void main() {
 
     AlertsBloc build() => AlertsBloc(
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
-      getEquipments: GetEquipments(equipmentRepo),
+      equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
       getAlerts: GetLaboratoryAlerts(complianceRepo),
       laboratoryId: () => lab,
     );
@@ -269,7 +270,7 @@ void main() {
     AlertDetailBloc build() => AlertDetailBloc(
       alertId: 1,
       getAlert: GetAlertDetail(repo),
-      getEquipment: GetEquipment(equipmentRepo),
+      equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       acknowledge: AcknowledgeAlert(repo),
       resolve: ResolveAlert(repo),
@@ -415,7 +416,7 @@ void main() {
     });
 
     TelemetryDashboardBloc build() => TelemetryDashboardBloc(
-      getEquipments: GetEquipments(equipmentRepo),
+      equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       getConnection: GetDeviceConnection(telemetryRepo),
       getMeasurements: GetMeasurements(telemetryRepo),
