@@ -5,7 +5,6 @@ import '../../../equipment/application/equipment_queries.dart';
 import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/compliance_queries.dart';
 import '../../domain/compliance.dart';
@@ -127,7 +126,7 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
       emit(state.copyWith(alert: state.alert.success(alert)));
       emit(state.copyWith(context: await _loadContext(alert)));
     } catch (error) {
-      emit(state.copyWith(alert: state.alert.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(alert: state.alert.failed(Failure.from(error))));
     }
   }
 
@@ -174,7 +173,7 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
       final updated = await _getAlert(alertId);
       emit(state.copyWith(alert: state.alert.success(updated), actionStatus: ReviewActionStatus.success));
     } catch (error) {
-      emit(state.copyWith(actionStatus: ReviewActionStatus.failure, actionFailure: ApiExceptionMapper.map(error)));
+      emit(state.copyWith(actionStatus: ReviewActionStatus.failure, actionFailure: Failure.from(error)));
     }
   }
 }
