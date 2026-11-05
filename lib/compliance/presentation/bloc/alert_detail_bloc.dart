@@ -92,15 +92,13 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
     required this.alertId,
     required GetAlertDetail getAlert,
     required GetEquipment getEquipment,
-    required GetEnvironments getEnvironments,
-    required GetUserDirectory getUserDirectory,
+    required LaboratoryApi laboratoryApi,
     required AcknowledgeAlert acknowledge,
     required ResolveAlert resolve,
     required LaboratoryId Function() laboratoryId,
   }) : _getAlert = getAlert,
        _getEquipment = getEquipment,
-       _getEnvironments = getEnvironments,
-       _getUserDirectory = getUserDirectory,
+       _laboratoryApi = laboratoryApi,
        _acknowledge = acknowledge,
        _resolve = resolve,
        _laboratoryId = laboratoryId,
@@ -113,8 +111,7 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
   final int alertId;
   final GetAlertDetail _getAlert;
   final GetEquipment _getEquipment;
-  final GetEnvironments _getEnvironments;
-  final GetUserDirectory _getUserDirectory;
+  final LaboratoryApi _laboratoryApi;
   final AcknowledgeAlert _acknowledge;
   final ResolveAlert _resolve;
   final LaboratoryId Function() _laboratoryId;
@@ -134,12 +131,12 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
     final laboratoryId = _laboratoryId();
     final device = await _optional(() async => (await _getEquipment(laboratoryId, alert.equipmentId)).name);
     final environment = await _optional(() async {
-      for (final item in await _getEnvironments(laboratoryId)) {
+      for (final item in await _laboratoryApi.getEnvironments(laboratoryId)) {
         if (item.id == alert.environmentId) return item.name;
       }
       return null;
     });
-    final people = await _optional(() => _getUserDirectory(laboratoryId));
+    final people = await _optional(() => _laboratoryApi.getUserDirectory(laboratoryId));
     return AlertContext(deviceName: device, environmentName: environment, people: people ?? const {});
   }
 
