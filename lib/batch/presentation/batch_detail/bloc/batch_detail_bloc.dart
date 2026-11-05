@@ -1,10 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../compliance/application/compliance_queries.dart';
-import '../../../../compliance/domain/compliance.dart';
-import '../../../../laboratory/application/laboratory_queries.dart';
-import '../../../../reporting/application/reporting_queries.dart';
-import '../../../../reporting/domain/reporting.dart';
+import '../../../../compliance/api/index.dart';
+import '../../../../laboratory/api/index.dart';
+import '../../../../reporting/api/index.dart';
 import '../../../../shared/domain/failure.dart';
 import '../../../../shared/domain/value_objects.dart';
 import '../../../../shared/presentation/section.dart';

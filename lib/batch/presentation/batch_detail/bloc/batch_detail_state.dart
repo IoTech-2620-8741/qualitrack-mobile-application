@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../compliance/domain/compliance.dart';
-import '../../../../reporting/domain/reporting.dart';
+import '../../../../compliance/api/index.dart';
+import '../../../../reporting/api/index.dart';
 import '../../../../shared/domain/failure.dart';
 import '../../../../shared/presentation/remote_state.dart';
 import '../../../../shared/presentation/section.dart';
