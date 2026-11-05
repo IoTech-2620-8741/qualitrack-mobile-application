@@ -1,6 +1,8 @@
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/equipment.dart';
+import '../../domain/entities/equipment.dart';
+import '../../domain/entities/equipment_status.dart';
+import '../../domain/entities/iot_device_type.dart';
 
 extension EquipmentStatusPresentation on EquipmentStatus {
   BadgeTone get tone => switch (this) {

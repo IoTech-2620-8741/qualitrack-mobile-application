@@ -6,8 +6,9 @@ import '../../../laboratory/api/index.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../tracking/api/index.dart';
-import '../../application/equipment_queries.dart';
-import '../../domain/equipment.dart';
+import '../../application/equipment_facade_service.dart';
+import '../../domain/entities/equipment.dart';
+import '../../domain/entities/equipment_status.dart';
 
 /// Equipment with its environment and, for IoT devices, the connection
 /// status of Tracking (UI composition only).
@@ -91,11 +92,11 @@ final class EquipmentListState extends Equatable {
 
 class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
   EquipmentListBloc({
-    required GetEquipments getEquipments,
+    required EquipmentFacadeService equipmentService,
     required LaboratoryApi laboratoryApi,
     required GetDeviceConnections getConnections,
     required LaboratoryId Function() laboratoryId,
-  }) : _getEquipments = getEquipments,
+  }) : _equipmentService = equipmentService,
        _laboratoryApi = laboratoryApi,
        _getConnections = getConnections,
        _laboratoryId = laboratoryId,
@@ -105,7 +106,7 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
     on<EquipmentFilterChanged>((e, emit) => emit(state.copyWith(filter: e.filter)));
   }
 
-  final GetEquipments _getEquipments;
+  final EquipmentFacadeService _equipmentService;
   final LaboratoryApi _laboratoryApi;
   final GetDeviceConnections _getConnections;
   final LaboratoryId Function() _laboratoryId;
@@ -115,7 +116,7 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
     emit(state.copyWith(remote: event.refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
       final lab = _laboratoryId();
-      final results = await Future.wait<Object>([_getEquipments(lab), _laboratoryApi.getEnvironments(lab)]);
+      final results = await Future.wait<Object>([_equipmentService.getEquipments(lab), _laboratoryApi.getEnvironments(lab)]);
       final equipments = results[0] as List<Equipment>;
       final environments = {for (final e in results[1] as List<LabEnvironment>) e.id: e.name};
       final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();
