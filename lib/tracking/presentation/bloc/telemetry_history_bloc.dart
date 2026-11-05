@@ -160,12 +160,12 @@ final class TelemetryHistoryState extends Equatable {
 class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryState> {
   TelemetryHistoryBloc({
     required GetEquipments getEquipments,
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetMeasurements getMeasurements,
     required LaboratoryId Function() laboratoryId,
     DateTime Function()? clock,
   }) : _getEquipments = getEquipments,
-       _getEnvironments = getEnvironments,
+       _laboratoryApi = laboratoryApi,
        _getMeasurements = getMeasurements,
        _laboratoryId = laboratoryId,
        super(TelemetryHistoryState(range: HistoryRange.last(const Duration(hours: 24), (clock ?? DateTime.now)()))) {
@@ -189,7 +189,7 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
   }
 
   final GetEquipments _getEquipments;
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetMeasurements _getMeasurements;
   final LaboratoryId Function() _laboratoryId;
 
@@ -197,7 +197,7 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
     emit(state.copyWith(catalog: state.catalog.loading()));
     try {
       final laboratoryId = _laboratoryId();
-      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _getEnvironments(laboratoryId)]);
+      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _laboratoryApi.getEnvironments(laboratoryId)]);
       final catalog = DeviceCatalog(
         devices: telemetryDevices(results[0] as List<Equipment>),
         environments: results[1] as List<LabEnvironment>,
