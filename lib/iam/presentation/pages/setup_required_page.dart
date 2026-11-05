@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/session_controller.dart';
 import '../../domain/onboarding_state.dart';
 import '../widgets/qualitrack_logo.dart';
@@ -29,13 +29,13 @@ class _SetupRequiredPageState extends State<SetupRequiredPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     final step = widget.session.pendingStep;
     final reason = switch (step) {
-      OnboardingStep.subscription => l10n.setupSubscriptionMissing,
-      OnboardingStep.laboratory => l10n.setupLaboratoryMissing,
-      _ => l10n.setupGeneric,
+      OnboardingStep.subscription => i18n.setupSubscriptionMissing,
+      OnboardingStep.laboratory => i18n.setupLaboratoryMissing,
+      _ => i18n.setupGeneric,
     };
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -53,7 +53,7 @@ class _SetupRequiredPageState extends State<SetupRequiredPage> {
               Semantics(
                 header: true,
                 child: Text(
-                  l10n.setupRequiredTitle,
+                  i18n.setupRequiredTitle,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge,
                 ),
@@ -62,7 +62,7 @@ class _SetupRequiredPageState extends State<SetupRequiredPage> {
               Text(reason, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                l10n.setupRequiredHint,
+                i18n.setupRequiredHint,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall,
               ),
@@ -70,13 +70,13 @@ class _SetupRequiredPageState extends State<SetupRequiredPage> {
               FilledButton.icon(
                 onPressed: _checking ? null : _recheck,
                 icon: const Icon(Icons.refresh),
-                label: Text(l10n.checkAgain),
+                label: Text(i18n.checkAgain),
               ),
               const SizedBox(height: AppSpacing.sm),
               OutlinedButton.icon(
                 onPressed: _checking ? null : widget.session.signOut,
                 icon: const Icon(Icons.logout),
-                label: Text(l10n.signOut),
+                label: Text(i18n.signOut),
               ),
             ],
           ),

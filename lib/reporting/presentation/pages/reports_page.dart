@@ -6,7 +6,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
@@ -15,18 +15,18 @@ import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/reporting.dart';
 import '../bloc/reports_bloc.dart';
 
-String reportPeriodLabel(AppLocalizations l10n, ReportPeriod period) => switch (period) {
-  ReportPeriod.last24Hours => l10n.period24h,
-  ReportPeriod.last7Days => l10n.period7d,
-  ReportPeriod.last31Days => l10n.period31d,
+String reportPeriodLabel(AppLocalizations i18n, ReportPeriod period) => switch (period) {
+  ReportPeriod.last24Hours => i18n.period24h,
+  ReportPeriod.last7Days => i18n.period7d,
+  ReportPeriod.last31Days => i18n.period31d,
 };
 
-String reportTypeLabel(AppLocalizations l10n, String type) => switch (type) {
-  'BATCH_TRACEABILITY' => l10n.reportBatchTraceability,
-  'COMPLIANCE_PERIOD' => l10n.reportCompliance,
-  'EQUIPMENT_LOG' => l10n.reportEquipmentLog,
-  'INVENTORY' => l10n.reportInventory,
-  'KPI_SUMMARY' => l10n.reportKpiSummary,
+String reportTypeLabel(AppLocalizations i18n, String type) => switch (type) {
+  'BATCH_TRACEABILITY' => i18n.reportBatchTraceability,
+  'COMPLIANCE_PERIOD' => i18n.reportCompliance,
+  'EQUIPMENT_LOG' => i18n.reportEquipmentLog,
+  'INVENTORY' => i18n.reportInventory,
+  'KPI_SUMMARY' => i18n.reportKpiSummary,
   _ => Formatters.humanize(type),
 };
 
@@ -44,47 +44,47 @@ class ReportsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<ReportsBloc>();
     void reload() => bloc.add(const ReportsRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.reportsTitle)),
+      appBar: AppBar(title: Text(i18n.reportsTitle)),
       body: BlocBuilder<ReportsBloc, ReportsState>(
         builder: (context, state) => RemoteStateView<ReportsData>(
           state: state.remote,
           onRetry: reload,
           emptyIcon: Icons.insights_outlined,
-          emptyMessage: l10n.reportsEmpty,
+          emptyMessage: i18n.reportsEmpty,
           builder: (context, data) => RefreshIndicator(
             onRefresh: () async => reload(),
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                PageHeader(title: l10n.reportsTitle, subtitle: l10n.reportsSubtitle),
+                PageHeader(title: i18n.reportsTitle, subtitle: i18n.reportsSubtitle),
                 const SizedBox(height: AppSpacing.md),
                 FilterChipBar<ReportPeriod>(
                   options: ReportPeriod.values,
                   selected: state.period,
-                  labelOf: (p) => reportPeriodLabel(l10n, p),
+                  labelOf: (p) => reportPeriodLabel(i18n, p),
                   onSelected: (p) => bloc.add(ReportsPeriodChanged(p)),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _MeasurementSummaryCard(data: data),
                 const SizedBox(height: AppSpacing.md),
                 SectionCard<DeviationTrend>(
-                  title: l10n.deviationIndicators,
+                  title: i18n.deviationIndicators,
                   section: data.trends,
-                  emptyMessage: l10n.noReadingsInPeriod,
+                  emptyMessage: i18n.noReadingsInPeriod,
                   itemBuilder: (context, t) => _TrendRow(trend: t, data: data),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 SectionCard<AuditReport>(
-                  title: l10n.reportHistory,
+                  title: i18n.reportHistory,
                   section: data.reports,
-                  emptyMessage: l10n.reportHistoryEmpty,
+                  emptyMessage: i18n.reportHistoryEmpty,
                   itemBuilder: (context, r) => SectionRow(
                     leading: const Icon(Icons.description_outlined, color: AppColors.primary),
-                    title: reportTypeLabel(l10n, r.reportType),
+                    title: reportTypeLabel(i18n, r.reportType),
                     subtitle: [
                       if (r.dateRangeFrom != null || r.dateRangeTo != null)
                         '${Formatters.rawDate(r.dateRangeFrom, context.localeName)} – ${Formatters.rawDate(r.dateRangeTo, context.localeName)}',
@@ -97,7 +97,7 @@ class ReportsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                Text(l10n.reportsGeneratedOnWeb, style: Theme.of(context).textTheme.bodySmall),
+                Text(i18n.reportsGeneratedOnWeb, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
@@ -114,20 +114,20 @@ class _MeasurementSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
     final failure = data.kpiFailure;
     final summaries = data.kpi?.measurementSummaries ?? const <MeasurementSummary>[];
     return InfoCard(
-      title: l10n.measurementSummary,
+      title: i18n.measurementSummary,
       child: failure != null
           ? Text(
               failureMessage(context, failure),
               style: theme.textTheme.bodySmall?.copyWith(color: AppColors.critical),
             )
           : summaries.isEmpty
-          ? Text(l10n.noReadingsInPeriod)
+          ? Text(i18n.noReadingsInPeriod)
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -135,11 +135,11 @@ class _MeasurementSummaryCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: SectionRow(
-                      title: alertVariable(l10n, s.metric),
+                      title: alertVariable(i18n, s.metric),
                       subtitle: [
                         data.environmentNames[s.environmentId],
                         data.deviceNames[s.deviceId],
-                        l10n.readingsCount(s.readings),
+                        i18n.readingsCount(s.readings),
                       ].whereType<String>().join(' · '),
                       trailing: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -149,7 +149,7 @@ class _MeasurementSummaryCard extends StatelessWidget {
                             style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                           Text(
-                            l10n.minMax(Formatters.number(s.minimum, locale), Formatters.number(s.maximum, locale)),
+                            i18n.minMax(Formatters.number(s.minimum, locale), Formatters.number(s.maximum, locale)),
                             style: theme.textTheme.bodySmall,
                           ),
                         ],
@@ -170,18 +170,18 @@ class _TrendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final percent = trend.timeInRangePercent;
     return SectionRow(
       leading: Icon(trend.direction.icon, color: AppColors.primary),
-      title: alertVariable(l10n, trend.parameterName),
+      title: alertVariable(i18n, trend.parameterName),
       subtitle: [
         data.deviceNames[trend.equipmentId],
-        l10n.deviationsSummary(trend.deviationCount, trend.criticalDeviationCount),
+        i18n.deviationsSummary(trend.deviationCount, trend.criticalDeviationCount),
       ].whereType<String>().join(' · '),
       trailing: StatusBadge(
-        label: percent == null ? '—' : l10n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
+        label: percent == null ? '—' : i18n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
         tone: timeInRangeTone(percent),
       ),
     );

@@ -7,7 +7,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/confirm_dialog.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
@@ -28,9 +28,9 @@ class AlertDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.deviationDetails)),
+      appBar: AppBar(title: Text(i18n.deviationDetails)),
       body: BlocConsumer<AlertDetailBloc, AlertDetailState>(
         listenWhen: (a, b) => a.actionStatus != b.actionStatus,
         listener: (context, state) {
@@ -39,8 +39,8 @@ class AlertDetailPage extends StatelessWidget {
             messenger.showSnackBar(SnackBar(
               content: Text(
                 state.lastAction == AlertReviewAction.acknowledge
-                    ? l10n.alertAcknowledgedMessage
-                    : l10n.alertResolvedMessage,
+                    ? i18n.alertAcknowledgedMessage
+                    : i18n.alertResolvedMessage,
               ),
             ));
           } else if (state.actionStatus == ReviewActionStatus.failure && state.actionFailure != null) {
@@ -81,20 +81,20 @@ class _AlertDetailBody extends StatelessWidget {
   final int? currentUserId;
   final bool submitting;
 
-  String _person(AppLocalizations l10n, int id) =>
-      id == currentUserId ? l10n.you : (names.people[id] ?? l10n.userNumber(id));
+  String _person(AppLocalizations i18n, int id) =>
+      id == currentUserId ? i18n.you : (names.people[id] ?? i18n.userNumber(id));
 
-  String _who(AppLocalizations l10n, String locale, int? userId, DateTime? at) {
-    final person = userId == null ? '—' : _person(l10n, userId);
+  String _who(AppLocalizations i18n, String locale, int? userId, DateTime? at) {
+    final person = userId == null ? '—' : _person(i18n, userId);
     return at == null ? person : '$person · ${Formatters.dateTime(at, locale)}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
-    final device = names.deviceName ?? l10n.equipmentNumber(alert.equipmentId);
+    final device = names.deviceName ?? i18n.equipmentNumber(alert.equipmentId);
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
@@ -110,13 +110,13 @@ class _AlertDetailBody extends StatelessWidget {
                   children: [
                     Semantics(
                       header: true,
-                      child: Text(alertVariable(l10n, alert.parameterName), style: theme.textTheme.titleLarge),
+                      child: Text(alertVariable(i18n, alert.parameterName), style: theme.textTheme.titleLarge),
                     ),
                     Text(
                       Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale),
                       style: theme.textTheme.bodySmall,
                     ),
-                    Text(l10n.alertNumber(alert.id), style: theme.textTheme.bodySmall),
+                    Text(i18n.alertNumber(alert.id), style: theme.textTheme.bodySmall),
                   ],
                 ),
               ),
@@ -128,33 +128,33 @@ class _AlertDetailBody extends StatelessWidget {
           InfoCard(
             color: AppColors.successContainer,
             borderColor: AppColors.success.withValues(alpha: 0.3),
-            child: Text(l10n.conditionNormalized(Formatters.dateTime(alert.normalizedAt, locale))),
+            child: Text(i18n.conditionNormalized(Formatters.dateTime(alert.normalizedAt, locale))),
           ),
         ],
         const SizedBox(height: AppSpacing.md),
         InfoCard(
-          title: l10n.technicalInspection,
+          title: i18n.technicalInspection,
           child: Wrap(
             spacing: AppSpacing.xl,
             runSpacing: AppSpacing.lg,
             children: [
               KeyValue(
-                label: l10n.severity,
-                value: alert.severity.label(l10n),
-                valueWidget: StatusBadge(label: alert.severity.label(l10n), tone: alert.severity.tone),
+                label: i18n.severity,
+                value: alert.severity.label(i18n),
+                valueWidget: StatusBadge(label: alert.severity.label(i18n), tone: alert.severity.tone),
               ),
               KeyValue(
-                label: l10n.status,
-                value: alert.status.label(l10n),
-                valueWidget: StatusBadge(label: alert.status.label(l10n), tone: alert.status.tone, icon: alert.status.icon),
+                label: i18n.status,
+                value: alert.status.label(i18n),
+                valueWidget: StatusBadge(label: alert.status.label(i18n), tone: alert.status.tone, icon: alert.status.icon),
               ),
-              KeyValue(label: l10n.recordedValue, value: formatAlertValue(alert.recordedValue, alert.unit, locale)),
-              KeyValue(label: l10n.thresholdValue, value: formatAlertValue(alert.thresholdValue, alert.unit, locale)),
-              KeyValue(label: l10n.deviationsLabel, value: '${alert.deviationCount}'),
-              KeyValue(label: l10n.firstDetected, value: Formatters.dateTime(alert.timestamp, locale)),
-              if (names.environmentName != null) KeyValue(label: l10n.environment, value: names.environmentName!),
+              KeyValue(label: i18n.recordedValue, value: formatAlertValue(alert.recordedValue, alert.unit, locale)),
+              KeyValue(label: i18n.thresholdValue, value: formatAlertValue(alert.thresholdValue, alert.unit, locale)),
+              KeyValue(label: i18n.deviationsLabel, value: '${alert.deviationCount}'),
+              KeyValue(label: i18n.firstDetected, value: Formatters.dateTime(alert.timestamp, locale)),
+              if (names.environmentName != null) KeyValue(label: i18n.environment, value: names.environmentName!),
               KeyValue(
-                label: alert.origin == AlertOrigin.container ? l10n.containerMonitor : l10n.environmentalDevice,
+                label: alert.origin == AlertOrigin.container ? i18n.containerMonitor : i18n.environmentalDevice,
                 value: device,
                 valueWidget: TextButton(
                   style: TextButton.styleFrom(padding: EdgeInsets.zero),
@@ -164,38 +164,38 @@ class _AlertDetailBody extends StatelessWidget {
               ),
               if (alert.batchId != null)
                 KeyValue(
-                  label: l10n.batch,
-                  value: l10n.batchNumberShort(alert.batchId!),
+                  label: i18n.batch,
+                  value: i18n.batchNumberShort(alert.batchId!),
                   valueWidget: TextButton(
                     style: TextButton.styleFrom(padding: EdgeInsets.zero),
                     onPressed: () => context.push('/batches/${alert.batchId}'),
-                    child: Text(l10n.batchNumberShort(alert.batchId!)),
+                    child: Text(i18n.batchNumberShort(alert.batchId!)),
                   ),
                 ),
               if (alert.acknowledgedBy != null)
                 KeyValue(
-                  label: l10n.acknowledgedBy,
-                  value: _who(l10n, locale, alert.acknowledgedBy, alert.acknowledgedAt),
+                  label: i18n.acknowledgedBy,
+                  value: _who(i18n, locale, alert.acknowledgedBy, alert.acknowledgedAt),
                 ),
               if (alert.resolvedBy != null)
-                KeyValue(label: l10n.resolvedBy, value: _who(l10n, locale, alert.resolvedBy, alert.resolvedAt)),
+                KeyValue(label: i18n.resolvedBy, value: _who(i18n, locale, alert.resolvedBy, alert.resolvedAt)),
             ],
           ),
         ),
         if (alert.relatedActuations.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
           InfoCard(
-            title: l10n.automaticActions,
+            title: i18n.automaticActions,
             child: Column(
               children: [
                 for (final action in alert.relatedActuations)
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.settings_remote_outlined, color: AppColors.primary),
-                    title: Text(actuationLabel(l10n, action.action)),
+                    title: Text(actuationLabel(i18n, action.action)),
                     subtitle: Text(Formatters.dateTime(action.occurredAt, locale)),
                     trailing: StatusBadge(
-                      label: action.result == 'EXECUTED' ? l10n.actionExecuted : l10n.actionFailed,
+                      label: action.result == 'EXECUTED' ? i18n.actionExecuted : i18n.actionFailed,
                       tone: action.result == 'EXECUTED' ? BadgeTone.success : BadgeTone.critical,
                     ),
                   ),
@@ -206,7 +206,7 @@ class _AlertDetailBody extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         if (alert.status == AlertStatus.resolved || !canAttend)
           InfoCard(
-            title: l10n.resolutionNotes,
+            title: i18n.resolutionNotes,
             child: Text(alert.resolutionNotes?.isNotEmpty == true ? alert.resolutionNotes! : '—'),
           ),
         if (canAttend && alert.canResolve)
@@ -214,7 +214,7 @@ class _AlertDetailBody extends StatelessWidget {
         else if (!canAttend && alert.isOpen)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.md),
-            child: Text(l10n.auditorReadOnly, style: theme.textTheme.bodySmall),
+            child: Text(i18n.auditorReadOnly, style: theme.textTheme.bodySmall),
           ),
       ],
     );
@@ -242,36 +242,36 @@ class _ReviewActionsState extends State<_ReviewActions> {
   }
 
   Future<void> _acknowledge() async {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<AlertDetailBloc>();
     final ok = await showConfirmDialog(
       context,
-      title: l10n.acknowledgeAlert,
-      message: l10n.acknowledgeConfirm,
-      confirmLabel: l10n.acknowledge,
+      title: i18n.acknowledgeAlert,
+      message: i18n.acknowledgeConfirm,
+      confirmLabel: i18n.acknowledge,
     );
     if (ok) bloc.add(const AlertAcknowledgeSubmitted());
   }
 
   Future<void> _resolve() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<AlertDetailBloc>();
     final ok = await showConfirmDialog(
       context,
-      title: l10n.markAsResolved,
-      message: l10n.resolveConfirm,
-      confirmLabel: l10n.markAsResolved,
+      title: i18n.markAsResolved,
+      message: i18n.resolveConfirm,
+      confirmLabel: i18n.markAsResolved,
     );
     if (ok) bloc.add(AlertResolveSubmitted(_notes.text));
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final busy = widget.submitting;
     return InfoCard(
-      title: l10n.reviewActions,
+      title: i18n.reviewActions,
       child: Form(
         key: _formKey,
         child: Column(
@@ -285,11 +285,11 @@ class _ReviewActionsState extends State<_ReviewActions> {
               maxLines: 6,
               maxLength: 500,
               decoration: InputDecoration(
-                labelText: l10n.resolutionNotes,
-                hintText: l10n.resolutionNotesHint,
+                labelText: i18n.resolutionNotes,
+                hintText: i18n.resolutionNotesHint,
                 alignLabelWithHint: true,
               ),
-              validator: (v) => (v == null || v.trim().isEmpty) ? l10n.resolutionNotesRequired : null,
+              validator: (v) => (v == null || v.trim().isEmpty) ? i18n.resolutionNotesRequired : null,
             ),
             const SizedBox(height: AppSpacing.md),
             if (busy) const LinearProgressIndicator(),
@@ -304,13 +304,13 @@ class _ReviewActionsState extends State<_ReviewActions> {
                     key: const Key('alert.acknowledge'),
                     onPressed: busy ? null : _acknowledge,
                     icon: const Icon(Icons.visibility_outlined),
-                    label: Text(l10n.acknowledge),
+                    label: Text(i18n.acknowledge),
                   ),
                 FilledButton.icon(
                   key: const Key('alert.resolve'),
                   onPressed: busy ? null : _resolve,
                   icon: const Icon(Icons.task_alt),
-                  label: Text(l10n.markAsResolved),
+                  label: Text(i18n.markAsResolved),
                 ),
               ],
             ),

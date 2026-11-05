@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND.
-// Source: l10n/strings.tsv — regenerate with `dart run tool/generate_l10n.dart`.
+// Source: i18n/strings.tsv — regenerate with `dart run tool/generate_i18n.dart`.
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -1384,5 +1384,5 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 }
 
 extension AppLocalizationsX on BuildContext {
-  AppLocalizations get l10n => AppLocalizations.of(this);
+  AppLocalizations get i18n => AppLocalizations.of(this);
 }

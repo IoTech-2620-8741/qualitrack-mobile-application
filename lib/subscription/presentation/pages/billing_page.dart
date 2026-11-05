@@ -5,7 +5,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
@@ -38,16 +38,16 @@ class BillingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     void reload() => context.read<BillingBloc>().add(const BillingRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.billingTitle)),
+      appBar: AppBar(title: Text(i18n.billingTitle)),
       body: BlocBuilder<BillingBloc, RemoteState<BillingSummary>>(
         builder: (context, state) => RemoteStateView<BillingSummary>(
           state: state,
           onRetry: reload,
           emptyIcon: Icons.receipt_long_outlined,
-          emptyMessage: l10n.billingEmpty,
+          emptyMessage: i18n.billingEmpty,
           builder: (context, summary) => RefreshIndicator(
             onRefresh: () async => reload(),
             child: _BillingBody(summary: summary),
@@ -65,19 +65,19 @@ class _BillingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final active = summary.active;
     final plan = summary.plan;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        PageHeader(title: l10n.billingTitle, subtitle: l10n.billingSubtitle),
+        PageHeader(title: i18n.billingTitle, subtitle: i18n.billingSubtitle),
         const SizedBox(height: AppSpacing.md),
         InfoCard(
-          title: l10n.currentSubscription,
+          title: i18n.currentSubscription,
           child: active == null
-              ? Text(l10n.noActiveSubscription)
+              ? Text(i18n.noActiveSubscription)
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -85,39 +85,39 @@ class _BillingBody extends StatelessWidget {
                       spacing: AppSpacing.xl,
                       runSpacing: AppSpacing.lg,
                       children: [
-                        KeyValue(label: l10n.plan, value: plan?.name ?? active.planCode),
+                        KeyValue(label: i18n.plan, value: plan?.name ?? active.planCode),
                         KeyValue(
-                          label: l10n.status,
+                          label: i18n.status,
                           value: Formatters.humanize(active.status),
                           valueWidget: StatusBadge(
                             label: Formatters.humanize(active.status),
                             tone: subscriptionTone(active.status),
                           ),
                         ),
-                        KeyValue(label: l10n.billingCycle, value: Formatters.humanize(active.billingCycle)),
+                        KeyValue(label: i18n.billingCycle, value: Formatters.humanize(active.billingCycle)),
                         KeyValue(
-                          label: l10n.periodStart,
+                          label: i18n.periodStart,
                           value: Formatters.date(active.currentPeriodStart, locale),
                         ),
                         KeyValue(
-                          label: l10n.periodEnd,
+                          label: i18n.periodEnd,
                           value: Formatters.date(active.currentPeriodEnd, locale),
                         ),
                         if (plan != null && plan.amount != null)
                           KeyValue(
-                            label: l10n.amount,
+                            label: i18n.amount,
                             value: Formatters.money(plan.amount, plan.currency, locale),
                           ),
                         if (plan != null && plan.maxUsers != null)
-                          KeyValue(label: l10n.maxUsers, value: '${plan.maxUsers}'),
+                          KeyValue(label: i18n.maxUsers, value: '${plan.maxUsers}'),
                         if (plan != null && plan.maxEquipment != null)
-                          KeyValue(label: l10n.maxEquipment, value: '${plan.maxEquipment}'),
+                          KeyValue(label: i18n.maxEquipment, value: '${plan.maxEquipment}'),
                       ],
                     ),
                     if (active.cancelAtPeriodEnd) ...[
                       const SizedBox(height: AppSpacing.md),
                       StatusBadge(
-                        label: l10n.renewalCancelled(Formatters.date(active.currentPeriodEnd, locale)),
+                        label: i18n.renewalCancelled(Formatters.date(active.currentPeriodEnd, locale)),
                         tone: BadgeTone.warning,
                         icon: Icons.event_busy_outlined,
                       ),
@@ -127,14 +127,14 @@ class _BillingBody extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<SubscriptionPayment>(
-          title: l10n.paymentHistory,
+          title: i18n.paymentHistory,
           section: Section(summary.payments),
-          emptyMessage: l10n.paymentsEmpty,
+          emptyMessage: i18n.paymentsEmpty,
           itemBuilder: (context, p) => SectionRow(
             leading: const Icon(Icons.payments_outlined, color: AppColors.primary),
             title: Formatters.money(p.amount, p.currency, locale),
             subtitle: [
-              if (p.provider != null) '${l10n.provider}: ${p.provider}',
+              if (p.provider != null) '${i18n.provider}: ${p.provider}',
               Formatters.dateTime(p.paidAt, locale),
             ].join(' · '),
             trailing: StatusBadge(label: Formatters.humanize(p.status), tone: paymentTone(p.status)),
@@ -142,7 +142,7 @@ class _BillingBody extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<Subscription>(
-          title: l10n.subscriptionHistory,
+          title: i18n.subscriptionHistory,
           section: Section(summary.subscriptions),
           itemBuilder: (context, s) => SectionRow(
             title: '${summary.planNameOf(s)} · ${Formatters.humanize(s.billingCycle)}',
@@ -157,7 +157,7 @@ class _BillingBody extends StatelessWidget {
             const Icon(Icons.desktop_windows_outlined, size: 18, color: AppColors.textMuted),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
-              child: Text(l10n.billingManagedOnWeb, style: Theme.of(context).textTheme.bodySmall),
+              child: Text(i18n.billingManagedOnWeb, style: Theme.of(context).textTheme.bodySmall),
             ),
           ],
         ),

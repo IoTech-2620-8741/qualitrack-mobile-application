@@ -5,7 +5,7 @@ import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_typography.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../domain/entities/production_batch.dart';
 import 'batch_labels.dart';
@@ -19,7 +19,7 @@ class BatchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
     final awaiting = batch.isAwaitingReview;
@@ -49,7 +49,7 @@ class BatchCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                '${l10n.product}: ${batch.productName ?? '—'}',
+                '${i18n.product}: ${batch.productName ?? '—'}',
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -57,12 +57,12 @@ class BatchCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: KeyValue(
-                      label: l10n.quantity,
+                      label: i18n.quantity,
                       value: '${Formatters.number(batch.quantity, locale)} ${batch.unit ?? ''}'.trim(),
                     ),
                   ),
                   Expanded(
-                    child: KeyValue(label: l10n.startDate, value: Formatters.rawDate(batch.startDate, locale)),
+                    child: KeyValue(label: i18n.startDate, value: Formatters.rawDate(batch.startDate, locale)),
                   ),
                 ],
               ),
@@ -73,7 +73,7 @@ class BatchCard extends StatelessWidget {
                     const Icon(Icons.pending_actions_outlined, size: 16, color: AppColors.warning),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
-                      l10n.awaitingQaRelease,
+                      i18n.awaitingQaRelease,
                       style: theme.textTheme.bodySmall?.copyWith(color: AppColors.warning),
                     ),
                   ],

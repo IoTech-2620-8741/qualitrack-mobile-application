@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
-import '../l10n/app_localizations.dart';
+import '../i18n/app_localizations.dart';
 import '../section.dart';
 import 'failure_message.dart';
 import 'layout_widgets.dart';
@@ -43,7 +43,7 @@ class SectionCard<T> extends StatelessWidget {
         ],
       );
     } else if (section.items.isEmpty) {
-      body = Text(emptyMessage ?? context.l10n.noInformation, style: theme.textTheme.bodySmall);
+      body = Text(emptyMessage ?? context.i18n.noInformation, style: theme.textTheme.bodySmall);
     } else {
       final items = maxItems == null ? section.items : section.items.take(maxItems!).toList();
       body = Column(

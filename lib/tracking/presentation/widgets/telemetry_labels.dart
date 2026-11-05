@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/labels.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/telemetry.dart';
 
 extension MonitoredMetricPresentation on MonitoredMetric {
-  String label(AppLocalizations l10n, {String? raw}) => metricLabel(l10n, code, raw: raw);
+  String label(AppLocalizations i18n, {String? raw}) => metricLabel(i18n, code, raw: raw);
 
   IconData get icon => switch (this) {
     MonitoredMetric.airQuality => Icons.air_outlined,
@@ -27,11 +27,11 @@ extension EnvironmentalStatePresentation on EnvironmentalState {
     EnvironmentalState.unknown => BadgeTone.neutral,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    EnvironmentalState.normal => l10n.stateNormal,
-    EnvironmentalState.warning => l10n.stateWarning,
-    EnvironmentalState.critical => l10n.stateCritical,
-    EnvironmentalState.unknown => l10n.notEvaluated,
+  String label(AppLocalizations i18n) => switch (this) {
+    EnvironmentalState.normal => i18n.stateNormal,
+    EnvironmentalState.warning => i18n.stateWarning,
+    EnvironmentalState.critical => i18n.stateCritical,
+    EnvironmentalState.unknown => i18n.notEvaluated,
   };
 }
 
@@ -41,5 +41,5 @@ class StateBadge extends StatelessWidget {
   final EnvironmentalState state;
 
   @override
-  Widget build(BuildContext context) => StatusBadge(label: state.label(context.l10n), tone: state.tone);
+  Widget build(BuildContext context) => StatusBadge(label: state.label(context.i18n), tone: state.tone);
 }

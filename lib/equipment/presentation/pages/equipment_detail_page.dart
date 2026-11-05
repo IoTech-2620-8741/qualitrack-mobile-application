@@ -9,7 +9,7 @@ import '../../../compliance/api/index.dart';
 import '../../../reporting/api/index.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
@@ -26,10 +26,10 @@ class EquipmentDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     void reload() => context.read<EquipmentDetailBloc>().add(const EquipmentDetailRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.equipmentDetail)),
+      appBar: AppBar(title: Text(i18n.equipmentDetail)),
       body: BlocBuilder<EquipmentDetailBloc, RemoteState<EquipmentDetail>>(
         builder: (context, state) => RemoteStateView<EquipmentDetail>(
           state: state,
@@ -52,41 +52,41 @@ class _DetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final e = detail.equipment;
     final connection = detail.connection;
-    String person(int userId) => userId == currentUserId ? l10n.you : (detail.people[userId] ?? l10n.userNumber(userId));
+    String person(int userId) => userId == currentUserId ? i18n.you : (detail.people[userId] ?? i18n.userNumber(userId));
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        PageHeader(title: e.name, subtitle: [e.typeLabel(l10n), e.model].whereType<String>().join(' · ')),
+        PageHeader(title: e.name, subtitle: [e.typeLabel(i18n), e.model].whereType<String>().join(' · ')),
         const SizedBox(height: AppSpacing.md),
         InfoCard(
-          title: l10n.generalInformation,
+          title: i18n.generalInformation,
           child: Wrap(
             spacing: AppSpacing.xl,
             runSpacing: AppSpacing.lg,
             children: [
               KeyValue(
-                label: l10n.status,
-                value: e.statusLabel(l10n),
-                valueWidget: StatusBadge(label: e.statusLabel(l10n), tone: e.status.tone),
+                label: i18n.status,
+                value: e.statusLabel(i18n),
+                valueWidget: StatusBadge(label: e.statusLabel(i18n), tone: e.status.tone),
               ),
-              KeyValue(label: l10n.environment, value: detail.environmentName ?? l10n.notLocated),
-              KeyValue(label: l10n.type, value: e.typeLabel(l10n) ?? '—'),
-              KeyValue(label: l10n.model, value: e.model ?? '—'),
-              KeyValue(label: l10n.serialNumber, value: e.serialNumber ?? '—'),
-              if (e.deviceType != null) KeyValue(label: l10n.iotRole, value: e.deviceType!.label(l10n)),
-              if (e.sensorExternalId != null) KeyValue(label: l10n.deviceIdentifier, value: e.sensorExternalId!),
-              if (e.firmwareVersion != null) KeyValue(label: l10n.firmware, value: e.firmwareVersion!),
+              KeyValue(label: i18n.environment, value: detail.environmentName ?? i18n.notLocated),
+              KeyValue(label: i18n.type, value: e.typeLabel(i18n) ?? '—'),
+              KeyValue(label: i18n.model, value: e.model ?? '—'),
+              KeyValue(label: i18n.serialNumber, value: e.serialNumber ?? '—'),
+              if (e.deviceType != null) KeyValue(label: i18n.iotRole, value: e.deviceType!.label(i18n)),
+              if (e.sensorExternalId != null) KeyValue(label: i18n.deviceIdentifier, value: e.sensorExternalId!),
+              if (e.firmwareVersion != null) KeyValue(label: i18n.firmware, value: e.firmwareVersion!),
             ],
           ),
         ),
         if (e.isIotDevice) ...[
           const SizedBox(height: AppSpacing.md),
           InfoCard(
-            title: l10n.connectionStatus,
+            title: i18n.connectionStatus,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -94,7 +94,7 @@ class _DetailBody extends StatelessWidget {
                 if (connection != null) ...[
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    '${l10n.lastCommunication}: ${connection.lastCommunicationAt == null ? l10n.neverCommunicated : Formatters.dateTime(connection.lastCommunicationAt, locale)}',
+                    '${i18n.lastCommunication}: ${connection.lastCommunicationAt == null ? i18n.neverCommunicated : Formatters.dateTime(connection.lastCommunicationAt, locale)}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -103,7 +103,7 @@ class _DetailBody extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: () => context.go('/telemetry?deviceId=${e.id}'),
                     icon: const Icon(Icons.monitor_heart_outlined),
-                    label: Text(l10n.viewTelemetry),
+                    label: Text(i18n.viewTelemetry),
                   ),
                 ],
               ],
@@ -111,17 +111,17 @@ class _DetailBody extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           SectionCard<DeviationTrend>(
-            title: l10n.deviationIndicators7d,
+            title: i18n.deviationIndicators7d,
             section: detail.trends,
-            emptyMessage: l10n.noReadingsInPeriod,
+            emptyMessage: i18n.noReadingsInPeriod,
             itemBuilder: (context, t) {
               final percent = t.timeInRangePercent;
               return SectionRow(
                 leading: Icon(_trendIcon(t.direction)),
-                title: alertVariable(l10n, t.parameterName),
-                subtitle: l10n.deviationsSummary(t.deviationCount, t.criticalDeviationCount),
+                title: alertVariable(i18n, t.parameterName),
+                subtitle: i18n.deviationsSummary(t.deviationCount, t.criticalDeviationCount),
                 trailing: StatusBadge(
-                  label: percent == null ? '—' : l10n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
+                  label: percent == null ? '—' : i18n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
                   tone: timeInRangeTone(percent),
                 ),
               );
@@ -130,9 +130,9 @@ class _DetailBody extends StatelessWidget {
         ],
         const SizedBox(height: AppSpacing.md),
         SectionCard<BpmParameterConfig>(
-          title: l10n.bpmLimits,
+          title: i18n.bpmLimits,
           section: detail.bpmConfigs,
-          emptyMessage: l10n.bpmLimitsEmpty,
+          emptyMessage: i18n.bpmLimitsEmpty,
           itemBuilder: (context, c) => SectionRow(
             title: c.parameterName,
             trailing: Text(
@@ -142,9 +142,9 @@ class _DetailBody extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<MaintenanceRecord>(
-          title: l10n.maintenanceHistory,
+          title: i18n.maintenanceHistory,
           section: detail.maintenance,
-          emptyMessage: l10n.maintenanceEmpty,
+          emptyMessage: i18n.maintenanceEmpty,
           itemBuilder: (context, m) => SectionRow(
             title: Formatters.humanize(m.type),
             subtitle: [m.description, m.technicianName].whereType<String>().join(' · '),
@@ -153,7 +153,7 @@ class _DetailBody extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<ComplianceEvent>(
-          title: l10n.complianceEvents,
+          title: i18n.complianceEvents,
           section: detail.events,
           maxItems: 10,
           itemBuilder: (context, ev) => SectionRow(
@@ -167,7 +167,7 @@ class _DetailBody extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<AuditLogEntry>(
-          title: l10n.auditLog,
+          title: i18n.auditLog,
           section: detail.auditLogs,
           maxItems: 10,
           itemBuilder: (context, log) => SectionRow(

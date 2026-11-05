@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
@@ -19,28 +19,28 @@ class AlertsPage extends StatelessWidget {
   final UnreadNotificationsController notifications;
 
   String _filterLabel(BuildContext context, AlertFilter filter) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return switch (filter) {
-      AlertFilter.open => l10n.alertsOpen,
-      AlertFilter.all => l10n.filterAll,
-      AlertFilter.unresolved => l10n.alertUnresolved,
-      AlertFilter.acknowledged => l10n.alertAcknowledged,
-      AlertFilter.resolved => l10n.alertResolved,
-      AlertFilter.critical => l10n.severityCritical,
+      AlertFilter.open => i18n.alertsOpen,
+      AlertFilter.all => i18n.filterAll,
+      AlertFilter.unresolved => i18n.alertUnresolved,
+      AlertFilter.acknowledged => i18n.alertAcknowledged,
+      AlertFilter.resolved => i18n.alertResolved,
+      AlertFilter.critical => i18n.severityCritical,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<AlertsBloc>();
     void reload() => bloc.add(const AlertsRequested(refresh: true));
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.alertsTitle),
+        title: Text(i18n.alertsTitle),
         actions: [
           NotificationBell(controller: notifications),
-          IconButton(tooltip: l10n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
+          IconButton(tooltip: i18n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
         ],
       ),
       body: BlocBuilder<AlertsBloc, AlertsState>(
@@ -48,8 +48,8 @@ class AlertsPage extends StatelessWidget {
           state: state.remote,
           onRetry: reload,
           emptyIcon: Icons.verified_outlined,
-          emptyTitle: l10n.alertsEmptyTitle,
-          emptyMessage: l10n.alertsEmptyMessage,
+          emptyTitle: i18n.alertsEmptyTitle,
+          emptyMessage: i18n.alertsEmptyMessage,
           builder: (context, data) {
             final summary = data.summary;
             final items = state.visible;
@@ -58,37 +58,37 @@ class AlertsPage extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
-                  PageHeader(title: l10n.alertsTitle, subtitle: l10n.alertsSubtitle),
+                  PageHeader(title: i18n.alertsTitle, subtitle: i18n.alertsSubtitle),
                   const SizedBox(height: AppSpacing.md),
                   ResponsiveGrid(
                     minItemWidth: 140,
                     children: [
                       MetricTile(
-                        label: l10n.totalAlerts,
+                        label: i18n.totalAlerts,
                         value: '${summary.total}',
                         icon: Icons.notifications_outlined,
                         color: AppColors.navy,
                       ),
                       MetricTile(
-                        label: l10n.alertUnresolved,
+                        label: i18n.alertUnresolved,
                         value: '${summary.unresolved}',
                         icon: Icons.report_gmailerrorred_outlined,
                         color: AppColors.critical,
                       ),
                       MetricTile(
-                        label: l10n.alertAcknowledged,
+                        label: i18n.alertAcknowledged,
                         value: '${summary.acknowledged}',
                         icon: Icons.visibility_outlined,
                         color: AppColors.info,
                       ),
                       MetricTile(
-                        label: l10n.alertResolved,
+                        label: i18n.alertResolved,
                         value: '${summary.resolved}',
                         icon: Icons.task_alt,
                         color: AppColors.success,
                       ),
                       MetricTile(
-                        label: l10n.criticalOpen,
+                        label: i18n.criticalOpen,
                         value: '${summary.critical}',
                         icon: Icons.warning_amber_rounded,
                         color: AppColors.critical,
@@ -104,7 +104,7 @@ class AlertsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (items.isEmpty)
-                    SizedBox(height: 200, child: EmptyView(title: l10n.noResults))
+                    SizedBox(height: 200, child: EmptyView(title: i18n.noResults))
                   else
                     for (final alert in items) ...[
                       AlertCard(

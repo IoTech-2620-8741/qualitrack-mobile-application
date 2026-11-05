@@ -4,7 +4,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/confirm_dialog.dart';
 import '../../domain/entities/production_batch.dart';
 import '../batch_detail/bloc/batch_detail_state.dart';
@@ -72,15 +72,15 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final navigator = Navigator.of(context);
     final confirmed = await showConfirmDialog(
       context,
-      title: _isRelease ? l10n.releaseBatch : l10n.rejectBatch,
+      title: _isRelease ? i18n.releaseBatch : i18n.rejectBatch,
       message: _isRelease
-          ? l10n.releaseConfirm(widget.batch.batchNumber)
-          : l10n.rejectConfirm(widget.batch.batchNumber),
-      confirmLabel: _isRelease ? l10n.releaseBatch : l10n.rejectBatch,
+          ? i18n.releaseConfirm(widget.batch.batchNumber)
+          : i18n.rejectConfirm(widget.batch.batchNumber),
+      confirmLabel: _isRelease ? i18n.releaseBatch : i18n.rejectBatch,
       destructive: !_isRelease,
     );
     if (!confirmed || !mounted) return;
@@ -89,7 +89,7 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     final color = _isRelease ? AppColors.primary : AppColors.critical;
     return SingleChildScrollView(
@@ -105,7 +105,7 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
-                    _isRelease ? l10n.releaseBatch : l10n.rejectBatch,
+                    _isRelease ? i18n.releaseBatch : i18n.rejectBatch,
                     style: theme.textTheme.titleLarge?.copyWith(color: color),
                   ),
                 ),
@@ -121,7 +121,7 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
               onPressed: _pickDate,
               icon: const Icon(Icons.event_outlined),
               label: Text(
-                '${_isRelease ? l10n.releaseDate : l10n.rejectionDate}: '
+                '${_isRelease ? i18n.releaseDate : i18n.rejectionDate}: '
                 '${Formatters.date(_date, context.localeName)}',
               ),
             ),
@@ -133,14 +133,14 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
               maxLines: 6,
               maxLength: 500,
               decoration: InputDecoration(
-                labelText: _isRelease ? l10n.qualityReleaseNotes : l10n.rejectionReason,
-                hintText: _isRelease ? l10n.releaseNotesHint : l10n.rejectionReasonHint,
+                labelText: _isRelease ? i18n.qualityReleaseNotes : i18n.rejectionReason,
+                hintText: _isRelease ? i18n.releaseNotesHint : i18n.rejectionReasonHint,
                 alignLabelWithHint: true,
               ),
               validator: (v) {
                 final text = v?.trim() ?? '';
                 if (text.isEmpty) {
-                  return _isRelease ? l10n.releaseNotesRequired : l10n.rejectionReasonRequired;
+                  return _isRelease ? i18n.releaseNotesRequired : i18n.rejectionReasonRequired;
                 }
                 return null;
               },
@@ -151,7 +151,7 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.cancel),
+                    child: Text(i18n.cancel),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -160,7 +160,7 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
                     key: const Key('batch.reviewSubmit'),
                     style: _isRelease ? null : FilledButton.styleFrom(backgroundColor: AppColors.critical),
                     onPressed: _submit,
-                    child: Text(_isRelease ? l10n.releaseBatch : l10n.rejectBatch),
+                    child: Text(_isRelease ? i18n.releaseBatch : i18n.rejectBatch),
                   ),
                 ),
               ],

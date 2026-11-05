@@ -104,7 +104,7 @@ lib/
 │   ├── dependency_injection/injection.dart
 │   ├── router/app_router.dart, app_routes.dart, main_shell.dart
 │   ├── theme/app_colors.dart, app_typography.dart, app_spacing.dart, app_radius.dart, app_theme.dart
-│   └── l10n/app_localizations.dart (+ en/es)
+│   └── i18n/app_localizations.dart (+ en/es)
 ├── common/
 │   ├── domain/failure.dart, session/user_role.dart
 │   ├── application/use_case.dart

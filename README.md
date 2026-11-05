@@ -39,7 +39,7 @@ initial analysis is in [`docs/analysis.md`](docs/analysis.md).
 lib/
 ├── main.dart
 ├── app/            # composition root: theme, router, DI, MaterialApp
-├── common/         # failures, ApiClient, secure storage, l10n, widgets
+├── common/         # failures, ApiClient, secure storage, i18n, widgets
 ├── iam/            # Identity & Access Management
 ├── laboratory/     # Laboratory Management (lab, products)
 ├── equipment/      # Equipment Management
@@ -96,8 +96,8 @@ On Windows you can run everything at once and keep a log in `tool/logs/verify.lo
 powershell -ExecutionPolicy Bypass -File tool\verify.ps1
 ```
 
-Localized strings are edited in `l10n/strings.tsv`, then regenerated with
-`dart run tool/generate_l10n.dart`.
+Localized strings are edited in `i18n/strings.tsv`, then regenerated with
+`dart run tool/generate_i18n.dart`.
 
 ## Build APK
 

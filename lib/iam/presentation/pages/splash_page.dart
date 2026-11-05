@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../widgets/qualitrack_logo.dart';
 
 /// Shown while the stored session is being validated. Navigation happens in
@@ -21,7 +21,7 @@ class SplashPage extends StatelessWidget {
             const QualiTrackLogo(size: 120),
             const SizedBox(height: AppSpacing.xl),
             Semantics(
-              label: context.l10n.checkingSession,
+              label: context.i18n.checkingSession,
               child: const CircularProgressIndicator(),
             ),
           ],

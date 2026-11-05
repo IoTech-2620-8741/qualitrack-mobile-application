@@ -10,7 +10,7 @@ import '../../iam/domain/user_session.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
-import '../../common/presentation/l10n/app_localizations.dart';
+import '../../common/presentation/i18n/app_localizations.dart';
 
 /// Composition root of the panel: connects it with the widgets of the batch,
 /// compliance, identity and profile contexts.
@@ -23,7 +23,7 @@ CommandCenterViews commandCenterViews({
   profileButton: ListenableBuilder(
     listenable: currentProfile,
     builder: (context, _) => IconButton(
-      tooltip: context.l10n.profile,
+      tooltip: context.i18n.profile,
       onPressed: () => context.push('/profile'),
       icon: ProfileAvatar(
         radius: 16,
@@ -34,7 +34,7 @@ CommandCenterViews commandCenterViews({
   ),
   profileChanges: currentProfile,
   displayName: () => currentProfile.profile?.displayName,
-  roleLabel: (role, l10n) => role.label(l10n),
+  roleLabel: (role, i18n) => role.label(i18n),
   alertCard: (alert, {deviceName, environmentName, onTap}) =>
       AlertCard(alert: alert, deviceName: deviceName, environmentName: environmentName, onTap: onTap),
   batchStatusBadge: (status) => BatchStatusBadge(status: status),

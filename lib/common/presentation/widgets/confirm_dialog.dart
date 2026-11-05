@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/app_localizations.dart';
+import '../i18n/app_localizations.dart';
 
 Future<bool> showConfirmDialog(
   BuildContext context, {
@@ -17,7 +17,7 @@ Future<bool> showConfirmDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(context.l10n.cancel),
+          child: Text(context.i18n.cancel),
         ),
         FilledButton(
           style: destructive

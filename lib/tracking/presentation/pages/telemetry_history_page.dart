@@ -6,7 +6,7 @@ import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_typography.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/view_status.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
@@ -24,7 +24,7 @@ class TelemetryHistoryPage extends StatelessWidget {
 
   Future<void> _pickRange(BuildContext context, HistoryRange current) async {
     final bloc = context.read<TelemetryHistoryBloc>();
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final messenger = ScaffoldMessenger.of(context);
     final now = DateTime.now();
     final picked = await showDateRangePicker(
@@ -32,13 +32,13 @@ class TelemetryHistoryPage extends StatelessWidget {
       firstDate: DateTime(now.year - 2),
       lastDate: now,
       initialDateRange: DateTimeRange(start: current.from, end: current.to.isAfter(now) ? now : current.to),
-      helpText: l10n.periodMax31Days,
+      helpText: i18n.periodMax31Days,
     );
     if (picked == null) return;
     final end = DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59, 999);
     final range = HistoryRange(from: picked.start, to: end.isAfter(now) ? now : end);
     if (!range.isValid) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.periodMax31Days)));
+      messenger.showSnackBar(SnackBar(content: Text(i18n.periodMax31Days)));
       return;
     }
     bloc.add(TelemetryHistoryRangeChanged(range));
@@ -46,19 +46,19 @@ class TelemetryHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.rawTelemetryLog)),
+      appBar: AppBar(title: Text(i18n.rawTelemetryLog)),
       body: BlocBuilder<TelemetryHistoryBloc, TelemetryHistoryState>(
         builder: (context, state) => RemoteStateView<DeviceCatalog>(
           state: state.catalog,
           onRetry: () => context.read<TelemetryHistoryBloc>().add(const TelemetryHistoryStarted()),
           emptyIcon: Icons.sensors_off_outlined,
-          emptyMessage: l10n.telemetryNoDevices,
+          emptyMessage: i18n.telemetryNoDevices,
           builder: (context, catalog) => ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
-              PageHeader(title: l10n.rawTelemetryLog, subtitle: l10n.rawTelemetrySubtitle),
+              PageHeader(title: i18n.rawTelemetryLog, subtitle: i18n.rawTelemetrySubtitle),
               const SizedBox(height: AppSpacing.md),
               _Filters(state: state, catalog: catalog, onPickRange: () => _pickRange(context, state.range)),
               const SizedBox(height: AppSpacing.md),
@@ -80,7 +80,7 @@ class _Filters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<TelemetryHistoryBloc>();
     final locale = context.localeName;
     final loading = state.points.status == ViewStatus.loading;
@@ -93,7 +93,7 @@ class _Filters extends StatelessWidget {
             key: ValueKey(state.selectedDeviceId),
             initialValue: state.selectedDeviceId,
             isExpanded: true,
-            decoration: InputDecoration(labelText: l10n.selectDevice),
+            decoration: InputDecoration(labelText: i18n.selectDevice),
             items: [
               for (final device in catalog.devices)
                 DropdownMenuItem(
@@ -123,20 +123,20 @@ class _Filters extends StatelessWidget {
             FilterChipBar<MonitoredMetric?>(
               options: [null, ...metrics],
               selected: state.metric,
-              labelOf: (m) => m == null ? l10n.filterAll : m.label(l10n),
+              labelOf: (m) => m == null ? i18n.filterAll : m.label(i18n),
               onSelected: (m) => bloc.add(TelemetryHistoryMetricChanged(m)),
             ),
           ],
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(l10n.onlyDeviations),
+            title: Text(i18n.onlyDeviations),
             value: state.onlyDeviations,
             onChanged: (v) => bloc.add(TelemetryHistoryDeviationsToggled(v)),
           ),
           FilledButton.icon(
             onPressed: loading ? null : () => bloc.add(const TelemetryHistorySearchRequested()),
             icon: const Icon(Icons.search),
-            label: Text(l10n.search),
+            label: Text(i18n.search),
           ),
         ],
       ),
@@ -151,7 +151,7 @@ class _Results extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<TelemetryHistoryBloc>();
     final remote = state.points;
     switch (remote.status) {
@@ -164,7 +164,7 @@ class _Results extends StatelessWidget {
           child: ErrorView(failure: remote.failure!, onRetry: () => bloc.add(const TelemetryHistorySearchRequested())),
         );
       case ViewStatus.empty:
-        return SizedBox(height: 220, child: EmptyView(title: l10n.noHistoryInRange));
+        return SizedBox(height: 220, child: EmptyView(title: i18n.noHistoryInRange));
       case ViewStatus.success:
         break;
     }
@@ -173,9 +173,9 @@ class _Results extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeader(title: l10n.liveEntries(total)),
+        SectionHeader(title: i18n.liveEntries(total)),
         if (items.isEmpty)
-          SizedBox(height: 160, child: EmptyView(title: l10n.noResults))
+          SizedBox(height: 160, child: EmptyView(title: i18n.noResults))
         else
           for (final m in items) ...[_HistoryTile(measurement: m), const SizedBox(height: AppSpacing.sm)],
         if (state.pageCount > 1)
@@ -183,13 +183,13 @@ class _Results extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                tooltip: l10n.previous,
+                tooltip: i18n.previous,
                 onPressed: state.page > 0 ? () => bloc.add(TelemetryHistoryPageChanged(state.page - 1)) : null,
                 icon: const Icon(Icons.chevron_left),
               ),
-              Text(l10n.pageOf(state.page + 1, state.pageCount)),
+              Text(i18n.pageOf(state.page + 1, state.pageCount)),
               IconButton(
-                tooltip: l10n.next,
+                tooltip: i18n.next,
                 onPressed: state.page + 1 < state.pageCount
                     ? () => bloc.add(TelemetryHistoryPageChanged(state.page + 1))
                     : null,
@@ -209,7 +209,7 @@ class _HistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final m = measurement;
     final critical = m.state == EnvironmentalState.critical;
     final deviation = m.state.isDeviation;
@@ -228,8 +228,8 @@ class _HistoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.parameter.toUpperCase(), style: AppTypography.overline),
-                    Text(m.metric.label(l10n, raw: m.rawMetric), style: Theme.of(context).textTheme.titleSmall),
+                    Text(i18n.parameter.toUpperCase(), style: AppTypography.overline),
+                    Text(m.metric.label(i18n, raw: m.rawMetric), style: Theme.of(context).textTheme.titleSmall),
                   ],
                 ),
               ),
@@ -240,9 +240,9 @@ class _HistoryTile extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: KeyValue(label: l10n.timestamp, value: Formatters.dateTime(m.measuredAt, context.localeName)),
+                child: KeyValue(label: i18n.timestamp, value: Formatters.dateTime(m.measuredAt, context.localeName)),
               ),
-              KeyValue(label: l10n.recordedValue, value: readingText(context, m)),
+              KeyValue(label: i18n.recordedValue, value: readingText(context, m)),
             ],
           ),
         ],

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../domain/password_policy.dart';
@@ -54,13 +54,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     return BlocConsumer<ChangePasswordBloc, ChangePasswordState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) async {
         if (state.status != ChangePasswordStatus.success) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.passwordChanged)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(i18n.passwordChanged)));
         await widget.onChanged();
       },
       builder: (context, state) {
@@ -76,13 +76,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 Semantics(
                   header: true,
                   child: Text(
-                    l10n.changePasswordTitle,
+                    i18n.changePasswordTitle,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineSmall,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Text(l10n.changePasswordForcedHint, textAlign: TextAlign.center),
+                Text(i18n.changePasswordForcedHint, textAlign: TextAlign.center),
                 const SizedBox(height: AppSpacing.xl),
               ],
               if (state.status == ChangePasswordStatus.failure && state.failure != null)
@@ -100,24 +100,24 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               _PasswordField(
                 fieldKey: const Key('changePassword.current'),
                 controller: _current,
-                label: l10n.currentPassword,
+                label: i18n.currentPassword,
                 obscure: _obscure,
                 enabled: !submitting,
                 autofillHints: const [AutofillHints.password],
-                validator: (value) => (value == null || value.isEmpty) ? l10n.passwordRequired : null,
+                validator: (value) => (value == null || value.isEmpty) ? i18n.passwordRequired : null,
               ),
               const SizedBox(height: AppSpacing.lg),
               _PasswordField(
                 fieldKey: const Key('changePassword.new'),
                 controller: _next,
-                label: l10n.newPassword,
-                helper: l10n.passwordPolicyHint,
+                label: i18n.newPassword,
+                helper: i18n.passwordPolicyHint,
                 obscure: _obscure,
                 enabled: !submitting,
                 autofillHints: const [AutofillHints.newPassword],
                 validator: (value) {
-                  if (value == null || value.isEmpty) return l10n.passwordRequired;
-                  if (!PasswordPolicy.isSatisfiedBy(value)) return l10n.passwordPolicyHint;
+                  if (value == null || value.isEmpty) return i18n.passwordRequired;
+                  if (!PasswordPolicy.isSatisfiedBy(value)) return i18n.passwordPolicyHint;
                   return null;
                 },
               ),
@@ -125,19 +125,19 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               _PasswordField(
                 fieldKey: const Key('changePassword.confirm'),
                 controller: _confirm,
-                label: l10n.confirmPassword,
+                label: i18n.confirmPassword,
                 obscure: _obscure,
                 enabled: !submitting,
                 autofillHints: const [AutofillHints.newPassword],
                 onSubmitted: (_) => _submit(),
-                validator: (value) => value != _next.text ? l10n.passwordsDoNotMatch : null,
+                validator: (value) => value != _next.text ? i18n.passwordsDoNotMatch : null,
               ),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   onPressed: () => setState(() => _obscure = !_obscure),
                   icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                  label: Text(_obscure ? l10n.showPassword : l10n.hidePassword),
+                  label: Text(_obscure ? i18n.showPassword : i18n.hidePassword),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -150,14 +150,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                         height: 22,
                         child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                       )
-                    : Text(l10n.changePassword),
+                    : Text(i18n.changePassword),
               ),
               if (widget.forced && widget.onSignOut != null) ...[
                 const SizedBox(height: AppSpacing.sm),
                 OutlinedButton.icon(
                   onPressed: submitting ? null : widget.onSignOut,
                   icon: const Icon(Icons.logout),
-                  label: Text(l10n.signOut),
+                  label: Text(i18n.signOut),
                 ),
               ],
             ],
@@ -165,7 +165,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         );
         return Scaffold(
           backgroundColor: widget.forced ? AppColors.surface : null,
-          appBar: widget.forced ? null : AppBar(title: Text(l10n.changePassword)),
+          appBar: widget.forced ? null : AppBar(title: Text(i18n.changePassword)),
           body: SafeArea(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

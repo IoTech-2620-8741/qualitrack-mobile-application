@@ -7,7 +7,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../iam/api/index.dart';
 import '../../../common/presentation/formatting/formatters.dart';
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/confirm_dialog.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
@@ -25,22 +25,22 @@ class ProfilePage extends StatelessWidget {
   final Future<void> Function() onSignOut;
 
   /// Provided by the composition root: the role names belong to Identity & Access.
-  final String Function(UserRole role, AppLocalizations l10n) roleLabel;
+  final String Function(UserRole role, AppLocalizations i18n) roleLabel;
 
   Future<void> _pickPhoto(BuildContext context) async {
     final bloc = context.read<ProfileBloc>();
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final messenger = ScaffoldMessenger.of(context);
     final file = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
     if (file == null) return;
     final contentType = ProfilePhoto.contentTypeOf(file.name) ?? file.mimeType;
     if (contentType == null || !ProfilePhoto.allowedTypes.contains(contentType)) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.photoTypeNotAllowed)));
+      messenger.showSnackBar(SnackBar(content: Text(i18n.photoTypeNotAllowed)));
       return;
     }
     final bytes = await file.readAsBytes();
     if (bytes.length > ProfilePhoto.maxBytes) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.photoTooLarge)));
+      messenger.showSnackBar(SnackBar(content: Text(i18n.photoTooLarge)));
       return;
     }
     bloc.add(ProfilePhotoPicked(ProfilePhoto(bytes: bytes, contentType: contentType)));
@@ -48,10 +48,10 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<ProfileBloc>();
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.profile)),
+      appBar: AppBar(title: Text(i18n.profile)),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listenWhen: (a, b) => a.actionStatus != b.actionStatus,
         listener: (context, state) {
@@ -59,9 +59,9 @@ class ProfilePage extends StatelessWidget {
           if (state.actionStatus == ProfileActionStatus.success) {
             messenger.showSnackBar(SnackBar(
               content: Text(switch (state.lastAction) {
-                ProfileAction.photo => l10n.photoUpdated,
-                ProfileAction.removePhoto => l10n.photoRemoved,
-                _ => l10n.profileSaved,
+                ProfileAction.photo => i18n.photoUpdated,
+                ProfileAction.removePhoto => i18n.photoRemoved,
+                _ => i18n.profileSaved,
               }),
             ));
           } else if (state.actionStatus == ProfileActionStatus.failure && state.actionFailure != null) {
@@ -91,7 +91,7 @@ class ProfilePage extends StatelessWidget {
                     TextButton.icon(
                       onPressed: busy ? null : () => _pickPhoto(context),
                       icon: const Icon(Icons.photo_camera_outlined),
-                      label: Text(profile.hasPhoto ? l10n.changePhoto : l10n.addPhoto),
+                      label: Text(profile.hasPhoto ? i18n.changePhoto : i18n.addPhoto),
                     ),
                     if (profile.hasPhoto)
                       TextButton.icon(
@@ -101,15 +101,15 @@ class ProfilePage extends StatelessWidget {
                             : () async {
                                 final ok = await showConfirmDialog(
                                   context,
-                                  title: l10n.removePhoto,
-                                  message: l10n.removePhotoConfirm,
-                                  confirmLabel: l10n.removePhoto,
+                                  title: i18n.removePhoto,
+                                  message: i18n.removePhotoConfirm,
+                                  confirmLabel: i18n.removePhoto,
                                   destructive: true,
                                 );
                                 if (ok) bloc.add(const ProfilePhotoRemoved());
                               },
                         icon: const Icon(Icons.delete_outline),
-                        label: Text(l10n.removePhoto),
+                        label: Text(i18n.removePhoto),
                       ),
                   ],
                 ),
@@ -121,12 +121,12 @@ class ProfilePage extends StatelessWidget {
                   alignment: WrapAlignment.center,
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.xs,
-                  children: [for (final role in roles) StatusBadge(label: roleLabel(role, l10n), tone: BadgeTone.brand)],
+                  children: [for (final role in roles) StatusBadge(label: roleLabel(role, i18n), tone: BadgeTone.brand)],
                 ),
                 if (busy) ...[const SizedBox(height: AppSpacing.md), const LinearProgressIndicator()],
                 const SizedBox(height: AppSpacing.lg),
                 InfoCard(
-                  title: l10n.personalData,
+                  title: i18n.personalData,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -134,10 +134,10 @@ class ProfilePage extends StatelessWidget {
                         spacing: AppSpacing.xl,
                         runSpacing: AppSpacing.lg,
                         children: [
-                          KeyValue(label: l10n.fullName, value: profile.fullName ?? '—'),
-                          KeyValue(label: l10n.dni, value: profile.dni ?? '—'),
-                          KeyValue(label: l10n.phone, value: profile.phoneNumber ?? '—'),
-                          KeyValue(label: l10n.location, value: profile.location ?? '—'),
+                          KeyValue(label: i18n.fullName, value: profile.fullName ?? '—'),
+                          KeyValue(label: i18n.dni, value: profile.dni ?? '—'),
+                          KeyValue(label: i18n.phone, value: profile.phoneNumber ?? '—'),
+                          KeyValue(label: i18n.location, value: profile.location ?? '—'),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -146,7 +146,7 @@ class ProfilePage extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: busy ? null : () => _editPersonalData(context, profile),
                           icon: const Icon(Icons.edit_outlined),
-                          label: Text(l10n.edit),
+                          label: Text(i18n.edit),
                         ),
                       ),
                     ],
@@ -154,31 +154,31 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 InfoCard(
-                  title: l10n.account,
+                  title: i18n.account,
                   child: Wrap(
                     spacing: AppSpacing.xl,
                     runSpacing: AppSpacing.lg,
                     children: [
-                      KeyValue(label: l10n.username, value: profile.username),
-                      KeyValue(label: l10n.email, value: profile.email ?? '—'),
+                      KeyValue(label: i18n.username, value: profile.username),
+                      KeyValue(label: i18n.email, value: profile.email ?? '—'),
                     ],
                   ),
                 ),
                 if (lab != null) ...[
                   const SizedBox(height: AppSpacing.md),
                   InfoCard(
-                    title: l10n.laboratory,
+                    title: i18n.laboratory,
                     child: Wrap(
                       spacing: AppSpacing.xl,
                       runSpacing: AppSpacing.lg,
                       children: [
-                        KeyValue(label: l10n.name, value: lab.name),
-                        KeyValue(label: l10n.ruc, value: lab.ruc ?? '—'),
-                        KeyValue(label: l10n.phone, value: lab.phone ?? '—'),
-                        KeyValue(label: l10n.address, value: lab.address ?? '—'),
-                        KeyValue(label: l10n.status, value: Formatters.humanize(lab.status)),
+                        KeyValue(label: i18n.name, value: lab.name),
+                        KeyValue(label: i18n.ruc, value: lab.ruc ?? '—'),
+                        KeyValue(label: i18n.phone, value: lab.phone ?? '—'),
+                        KeyValue(label: i18n.address, value: lab.address ?? '—'),
+                        KeyValue(label: i18n.status, value: Formatters.humanize(lab.status)),
                         if (lab.applicableRegulations.isNotEmpty)
-                          KeyValue(label: l10n.regulations, value: lab.applicableRegulations.join(', ')),
+                          KeyValue(label: i18n.regulations, value: lab.applicableRegulations.join(', ')),
                       ],
                     ),
                   ),
@@ -189,14 +189,14 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.lock_reset, color: AppColors.primary),
-                        title: Text(l10n.changePassword),
+                        title: Text(i18n.changePassword),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/profile/password'),
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
-                        title: Text(l10n.notificationPreferences),
+                        title: Text(i18n.notificationPreferences),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => context.push('/profile/notifications'),
                       ),
@@ -208,7 +208,7 @@ class ProfilePage extends StatelessWidget {
                   style: OutlinedButton.styleFrom(foregroundColor: AppColors.critical),
                   onPressed: onSignOut,
                   icon: const Icon(Icons.logout),
-                  label: Text(l10n.signOut),
+                  label: Text(i18n.signOut),
                 ),
               ],
             );
@@ -267,7 +267,7 @@ class _PersonalDataSheetState extends State<_PersonalDataSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     String? optional(String? value, bool Function(String) valid, String message) =>
         (value == null || value.trim().isEmpty || valid(value)) ? null : message;
     return Padding(
@@ -283,14 +283,14 @@ class _PersonalDataSheetState extends State<_PersonalDataSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(l10n.personalData, style: Theme.of(context).textTheme.titleLarge),
+              Text(i18n.personalData, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 key: const Key('profile.fullName'),
                 controller: _fullName,
                 textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(labelText: l10n.fullName),
-                validator: (v) => PersonalDataRules.isValidFullName(v ?? '') ? null : l10n.fullNameInvalid,
+                decoration: InputDecoration(labelText: i18n.fullName),
+                validator: (v) => PersonalDataRules.isValidFullName(v ?? '') ? null : i18n.fullNameInvalid,
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
@@ -298,25 +298,25 @@ class _PersonalDataSheetState extends State<_PersonalDataSheet> {
                 controller: _dni,
                 keyboardType: TextInputType.number,
                 maxLength: 8,
-                decoration: InputDecoration(labelText: l10n.dni),
-                validator: (v) => optional(v, PersonalDataRules.isValidDni, l10n.dniInvalid),
+                decoration: InputDecoration(labelText: i18n.dni),
+                validator: (v) => optional(v, PersonalDataRules.isValidDni, i18n.dniInvalid),
               ),
               TextFormField(
                 key: const Key('profile.phone'),
                 controller: _phone,
                 keyboardType: TextInputType.phone,
-                decoration: InputDecoration(labelText: l10n.phone),
-                validator: (v) => optional(v, PersonalDataRules.isValidPhone, l10n.phoneInvalid),
+                decoration: InputDecoration(labelText: i18n.phone),
+                validator: (v) => optional(v, PersonalDataRules.isValidPhone, i18n.phoneInvalid),
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 key: const Key('profile.location'),
                 controller: _location,
-                decoration: InputDecoration(labelText: l10n.location),
-                validator: (v) => optional(v, PersonalDataRules.isValidLocation, l10n.locationInvalid),
+                decoration: InputDecoration(labelText: i18n.location),
+                validator: (v) => optional(v, PersonalDataRules.isValidLocation, i18n.locationInvalid),
               ),
               const SizedBox(height: AppSpacing.lg),
-              FilledButton(key: const Key('profile.save'), onPressed: _save, child: Text(l10n.save)),
+              FilledButton(key: const Key('profile.save'), onPressed: _save, child: Text(i18n.save)),
             ],
           ),
         ),

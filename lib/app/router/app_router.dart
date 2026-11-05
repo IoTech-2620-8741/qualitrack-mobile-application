@@ -41,7 +41,7 @@ import '../../profile/presentation/bloc/profile_bloc.dart';
 import '../../profile/presentation/pages/profile_page.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
 import '../../reporting/presentation/pages/reports_page.dart';
-import '../../common/presentation/l10n/app_localizations.dart';
+import '../../common/presentation/i18n/app_localizations.dart';
 import '../../common/presentation/widgets/state_views.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
 import '../../subscription/presentation/pages/billing_page.dart';
@@ -79,7 +79,7 @@ int? _intParam(String? raw) {
   return value != null && value > 0 ? value : null;
 }
 
-Widget _invalidId(BuildContext context) => Scaffold(appBar: AppBar(), body: EmptyView(title: context.l10n.errorNotFound));
+Widget _invalidId(BuildContext context) => Scaffold(appBar: AppBar(), body: EmptyView(title: context.i18n.errorNotFound));
 
 /// Lets the router listen to the Flutter-free [SessionController].
 class _SessionRefresh extends ChangeNotifier {
@@ -245,7 +245,7 @@ GoRouter createRouter(
         path: AppRoutes.profile,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<ProfileBloc>()..add(const ProfileRequested()),
-          child: ProfilePage(onSignOut: session.signOut, roleLabel: (role, l10n) => role.label(l10n)),
+          child: ProfilePage(onSignOut: session.signOut, roleLabel: (role, i18n) => role.label(i18n)),
         ),
         routes: [
           GoRoute(
