@@ -15,7 +15,8 @@ import 'package:qualitrack_mobile/iam/domain/user_role.dart';
 import 'package:qualitrack_mobile/iam/infrastructure/iam_dtos.dart';
 import 'package:qualitrack_mobile/iam/infrastructure/iam_repositories_impl.dart';
 import 'package:qualitrack_mobile/inventory/infrastructure/inventory_infrastructure.dart';
-import 'package:qualitrack_mobile/laboratory/infrastructure/laboratory_infrastructure.dart';
+import 'package:qualitrack_mobile/laboratory/infrastructure/data_sources/laboratory_remote_data_provider.dart';
+import 'package:qualitrack_mobile/laboratory/infrastructure/repositories/laboratory_repository.dart';
 import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
 import 'package:qualitrack_mobile/profile/infrastructure/data_sources/profile_remote_data_provider.dart';
 import 'package:qualitrack_mobile/profile/infrastructure/repositories/profile_repository.dart';
@@ -364,7 +365,7 @@ void main() {
 
       expect(await InventoryRepositoryImpl(InventoryRemoteDataSource(client)).getMovements(lab, materialFixture()), isEmpty);
       expect(
-        (await LaboratoryRepositoryImpl(LaboratoryRemoteDataSource(client)).getEnvironments(lab)).map((e) => e.code),
+        (await LaboratoryRepository(remoteDataProvider: LaboratoryRemoteDataProvider(client)).getEnvironments(lab)).map((e) => e.code),
         ['ALM-01'],
       );
       final subscriptions = await SubscriptionRepository(remoteDataProvider: SubscriptionRemoteDataProvider(client)).getSubscriptions(lab);

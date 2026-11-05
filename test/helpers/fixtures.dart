@@ -8,7 +8,8 @@ import 'package:qualitrack_mobile/iam/domain/access_token.dart';
 import 'package:qualitrack_mobile/iam/domain/user_role.dart';
 import 'package:qualitrack_mobile/iam/domain/user_session.dart';
 import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
-import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/environment_usage.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/lab_environment.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 

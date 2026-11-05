@@ -35,9 +35,11 @@ import '../../inventory/domain/inventory.dart';
 import '../../inventory/infrastructure/inventory_infrastructure.dart';
 import '../../inventory/presentation/bloc/inventory_bloc.dart';
 import '../../inventory/presentation/bloc/material_detail_bloc.dart';
-import '../../laboratory/application/laboratory_queries.dart';
-import '../../laboratory/domain/laboratory.dart';
-import '../../laboratory/infrastructure/laboratory_infrastructure.dart';
+import '../../laboratory/api/index.dart';
+import '../../laboratory/application/laboratory_facade_service.dart';
+import '../../laboratory/domain/interfaces/laboratory_interface.dart';
+import '../../laboratory/infrastructure/data_sources/laboratory_remote_data_provider.dart';
+import '../../laboratory/infrastructure/repositories/laboratory_repository.dart';
 import '../../laboratory/presentation/bloc/products_bloc.dart';
 import '../../profile/application/profile_facade_service.dart';
 import '../../profile/domain/interfaces/profile_interface.dart';
@@ -100,12 +102,10 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   );
 
   // Laboratory Management
-  sl.registerLazySingleton(() => LaboratoryRemoteDataSource(sl()));
-  sl.registerLazySingleton<LaboratoryRepository>(() => LaboratoryRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetLaboratory(sl()));
-  sl.registerLazySingleton(() => GetEnvironments(sl()));
-  sl.registerLazySingleton(() => GetProductCatalog(sl()));
-  sl.registerLazySingleton(() => GetUserDirectory(sl()));
+  sl.registerLazySingleton(() => LaboratoryRemoteDataProvider(sl()));
+  sl.registerLazySingleton<LaboratoryInterface>(() => LaboratoryRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => LaboratoryFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => LaboratoryApi(sl()));
 
   // Equipment Management
   sl.registerLazySingleton(() => EquipmentRemoteDataSource(sl()));
@@ -181,8 +181,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   // Command Center (UI composition)
   sl.registerLazySingleton(
     () => GetCommandCenterSummary(
-      getLaboratory: sl(),
-      getEnvironments: sl(),
+      laboratoryApi: sl(),
       getEquipments: sl(),
       getConnections: sl(),
       batchApi: sl(),
@@ -209,7 +208,7 @@ void _registerBlocs() {
   sl.registerFactory(
     () => ProfileBloc(
       profileService: sl(),
-      getLaboratory: sl(),
+      laboratoryApi: sl(),
       laboratoryId: () => sl<SessionController>().session?.laboratoryId,
       onProfileChanged: (profile) => sl<CurrentProfileController>().changed(profile),
     ),
@@ -221,29 +220,28 @@ void _registerBlocs() {
       includeSubscription: _session().canManageQuality,
     ),
   );
-  sl.registerFactory(() => ProductsBloc(getCatalog: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => ProductsBloc(laboratoryService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactory(
-    () => EquipmentListBloc(getEquipments: sl(), getEnvironments: sl(), getConnections: sl(), laboratoryId: _laboratoryId),
+    () => EquipmentListBloc(getEquipments: sl(), laboratoryApi: sl(), getConnections: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<EquipmentDetailBloc, int, void>(
     (id, _) => EquipmentDetailBloc(
       equipmentId: id,
       getEquipment: sl(),
-      getEnvironments: sl(),
+      laboratoryApi: sl(),
       getConnection: sl(),
       getBpmConfigs: sl(),
       getMaintenance: sl(),
       getTrends: sl(),
       getEvents: sl(),
       getAuditLogs: sl(),
-      getUserDirectory: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
     () => TelemetryDashboardBloc(
       getEquipments: sl(),
-      getEnvironments: sl(),
+      laboratoryApi: sl(),
       getConnection: sl(),
       getMeasurements: sl(),
       getProfile: sl(),
@@ -254,21 +252,20 @@ void _registerBlocs() {
   sl.registerFactory(
     () => TelemetryHistoryBloc(
       getEquipments: sl(),
-      getEnvironments: sl(),
+      laboratoryApi: sl(),
       getMeasurements: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
-    () => AlertsBloc(getEnvironments: sl(), getEquipments: sl(), getAlerts: sl(), laboratoryId: _laboratoryId),
+    () => AlertsBloc(laboratoryApi: sl(), getEquipments: sl(), getAlerts: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<AlertDetailBloc, int, void>(
     (id, _) => AlertDetailBloc(
       alertId: id,
       getAlert: sl(),
       getEquipment: sl(),
-      getEnvironments: sl(),
-      getUserDirectory: sl(),
+      laboratoryApi: sl(),
       acknowledge: sl(),
       resolve: sl(),
       laboratoryId: _laboratoryId,
@@ -290,16 +287,16 @@ void _registerBlocs() {
       batchService: sl(),
       getEvents: sl(),
       getAuditLogs: sl(),
-      getUserDirectory: sl(),
+      laboratoryApi: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
-  sl.registerFactory(() => InventoryBloc(getEnvironments: sl(), getMaterials: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => InventoryBloc(laboratoryApi: sl(), getMaterials: sl(), laboratoryId: _laboratoryId));
   sl.registerFactoryParam<MaterialDetailBloc, int, int?>(
     (id, environmentId) => MaterialDetailBloc(
       materialId: id,
       environmentId: environmentId,
-      getEnvironments: sl(),
+      laboratoryApi: sl(),
       getMaterials: sl(),
       getMaterial: sl(),
       getReceipts: sl(),
@@ -313,7 +310,7 @@ void _registerBlocs() {
       getKpiDashboard: sl(),
       getDeviationTrends: sl(),
       getReportHistory: sl(),
-      getEnvironments: sl(),
+      laboratoryApi: sl(),
       getEquipments: sl(),
       laboratoryId: _laboratoryId,
     ),

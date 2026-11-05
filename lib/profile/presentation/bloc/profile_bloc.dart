@@ -101,11 +101,11 @@ final class ProfileState extends Equatable {
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc({
     required ProfileFacadeService profileService,
-    required GetLaboratory getLaboratory,
+    required LaboratoryApi laboratoryApi,
     required LaboratoryId? Function() laboratoryId,
     required void Function(UserProfile profile) onProfileChanged,
   }) : _profileService = profileService,
-       _getLaboratory = getLaboratory,
+       _laboratoryApi = laboratoryApi,
        _laboratoryId = laboratoryId,
        _onProfileChanged = onProfileChanged,
        super(const ProfileState()) {
@@ -124,7 +124,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   final ProfileFacadeService _profileService;
-  final GetLaboratory _getLaboratory;
+  final LaboratoryApi _laboratoryApi;
   final LaboratoryId? Function() _laboratoryId;
   final void Function(UserProfile profile) _onProfileChanged;
 
@@ -134,7 +134,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final profile = await _profileService.getMyProfile();
       final photo = profile.hasPhoto ? await _optional(_profileService.getMyPhoto) : null;
       final labId = _laboratoryId();
-      final laboratory = labId == null ? null : await _optional(() => _getLaboratory(labId));
+      final laboratory = labId == null ? null : await _optional(() => _laboratoryApi.getLaboratory(labId));
       _onProfileChanged(profile);
       emit(state.copyWith(remote: state.remote.success(ProfileData(profile: profile, photo: photo, laboratory: laboratory))));
     } catch (error) {

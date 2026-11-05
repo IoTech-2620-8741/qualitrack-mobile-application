@@ -226,7 +226,7 @@ final class TelemetryState extends Equatable {
 class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
   TelemetryDashboardBloc({
     required GetEquipments getEquipments,
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetDeviceConnection getConnection,
     required GetMeasurements getMeasurements,
     required GetEnvironmentalProfile getProfile,
@@ -238,7 +238,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
     this.actuationsEveryTicks = 4,
     this.lookback = const Duration(hours: 24),
   }) : _getEquipments = getEquipments,
-       _getEnvironments = getEnvironments,
+       _laboratoryApi = laboratoryApi,
        _getConnection = getConnection,
        _getMeasurements = getMeasurements,
        _getProfile = getProfile,
@@ -269,7 +269,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
   }
 
   final GetEquipments _getEquipments;
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetDeviceConnection _getConnection;
   final GetMeasurements _getMeasurements;
   final GetEnvironmentalProfile _getProfile;
@@ -290,7 +290,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
     emit(state.copyWith(catalog: state.catalog.loading()));
     try {
       final laboratoryId = _laboratoryId();
-      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _getEnvironments(laboratoryId)]);
+      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _laboratoryApi.getEnvironments(laboratoryId)]);
       final catalog = DeviceCatalog(
         devices: telemetryDevices(results[0] as List<Equipment>),
         environments: results[1] as List<LabEnvironment>,

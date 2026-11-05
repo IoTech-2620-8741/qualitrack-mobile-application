@@ -97,16 +97,14 @@ final class CommandCenterSummary extends Equatable {
 
 class GetCommandCenterSummary {
   const GetCommandCenterSummary({
-    required GetLaboratory getLaboratory,
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetEquipments getEquipments,
     required GetDeviceConnections getConnections,
     required BatchApi batchApi,
     required GetLaboratoryAlerts getAlerts,
     required GetInventoryMaterials getMaterials,
     required SubscriptionApi subscriptionApi,
-  }) : _getLaboratory = getLaboratory,
-       _getEnvironments = getEnvironments,
+  }) : _laboratoryApi = laboratoryApi,
        _getEquipments = getEquipments,
        _getConnections = getConnections,
        _batchApi = batchApi,
@@ -114,8 +112,7 @@ class GetCommandCenterSummary {
        _getMaterials = getMaterials,
        _subscriptionApi = subscriptionApi;
 
-  final GetLaboratory _getLaboratory;
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetEquipments _getEquipments;
   final GetDeviceConnections _getConnections;
   final BatchApi _batchApi;
@@ -124,14 +121,14 @@ class GetCommandCenterSummary {
   final SubscriptionApi _subscriptionApi;
 
   Future<CommandCenterSummary> call(LaboratoryId lab, {required bool includeSubscription}) async {
-    final environmentsPart = await _part(() => _getEnvironments(lab));
+    final environmentsPart = await _part(() => _laboratoryApi.getEnvironments(lab));
     final environmentIds = environmentsPart.value?.map((e) => e.id).toList();
     Future<Part<T>> perEnvironment<T>(Future<T> Function(List<int> ids) load) => environmentIds == null
         ? Future.value(Part<T>.failed(environmentsPart.failure!))
         : _part(() => load(environmentIds));
 
     final results = await Future.wait<Object?>([
-      _part(() => _getLaboratory(lab)),
+      _part(() => _laboratoryApi.getLaboratory(lab)),
       _part(() async {
         final equipments = await _getEquipments(lab);
         final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();

@@ -8,8 +8,9 @@ import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
 import 'package:qualitrack_mobile/inventory/application/inventory_queries.dart';
-import 'package:qualitrack_mobile/laboratory/application/laboratory_queries.dart';
-import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
+import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/pharmaceutical_product.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/staff_member.dart';
 import 'package:qualitrack_mobile/profile/application/profile_facade_service.dart';
 import 'package:qualitrack_mobile/profile/domain/entities/personal_data.dart';
 import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
@@ -94,7 +95,7 @@ void main() {
         (_) async => [const PharmaceuticalProduct(id: 2, environmentId: 4, code: 'P2', name: 'Amoxicillin', active: true)],
       );
 
-      final catalog = await GetProductCatalog(repo)(lab);
+      final catalog = await LaboratoryFacadeService(repository: repo).getProductCatalog(lab);
 
       expect(catalog.environments.map((e) => e.code), ['ALM-01', 'PRD-01']);
       expect(catalog.products.map((p) => p.name), ['Amoxicillin', 'Zinc']);
@@ -108,7 +109,7 @@ void main() {
           StaffMember(id: 2, fullName: 'No account', active: true),
         ],
       );
-      expect(await GetUserDirectory(repo)(lab), {5: 'Lucía Ramos'});
+      expect(await LaboratoryFacadeService(repository: repo).getUserDirectory(lab), {5: 'Lucía Ramos'});
     });
   });
 

@@ -79,13 +79,13 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     required GetKpiDashboard getKpiDashboard,
     required GetDeviationTrends getDeviationTrends,
     required GetReportHistory getReportHistory,
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetEquipments getEquipments,
     required LaboratoryId Function() laboratoryId,
   }) : _getKpi = getKpiDashboard,
        _getTrends = getDeviationTrends,
        _getReports = getReportHistory,
-       _getEnvironments = getEnvironments,
+       _laboratoryApi = laboratoryApi,
        _getEquipments = getEquipments,
        _laboratoryId = laboratoryId,
        super(const ReportsState()) {
@@ -100,7 +100,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   final GetKpiDashboard _getKpi;
   final GetDeviationTrends _getTrends;
   final GetReportHistory _getReports;
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetEquipments _getEquipments;
   final LaboratoryId Function() _laboratoryId;
 
@@ -110,7 +110,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     try {
       final lab = _laboratoryId();
       final period = state.period;
-      final results = await Future.wait<Object>([_getEnvironments(lab), _getEquipments(lab)]);
+      final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(lab), _getEquipments(lab)]);
       final environments = results[0] as List<LabEnvironment>;
       final equipments = results[1] as List<Equipment>;
       // Each part loads independently: one failing indicator must not hide the rest.

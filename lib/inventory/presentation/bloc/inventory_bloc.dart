@@ -94,10 +94,10 @@ final class InventoryState extends Equatable {
 
 class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
   InventoryBloc({
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetInventoryMaterials getMaterials,
     required LaboratoryId Function() laboratoryId,
-  }) : _getEnvironments = getEnvironments,
+  }) : _laboratoryApi = laboratoryApi,
        _getMaterials = getMaterials,
        _laboratoryId = laboratoryId,
        super(const InventoryState()) {
@@ -106,7 +106,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
     on<InventoryFilterChanged>((e, emit) => emit(state.copyWith(filter: e.filter)));
   }
 
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetInventoryMaterials _getMaterials;
   final LaboratoryId Function() _laboratoryId;
 
@@ -117,7 +117,7 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
     ));
     try {
       final lab = _laboratoryId();
-      final environments = await _getEnvironments(lab);
+      final environments = await _laboratoryApi.getEnvironments(lab);
       final materials = await _getMaterials(lab, environments.map((e) => e.id));
       emit(state.copyWith(
         remote: state.remote.success(materials, empty: materials.isEmpty),

@@ -66,24 +66,22 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
   EquipmentDetailBloc({
     required this.equipmentId,
     required GetEquipment getEquipment,
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetDeviceConnection getConnection,
     required GetBpmConfigs getBpmConfigs,
     required GetMaintenanceHistory getMaintenance,
     required GetDeviationTrends getTrends,
     required GetEquipmentComplianceEvents getEvents,
     required GetEquipmentAuditLogs getAuditLogs,
-    required GetUserDirectory getUserDirectory,
     required LaboratoryId Function() laboratoryId,
   }) : _getEquipment = getEquipment,
-       _getEnvironments = getEnvironments,
+       _laboratoryApi = laboratoryApi,
        _getConnection = getConnection,
        _getBpmConfigs = getBpmConfigs,
        _getMaintenance = getMaintenance,
        _getTrends = getTrends,
        _getEvents = getEvents,
        _getAuditLogs = getAuditLogs,
-       _getUserDirectory = getUserDirectory,
        _laboratoryId = laboratoryId,
        super(const RemoteState()) {
     on<EquipmentDetailRequested>(_onRequested);
@@ -91,14 +89,13 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
 
   final int equipmentId;
   final GetEquipment _getEquipment;
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetDeviceConnection _getConnection;
   final GetBpmConfigs _getBpmConfigs;
   final GetMaintenanceHistory _getMaintenance;
   final GetDeviationTrends _getTrends;
   final GetEquipmentComplianceEvents _getEvents;
   final GetEquipmentAuditLogs _getAuditLogs;
-  final GetUserDirectory _getUserDirectory;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(EquipmentDetailRequested event, Emitter<RemoteState<EquipmentDetail>> emit) async {
@@ -110,7 +107,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
       final environmentId = equipment.environmentId;
       final results = await Future.wait<Object?>([
         _optional(() async {
-          for (final environment in await _getEnvironments(lab)) {
+          for (final environment in await _laboratoryApi.getEnvironments(lab)) {
             if (environment.id == environmentId) return environment.displayName;
           }
           return null;
@@ -125,7 +122,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
         }),
         Section.load(() => _getEvents(lab, equipmentId)),
         Section.load(() => _getAuditLogs(lab, equipmentId)),
-        _optional(() => _getUserDirectory(lab)),
+        _optional(() => _laboratoryApi.getUserDirectory(lab)),
       ]);
       emit(state.success(EquipmentDetail(
         equipment: equipment,
