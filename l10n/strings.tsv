@@ -418,3 +418,22 @@ unread	Unread	Sin leer
 until	until {date}	hasta el {date}	date:String
 viewAll	View all	Ver todas
 you	You	Tú
+overallHealth	Overall health	Salud general
+healthOnTrack	on target	en meta
+healthAtRisk	at risk	en riesgo
+healthCritical	critical	crítico
+healthNoData	No data	Sin datos
+tabDeviations	Deviations ({count})	Desviaciones ({count})	count:int
+tabMeasurements	Measurements	Mediciones
+tabHistory	History	Historial
+noData	No data	Sin datos
+seeMore	See more	Ver más
+seeAll	See all	Ver todos
+totalReadings	{count} readings per variable	{count} lecturas por variable	count:int
+eventCount	{count} event	{count} evento	count:int
+eventCountPlural	{count} events	{count} eventos	count:int
+seeLast31Days	See last 31 days	Ver últimos 31 días
+historyIndependentOfPeriod	Independent of the selected period	No depende del período seleccionado
+reportHistoryBanner	Reports are generated and downloaded in QualiTrack Web.	Los reportes se generan y descargan en QualiTrack Web.
+swipeHint	Swipe sideways to change section	Desliza a los lados para cambiar de sección
+seeMoreCount	See {count} more	Ver {count} más	count:int
