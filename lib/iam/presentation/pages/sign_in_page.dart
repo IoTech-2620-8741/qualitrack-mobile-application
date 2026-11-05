@@ -72,7 +72,7 @@ class _SignInFormState extends State<SignInForm> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     return BlocBuilder<SignInBloc, SignInState>(
       builder: (context, state) {
@@ -88,28 +88,28 @@ class _SignInFormState extends State<SignInForm> {
                 Semantics(
                   header: true,
                   child: Text(
-                    l10n.signInTitle,
+                    i18n.signInTitle,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineSmall,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  l10n.signInSubtitle,
+                  i18n.signInSubtitle,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 if (widget.sessionExpired && state.status == SignInStatus.idle)
-                  _Banner(message: l10n.sessionExpired, tone: AppColors.warning),
+                  _Banner(message: i18n.sessionExpired, tone: AppColors.warning),
                 if (state.status == SignInStatus.failure && state.failure != null)
                   _Banner(
                     message: state.failure is UnauthorizedFailure
-                        ? l10n.invalidCredentials
+                        ? i18n.invalidCredentials
                         : failureMessage(context, state.failure!),
                     tone: AppColors.critical,
                   ),
-                Text(l10n.username, style: theme.textTheme.titleSmall),
+                Text(i18n.username, style: theme.textTheme.titleSmall),
                 const SizedBox(height: AppSpacing.xs),
                 TextFormField(
                   key: const Key('signIn.username'),
@@ -119,14 +119,14 @@ class _SignInFormState extends State<SignInForm> {
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
-                    hintText: l10n.usernameHint,
+                    hintText: i18n.usernameHint,
                     prefixIcon: const Icon(Icons.person_outline),
                   ),
                   validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? l10n.usernameRequired : null,
+                      (value == null || value.trim().isEmpty) ? i18n.usernameRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Text(l10n.password, style: theme.textTheme.titleSmall),
+                Text(i18n.password, style: theme.textTheme.titleSmall),
                 const SizedBox(height: AppSpacing.xs),
                 TextFormField(
                   key: const Key('signIn.password'),
@@ -137,16 +137,16 @@ class _SignInFormState extends State<SignInForm> {
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
-                    hintText: l10n.passwordHint,
+                    hintText: i18n.passwordHint,
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
+                      tooltip: _obscure ? i18n.showPassword : i18n.hidePassword,
                       icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
                   validator: (value) =>
-                      (value == null || value.isEmpty) ? l10n.passwordRequired : null,
+                      (value == null || value.isEmpty) ? i18n.passwordRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 FilledButton(
@@ -154,18 +154,18 @@ class _SignInFormState extends State<SignInForm> {
                   onPressed: submitting ? null : _submit,
                   child: submitting
                       ? Semantics(
-                          label: l10n.signingIn,
+                          label: i18n.signingIn,
                           child: const SizedBox(
                             width: 22,
                             height: 22,
                             child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                           ),
                         )
-                      : Text(l10n.signIn),
+                      : Text(i18n.signIn),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 Text(
-                  l10n.accountsManagedOnWeb,
+                  i18n.accountsManagedOnWeb,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall,
                 ),

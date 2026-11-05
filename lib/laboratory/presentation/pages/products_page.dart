@@ -21,15 +21,15 @@ class ProductsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.productsTitle)),
+      appBar: AppBar(title: Text(i18n.productsTitle)),
       body: BlocBuilder<ProductsBloc, ProductsState>(
         builder: (context, state) => RemoteStateView<ProductCatalog>(
           state: state.remote,
           onRetry: () => _reload(context),
           emptyIcon: Icons.medication_outlined,
-          emptyMessage: l10n.productsEmpty,
+          emptyMessage: i18n.productsEmpty,
           builder: (context, _) {
             final items = state.visible;
             return RefreshIndicator(
@@ -38,17 +38,17 @@ class ProductsPage extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
                   PageHeader(
-                    title: l10n.productsTitle,
-                    subtitle: l10n.productsCount(state.remote.data?.products.length ?? 0),
+                    title: i18n.productsTitle,
+                    subtitle: i18n.productsCount(state.remote.data?.products.length ?? 0),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   SearchField(
-                    hint: l10n.searchProducts,
+                    hint: i18n.searchProducts,
                     onChanged: (q) => context.read<ProductsBloc>().add(ProductsQueryChanged(q)),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (items.isEmpty)
-                    SizedBox(height: 240, child: EmptyView(title: l10n.noResults))
+                    SizedBox(height: 240, child: EmptyView(title: i18n.noResults))
                   else
                     for (final product in items) ...[
                       _ProductTile(
@@ -75,7 +75,7 @@ class _ProductTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return Card(
       child: ListTile(
         onTap: () => context.push('/products/${product.id}'),
@@ -95,7 +95,7 @@ class _ProductTile extends StatelessWidget {
           children: [
             Text(product.code, style: const TextStyle(fontFamily: AppTypography.monospace)),
             if (!product.active)
-              StatusBadge(label: l10n.inactive, tone: BadgeTone.neutral),
+              StatusBadge(label: i18n.inactive, tone: BadgeTone.neutral),
           ],
         ),
       ),
@@ -110,16 +110,16 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.productDetail)),
+      appBar: AppBar(title: Text(i18n.productDetail)),
       body: BlocBuilder<ProductsBloc, ProductsState>(
         builder: (context, state) => RemoteStateView<ProductCatalog>(
           state: state.remote,
           onRetry: () => context.read<ProductsBloc>().add(const ProductsRequested()),
           builder: (context, _) {
             final product = state.byId(productId);
-            if (product == null) return EmptyView(title: l10n.errorNotFound);
+            if (product == null) return EmptyView(title: i18n.errorNotFound);
             return ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
@@ -130,16 +130,16 @@ class ProductDetailPage extends StatelessWidget {
                     spacing: AppSpacing.xl,
                     runSpacing: AppSpacing.lg,
                     children: [
-                      KeyValue(label: l10n.code, value: product.code),
+                      KeyValue(label: i18n.code, value: product.code),
                       KeyValue(
-                        label: l10n.environment,
+                        label: i18n.environment,
                         value: state.remote.data?.environment(product.environmentId)?.displayName ?? '—',
                       ),
                       KeyValue(
-                        label: l10n.status,
-                        value: product.active ? l10n.active : l10n.inactive,
+                        label: i18n.status,
+                        value: product.active ? i18n.active : i18n.inactive,
                         valueWidget: StatusBadge(
-                          label: product.active ? l10n.active : l10n.inactive,
+                          label: product.active ? i18n.active : i18n.inactive,
                           tone: product.active ? BadgeTone.success : BadgeTone.neutral,
                         ),
                       ),
@@ -148,12 +148,12 @@ class ProductDetailPage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 InfoCard(
-                  title: l10n.description,
+                  title: i18n.description,
                   child: Text(product.description?.isNotEmpty == true ? product.description! : '—'),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 InfoCard(
-                  title: l10n.bpmSpecifications,
+                  title: i18n.bpmSpecifications,
                   child: Text(
                     product.specifications?.isNotEmpty == true ? product.specifications! : '—',
                   ),

@@ -43,7 +43,7 @@ class SectionCard<T> extends StatelessWidget {
         ],
       );
     } else if (section.items.isEmpty) {
-      body = Text(emptyMessage ?? context.l10n.noInformation, style: theme.textTheme.bodySmall);
+      body = Text(emptyMessage ?? context.i18n.noInformation, style: theme.textTheme.bodySmall);
     } else {
       final items = maxItems == null ? section.items : section.items.take(maxItems!).toList();
       body = Column(

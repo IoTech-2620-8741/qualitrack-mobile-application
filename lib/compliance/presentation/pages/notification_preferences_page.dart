@@ -17,16 +17,16 @@ class NotificationPreferencesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<NotificationPreferencesBloc>();
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.notificationPreferences)),
+      appBar: AppBar(title: Text(i18n.notificationPreferences)),
       body: BlocConsumer<NotificationPreferencesBloc, NotificationPreferencesState>(
         listenWhen: (a, b) => a.saveStatus != b.saveStatus,
         listener: (context, state) {
           final messenger = ScaffoldMessenger.of(context);
           if (state.saveStatus == PreferencesSaveStatus.saved) {
-            messenger.showSnackBar(SnackBar(content: Text(l10n.preferencesSaved)));
+            messenger.showSnackBar(SnackBar(content: Text(i18n.preferencesSaved)));
           } else if (state.saveStatus == PreferencesSaveStatus.failure && state.saveFailure != null) {
             messenger.showSnackBar(SnackBar(
               backgroundColor: AppColors.critical,
@@ -49,15 +49,15 @@ class NotificationPreferencesPage extends StatelessWidget {
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.inAppNotifications),
-                        subtitle: Text(l10n.inAppNotificationsHint),
+                        title: Text(i18n.inAppNotifications),
+                        subtitle: Text(i18n.inAppNotificationsHint),
                         value: preferences.inAppEnabled,
                         onChanged: saving ? null : (v) => save(preferences.copyWith(inAppEnabled: v)),
                       ),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(l10n.emailNotifications),
-                        subtitle: Text(l10n.emailNotificationsHint),
+                        title: Text(i18n.emailNotifications),
+                        subtitle: Text(i18n.emailNotificationsHint),
                         value: preferences.emailEnabled,
                         onChanged: saving ? null : (v) => save(preferences.copyWith(emailEnabled: v)),
                       ),
@@ -66,16 +66,16 @@ class NotificationPreferencesPage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 InfoCard(
-                  title: l10n.minimumSeverity,
+                  title: i18n.minimumSeverity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(l10n.minimumSeverityHint, style: Theme.of(context).textTheme.bodySmall),
+                      Text(i18n.minimumSeverityHint, style: Theme.of(context).textTheme.bodySmall),
                       const SizedBox(height: AppSpacing.sm),
                       SegmentedButton<AlertSeverity>(
                         segments: [
-                          ButtonSegment(value: AlertSeverity.warning, label: Text(l10n.severityWarning)),
-                          ButtonSegment(value: AlertSeverity.critical, label: Text(l10n.severityCritical)),
+                          ButtonSegment(value: AlertSeverity.warning, label: Text(i18n.severityWarning)),
+                          ButtonSegment(value: AlertSeverity.critical, label: Text(i18n.severityCritical)),
                         ],
                         selected: {
                           preferences.minimumSeverity == AlertSeverity.critical

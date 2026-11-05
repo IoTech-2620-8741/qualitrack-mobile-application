@@ -12,13 +12,13 @@ class NotificationBell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
         final count = controller.count;
         return IconButton(
-          tooltip: count == 0 ? l10n.notificationsTitle : l10n.notificationsUnread(count),
+          tooltip: count == 0 ? i18n.notificationsTitle : i18n.notificationsUnread(count),
           onPressed: () async {
             await context.push('/notifications');
             await controller.refresh();

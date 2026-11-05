@@ -21,11 +21,11 @@ class TelemetryChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     if (points.isEmpty) {
       return SizedBox(
         height: 200,
-        child: EmptyView(title: l10n.noHistoryInRange, icon: Icons.show_chart),
+        child: EmptyView(title: i18n.noHistoryInRange, icon: Icons.show_chart),
       );
     }
     final locale = Localizations.localeOf(context).languageCode;
@@ -47,7 +47,7 @@ class TelemetryChart extends StatelessWidget {
     final states = {for (final p in points) p.measuredAt!.millisecondsSinceEpoch.toDouble(): p.state};
 
     return Semantics(
-      label: l10n.chartSemantics(points.length, unit ?? ''),
+      label: i18n.chartSemantics(points.length, unit ?? ''),
       child: SizedBox(
         height: 220,
         child: LineChart(

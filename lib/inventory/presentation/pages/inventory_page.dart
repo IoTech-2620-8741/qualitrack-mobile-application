@@ -21,24 +21,24 @@ class InventoryPage extends StatelessWidget {
   const InventoryPage({super.key});
 
   String _filterLabel(BuildContext context, InventoryFilter f) => switch (f) {
-    InventoryFilter.all => context.l10n.filterAll,
-    InventoryFilter.belowMinimum => context.l10n.belowMinimum,
-    InventoryFilter.blockedStock => context.l10n.blockedStock,
+    InventoryFilter.all => context.i18n.filterAll,
+    InventoryFilter.belowMinimum => context.i18n.belowMinimum,
+    InventoryFilter.blockedStock => context.i18n.blockedStock,
   };
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<InventoryBloc>();
     void reload() => bloc.add(const InventoryRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.inventoryTitle)),
+      appBar: AppBar(title: Text(i18n.inventoryTitle)),
       body: BlocBuilder<InventoryBloc, InventoryState>(
         builder: (context, state) => RemoteStateView<List<InventoryMaterial>>(
           state: state.remote,
           onRetry: reload,
           emptyIcon: Icons.science_outlined,
-          emptyMessage: l10n.inventoryEmpty,
+          emptyMessage: i18n.inventoryEmpty,
           builder: (context, all) {
             final items = state.visible;
             final low = state.belowMinimumCount;
@@ -47,7 +47,7 @@ class InventoryPage extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
-                  PageHeader(title: l10n.inventoryTitle, subtitle: l10n.materialsCount(all.length)),
+                  PageHeader(title: i18n.inventoryTitle, subtitle: i18n.materialsCount(all.length)),
                   if (low > 0) ...[
                     const SizedBox(height: AppSpacing.md),
                     Semantics(
@@ -65,7 +65,7 @@ class InventoryPage extends StatelessWidget {
                             const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: Text(
-                                l10n.lowStockAlert(low),
+                                i18n.lowStockAlert(low),
                                 style: const TextStyle(
                                   color: AppColors.warning,
                                   fontWeight: FontWeight.w600,
@@ -79,7 +79,7 @@ class InventoryPage extends StatelessWidget {
                   ],
                   const SizedBox(height: AppSpacing.md),
                   SearchField(
-                    hint: l10n.searchMaterials,
+                    hint: i18n.searchMaterials,
                     onChanged: (q) => bloc.add(InventoryQueryChanged(q)),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -91,7 +91,7 @@ class InventoryPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (items.isEmpty)
-                    SizedBox(height: 200, child: EmptyView(title: l10n.noResults))
+                    SizedBox(height: 200, child: EmptyView(title: i18n.noResults))
                   else
                     for (final m in items) ...[
                       _MaterialCard(material: m, environmentName: state.environmentNames[m.environmentId]),
@@ -115,7 +115,7 @@ class _MaterialCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
     String qty(double v) => '${Formatters.number(v, locale)} ${material.unit}'.trim();
@@ -150,15 +150,15 @@ class _MaterialCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  StatusBadge(label: material.stockLabel(l10n), tone: material.stockTone),
+                  StatusBadge(label: material.stockLabel(i18n), tone: material.stockTone),
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  Expanded(child: KeyValue(label: l10n.usableStock, value: qty(material.usableStock))),
-                  Expanded(child: KeyValue(label: l10n.physicalStock, value: qty(material.physicalStock))),
-                  Expanded(child: KeyValue(label: l10n.minimumStock, value: qty(material.minimumStock))),
+                  Expanded(child: KeyValue(label: i18n.usableStock, value: qty(material.usableStock))),
+                  Expanded(child: KeyValue(label: i18n.physicalStock, value: qty(material.physicalStock))),
+                  Expanded(child: KeyValue(label: i18n.minimumStock, value: qty(material.minimumStock))),
                 ],
               ),
             ],

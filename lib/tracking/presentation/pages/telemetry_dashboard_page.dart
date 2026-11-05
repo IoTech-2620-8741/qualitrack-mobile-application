@@ -61,18 +61,18 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> with Wi
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.telemetryTitle),
+        title: Text(i18n.telemetryTitle),
         actions: [
           IconButton(
-            tooltip: l10n.rawTelemetryLog,
+            tooltip: i18n.rawTelemetryLog,
             icon: const Icon(Icons.table_rows_outlined),
             onPressed: () => _openHistory(context),
           ),
           IconButton(
-            tooltip: l10n.refresh,
+            tooltip: i18n.refresh,
             icon: const Icon(Icons.refresh),
             onPressed: () => context.read<TelemetryDashboardBloc>().add(const TelemetryRefreshRequested()),
           ),
@@ -83,17 +83,17 @@ class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> with Wi
           state: state.catalog,
           onRetry: () => context.read<TelemetryDashboardBloc>().add(const TelemetryStarted()),
           emptyIcon: Icons.sensors_off_outlined,
-          emptyMessage: l10n.telemetryNoDevices,
+          emptyMessage: i18n.telemetryNoDevices,
           builder: (context, catalog) => RefreshIndicator(
             onRefresh: () async => context.read<TelemetryDashboardBloc>().add(const TelemetryRefreshRequested()),
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
                 PageHeader(
-                  title: l10n.telemetryTitle,
-                  subtitle: l10n.telemetrySubtitle,
+                  title: i18n.telemetryTitle,
+                  subtitle: i18n.telemetrySubtitle,
                   trailing: state.polling
-                      ? StatusBadge(label: l10n.liveUpdates, tone: BadgeTone.brand, icon: Icons.podcasts)
+                      ? StatusBadge(label: i18n.liveUpdates, tone: BadgeTone.brand, icon: Icons.podcasts)
                       : null,
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -117,12 +117,12 @@ class _DeviceSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return DropdownButtonFormField<int>(
       key: ValueKey(selectedId),
       initialValue: selectedId,
       isExpanded: true,
-      decoration: InputDecoration(labelText: l10n.selectDevice, prefixIcon: const Icon(Icons.sensors_outlined)),
+      decoration: InputDecoration(labelText: i18n.selectDevice, prefixIcon: const Icon(Icons.sensors_outlined)),
       items: [
         for (final device in catalog.devices)
           DropdownMenuItem(
@@ -148,7 +148,7 @@ class _SnapshotSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final remote = state.snapshot;
     void retry() => context.read<TelemetryDashboardBloc>().add(const TelemetryRefreshRequested());
     if (remote.status.isLoading && remote.data == null) {
@@ -168,13 +168,13 @@ class _SnapshotSection extends StatelessWidget {
         if (remote.failure != null) StaleDataNotice(failure: remote.failure!),
         _StatusRow(snapshot: data),
         SectionHeader(
-          title: l10n.currentReadings,
+          title: i18n.currentReadings,
           subtitle: profile == null
-              ? l10n.noProfileConfigured
-              : l10n.profileVersion('${profile.version}'),
+              ? i18n.noProfileConfigured
+              : i18n.profileVersion('${profile.version}'),
         ),
         if (readings.isEmpty)
-          InfoCard(child: Text(l10n.noReadings24h))
+          InfoCard(child: Text(i18n.noReadings24h))
         else
           ResponsiveGrid(
             minItemWidth: 160,
@@ -184,23 +184,23 @@ class _SnapshotSection extends StatelessWidget {
             ],
           ),
         if (data.chartMetrics.isNotEmpty) ...[
-          SectionHeader(title: l10n.liveTelemetryStream, subtitle: l10n.liveTelemetryHint),
+          SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
           _ChartCard(state: state, snapshot: data),
         ],
-        SectionHeader(title: l10n.deviations24h, subtitle: l10n.deviationsHint),
+        SectionHeader(title: i18n.deviations24h, subtitle: i18n.deviationsHint),
         if (deviations.isEmpty)
-          InfoCard(child: Text(l10n.noDeviations))
+          InfoCard(child: Text(i18n.noDeviations))
         else
           for (final measurement in deviations.take(5)) ...[
             _DeviationTile(measurement: measurement),
             const SizedBox(height: AppSpacing.sm),
           ],
         if (data.target.containerMonitor) ...[
-          SectionHeader(title: l10n.automaticActions, subtitle: l10n.automaticActionsHint),
+          SectionHeader(title: i18n.automaticActions, subtitle: i18n.automaticActionsHint),
           if (data.actuationsFailure != null)
             StaleDataNotice(failure: data.actuationsFailure!)
           else if (data.actuations.isEmpty)
-            InfoCard(child: Text(l10n.noAutomaticActions))
+            InfoCard(child: Text(i18n.noAutomaticActions))
           else
             for (final event in data.actuations.take(5)) ...[
               _ActuationTile(event: event),
@@ -211,7 +211,7 @@ class _SnapshotSection extends StatelessWidget {
         OutlinedButton.icon(
           onPressed: onOpenHistory,
           icon: const Icon(Icons.table_rows_outlined),
-          label: Text(l10n.rawTelemetryLog),
+          label: Text(i18n.rawTelemetryLog),
         ),
       ],
     );
@@ -225,12 +225,12 @@ class _StatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     final connection = snapshot.connection;
     final deviations = snapshot.deviations.length;
     final lastCommunication = connection.lastCommunicationAt == null
-        ? l10n.neverCommunicated
+        ? i18n.neverCommunicated
         : Formatters.dateTime(connection.lastCommunicationAt, context.localeName);
     final tone = connection.isConnected ? BadgeTone.success : BadgeTone.warning;
     return ResponsiveGrid(
@@ -242,11 +242,11 @@ class _StatusRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.connectionStatus.toUpperCase(), style: AppTypography.overline),
+              Text(i18n.connectionStatus.toUpperCase(), style: AppTypography.overline),
               const SizedBox(height: AppSpacing.xs),
               ConnectionBadge(connected: connection.reachable),
               const SizedBox(height: AppSpacing.xs),
-              Text('${l10n.lastCommunication}: $lastCommunication', style: theme.textTheme.bodySmall),
+              Text('${i18n.lastCommunication}: $lastCommunication', style: theme.textTheme.bodySmall),
             ],
           ),
         ),
@@ -256,7 +256,7 @@ class _StatusRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.deviations24h.toUpperCase(), style: AppTypography.overline),
+              Text(i18n.deviations24h.toUpperCase(), style: AppTypography.overline),
               const SizedBox(height: AppSpacing.xs),
               Row(
                 children: [
@@ -265,12 +265,12 @@ class _StatusRow extends StatelessWidget {
                     color: deviations > 0 ? AppColors.critical : AppColors.success,
                   ),
                   const SizedBox(width: AppSpacing.xs),
-                  Expanded(child: Text(l10n.eventsCount(deviations), style: theme.textTheme.titleMedium)),
+                  Expanded(child: Text(i18n.eventsCount(deviations), style: theme.textTheme.titleMedium)),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                l10n.updatedAt(Formatters.time(snapshot.fetchedAt, context.localeName)),
+                i18n.updatedAt(Formatters.time(snapshot.fetchedAt, context.localeName)),
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -288,15 +288,15 @@ class _ChartCard extends StatelessWidget {
   final TelemetrySnapshot snapshot;
 
   String _windowLabel(BuildContext context, TelemetryWindow w) => switch (w) {
-    TelemetryWindow.fifteenMinutes => context.l10n.window15m,
-    TelemetryWindow.oneHour => context.l10n.window1h,
-    TelemetryWindow.sixHours => context.l10n.window6h,
-    TelemetryWindow.twentyFourHours => context.l10n.window24h,
+    TelemetryWindow.fifteenMinutes => context.i18n.window15m,
+    TelemetryWindow.oneHour => context.i18n.window1h,
+    TelemetryWindow.sixHours => context.i18n.window6h,
+    TelemetryWindow.twentyFourHours => context.i18n.window24h,
   };
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<TelemetryDashboardBloc>();
     final metrics = snapshot.chartMetrics;
     final metric = state.chartMetric;
@@ -311,7 +311,7 @@ class _ChartCard extends StatelessWidget {
             FilterChipBar<MonitoredMetric>(
               options: metrics,
               selected: metric ?? metrics.first,
-              labelOf: (m) => m.label(l10n),
+              labelOf: (m) => m.label(i18n),
               onSelected: (m) => bloc.add(TelemetryMetricSelected(m)),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -335,12 +335,12 @@ class _ChartCard extends StatelessWidget {
             spacing: AppSpacing.md,
             runSpacing: AppSpacing.xs,
             children: [
-              _Legend(color: AppColors.chartLine, label: metric?.label(l10n) ?? '—'),
-              _Legend(color: AppColors.chartWarning, label: l10n.stateWarning),
-              _Legend(color: AppColors.chartCritical, label: l10n.stateCritical),
+              _Legend(color: AppColors.chartLine, label: metric?.label(i18n) ?? '—'),
+              _Legend(color: AppColors.chartWarning, label: i18n.stateWarning),
+              _Legend(color: AppColors.chartCritical, label: i18n.stateCritical),
               if (threshold != null) ...[
-                _Legend(color: AppColors.chartNormalRange, label: l10n.normalRange, dashed: true),
-                _Legend(color: AppColors.chartCritical, label: l10n.criticalRange, dashed: true),
+                _Legend(color: AppColors.chartNormalRange, label: i18n.normalRange, dashed: true),
+                _Legend(color: AppColors.chartCritical, label: i18n.criticalRange, dashed: true),
               ],
             ],
           ),
@@ -376,8 +376,8 @@ class _Legend extends StatelessWidget {
 
 /// Text of a reading: number with unit, a detected motion or an RFID tag.
 String readingText(BuildContext context, Measurement m) {
-  final l10n = context.l10n;
-  if (m.metric == MonitoredMetric.motion) return l10n.motionDetected;
+  final i18n = context.i18n;
+  if (m.metric == MonitoredMetric.motion) return i18n.motionDetected;
   if (m.textValue != null && m.textValue!.isNotEmpty) return m.textValue!;
   if (m.value == null) return '—';
   return '${Formatters.number(m.value, context.localeName)} ${m.unit ?? ''}'.trim();
@@ -397,9 +397,9 @@ String? rangeText(BuildContext context, MetricThreshold? threshold) {
   }
   final parts = <String>[
     if (threshold.normalMin != null || threshold.normalMax != null)
-      context.l10n.normalRangeValue(bounds(threshold.normalMin, threshold.normalMax)),
+      context.i18n.normalRangeValue(bounds(threshold.normalMin, threshold.normalMax)),
     if (threshold.criticalMin != null || threshold.criticalMax != null)
-      context.l10n.criticalRangeValue(bounds(threshold.criticalMin, threshold.criticalMax)),
+      context.i18n.criticalRangeValue(bounds(threshold.criticalMin, threshold.criticalMax)),
   ];
   return parts.isEmpty ? null : parts.join(' · ');
 }
@@ -412,11 +412,11 @@ class _ReadingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     final m = reading.latest;
     final range = rangeText(context, threshold);
-    final name = m.metric.label(l10n, raw: m.rawMetric);
+    final name = m.metric.label(i18n, raw: m.rawMetric);
     return Semantics(
       label: '$name: ${readingText(context, m)}',
       child: InfoCard(
@@ -460,7 +460,7 @@ class _DeviationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final m = measurement;
     final critical = m.state == EnvironmentalState.critical;
@@ -474,10 +474,10 @@ class _DeviationTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(m.metric.label(l10n, raw: m.rawMetric), style: Theme.of(context).textTheme.titleSmall),
+                Text(m.metric.label(i18n, raw: m.rawMetric), style: Theme.of(context).textTheme.titleSmall),
                 if (m.thresholdValue != null)
                   Text(
-                    l10n.thresholdExceeded('${Formatters.number(m.thresholdValue, locale)} ${m.unit ?? ''}'.trim()),
+                    i18n.thresholdExceeded('${Formatters.number(m.thresholdValue, locale)} ${m.unit ?? ''}'.trim()),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 Text(Formatters.dateTime(m.measuredAt, locale), style: Theme.of(context).textTheme.bodySmall),
@@ -508,11 +508,11 @@ class _ActuationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     final trigger = event.triggerMetric == null
         ? null
-        : '${event.triggerMetric!.label(l10n)} · ${event.triggerState?.label(l10n) ?? '—'}';
+        : '${event.triggerMetric!.label(i18n)} · ${event.triggerState?.label(i18n) ?? '—'}';
     return InfoCard(
       child: Row(
         children: [
@@ -522,14 +522,14 @@ class _ActuationTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(actuationLabel(l10n, event.action), style: theme.textTheme.titleSmall),
+                Text(actuationLabel(i18n, event.action), style: theme.textTheme.titleSmall),
                 if (trigger != null) Text(trigger, style: theme.textTheme.bodySmall),
                 Text(Formatters.dateTime(event.occurredAt, context.localeName), style: theme.textTheme.bodySmall),
               ],
             ),
           ),
           StatusBadge(
-            label: event.executed ? l10n.actionExecuted : l10n.actionFailed,
+            label: event.executed ? i18n.actionExecuted : i18n.actionFailed,
             tone: event.executed ? BadgeTone.success : BadgeTone.critical,
           ),
         ],

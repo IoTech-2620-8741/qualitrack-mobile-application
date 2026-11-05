@@ -23,7 +23,7 @@ CommandCenterViews commandCenterViews({
   profileButton: ListenableBuilder(
     listenable: currentProfile,
     builder: (context, _) => IconButton(
-      tooltip: context.l10n.profile,
+      tooltip: context.i18n.profile,
       onPressed: () => context.push('/profile'),
       icon: ProfileAvatar(
         radius: 16,
@@ -34,7 +34,7 @@ CommandCenterViews commandCenterViews({
   ),
   profileChanges: currentProfile,
   displayName: () => currentProfile.profile?.displayName,
-  roleLabel: (role, l10n) => role.label(l10n),
+  roleLabel: (role, i18n) => role.label(i18n),
   alertCard: (alert, {deviceName, environmentName, onTap}) =>
       AlertCard(alert: alert, deviceName: deviceName, environmentName: environmentName, onTap: onTap),
   batchStatusBadge: (status) => BatchStatusBadge(status: status),

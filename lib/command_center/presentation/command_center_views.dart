@@ -25,7 +25,7 @@ class CommandCenterViews {
   /// Notifies when [displayName] may have changed.
   final Listenable profileChanges;
   final String? Function() displayName;
-  final String Function(UserRole role, AppLocalizations l10n) roleLabel;
+  final String Function(UserRole role, AppLocalizations i18n) roleLabel;
   final Widget Function(DeviationAlert alert, {String? deviceName, String? environmentName, VoidCallback? onTap})
   alertCard;
   final Widget Function(BatchStatus status) batchStatusBadge;

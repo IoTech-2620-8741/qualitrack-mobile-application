@@ -30,19 +30,19 @@ class BatchDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.batchDetail),
+          title: Text(i18n.batchDetail),
           bottom: TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.start,
             tabs: [
-              Tab(text: l10n.generalInformation),
-              Tab(text: l10n.traceability),
-              Tab(text: l10n.history),
+              Tab(text: i18n.generalInformation),
+              Tab(text: i18n.traceability),
+              Tab(text: i18n.history),
             ],
           ),
         ),
@@ -53,7 +53,7 @@ class BatchDetailScreen extends StatelessWidget {
             if (state.actionStatus == BatchActionStatus.success) {
               messenger.showSnackBar(SnackBar(
                 content: Text(
-                  state.lastAction == BatchReviewAction.release ? l10n.batchReleasedMessage : l10n.batchRejectedMessage,
+                  state.lastAction == BatchReviewAction.release ? i18n.batchReleasedMessage : i18n.batchRejectedMessage,
                 ),
               ));
             } else if (state.actionStatus == BatchActionStatus.failure && state.actionFailure != null) {
@@ -69,8 +69,8 @@ class BatchDetailScreen extends StatelessWidget {
             builder: (context, detail) {
               Future<void> refresh() async => context.read<BatchDetailBloc>().add(const BatchDetailRequested(refresh: true));
               String person(int userId) => userId == currentUserId
-                  ? l10n.you
-                  : (detail.people[userId] ?? l10n.userNumber(userId));
+                  ? i18n.you
+                  : (detail.people[userId] ?? i18n.userNumber(userId));
               return TabBarView(
                 children: [
                   RefreshIndicator(
@@ -104,7 +104,7 @@ class _GeneralTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final bloc = context.read<BatchDetailBloc>();
     final batch = detail.batch;
@@ -121,26 +121,26 @@ class _GeneralTab extends StatelessWidget {
             runSpacing: AppSpacing.lg,
             children: [
               KeyValue(
-                label: l10n.product,
+                label: i18n.product,
                 value: [detail.traceability.productCode, batch.productName].whereType<String>().join(' · '),
               ),
               KeyValue(
-                label: l10n.status,
-                value: batch.status.label(l10n),
+                label: i18n.status,
+                value: batch.status.label(i18n),
                 valueWidget: BatchStatusBadge(status: batch.status),
               ),
               KeyValue(
-                label: l10n.quantity,
+                label: i18n.quantity,
                 value: '${Formatters.number(batch.quantity, locale)} ${batch.unit ?? ''}'.trim(),
               ),
-              KeyValue(label: l10n.startDate, value: Formatters.rawDate(batch.startDate, locale)),
-              KeyValue(label: l10n.endDate, value: Formatters.rawDate(batch.endDate, locale)),
+              KeyValue(label: i18n.startDate, value: Formatters.rawDate(batch.startDate, locale)),
+              KeyValue(label: i18n.endDate, value: Formatters.rawDate(batch.endDate, locale)),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         InfoCard(
-          title: l10n.bpmNotes,
+          title: i18n.bpmNotes,
           child: Text(
             batch.notes?.isNotEmpty == true ? batch.notes! : '—',
             style: const TextStyle(fontFamily: AppTypography.monospace),
@@ -149,17 +149,17 @@ class _GeneralTab extends StatelessWidget {
         if (release != null) ...[
           const SizedBox(height: AppSpacing.md),
           InfoCard(
-            title: l10n.digitalSignature,
+            title: i18n.digitalSignature,
             color: AppColors.successContainer,
             borderColor: AppColors.success.withValues(alpha: 0.3),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                KeyValue(label: l10n.signedBy, value: person(release.signedByUserId)),
+                KeyValue(label: i18n.signedBy, value: person(release.signedByUserId)),
                 const SizedBox(height: AppSpacing.sm),
-                KeyValue(label: l10n.signedAt, value: Formatters.dateTime(release.signedAt, locale)),
+                KeyValue(label: i18n.signedAt, value: Formatters.dateTime(release.signedAt, locale)),
                 const SizedBox(height: AppSpacing.sm),
-                Text(l10n.signatureHash, style: Theme.of(context).textTheme.bodySmall),
+                Text(i18n.signatureHash, style: Theme.of(context).textTheme.bodySmall),
                 SelectableText(
                   release.signatureHash,
                   style: const TextStyle(fontFamily: AppTypography.monospace, fontSize: 12),
@@ -171,7 +171,7 @@ class _GeneralTab extends StatelessWidget {
         if (rejection != null) ...[
           const SizedBox(height: AppSpacing.md),
           InfoCard(
-            title: l10n.rejectionReason,
+            title: i18n.rejectionReason,
             color: AppColors.criticalContainer,
             borderColor: AppColors.critical.withValues(alpha: 0.3),
             child: Column(
@@ -187,11 +187,11 @@ class _GeneralTab extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         if (canReview && batch.isAwaitingReview)
           InfoCard(
-            title: l10n.qaReview,
+            title: i18n.qaReview,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(l10n.qaReviewHint, style: Theme.of(context).textTheme.bodySmall),
+                Text(i18n.qaReviewHint, style: Theme.of(context).textTheme.bodySmall),
                 const SizedBox(height: AppSpacing.md),
                 if (submitting) ...[const LinearProgressIndicator(), const SizedBox(height: AppSpacing.md)],
                 Wrap(
@@ -209,7 +209,7 @@ class _GeneralTab extends StatelessWidget {
                               if (result != null) bloc.add(BatchRejectSubmitted(date: result.date, reason: result.text));
                             },
                       icon: const Icon(Icons.block_outlined),
-                      label: Text(l10n.rejectBatch),
+                      label: Text(i18n.rejectBatch),
                     ),
                     FilledButton.icon(
                       key: const Key('batch.release'),
@@ -220,7 +220,7 @@ class _GeneralTab extends StatelessWidget {
                               if (result != null) bloc.add(BatchReleaseSubmitted(date: result.date, notes: result.text));
                             },
                       icon: const Icon(Icons.verified_outlined),
-                      label: Text(l10n.releaseBatch),
+                      label: Text(i18n.releaseBatch),
                     ),
                   ],
                 ),
@@ -228,7 +228,7 @@ class _GeneralTab extends StatelessWidget {
             ),
           )
         else if (!canReview && batch.isAwaitingReview)
-          Text(l10n.reviewRestricted, style: Theme.of(context).textTheme.bodySmall),
+          Text(i18n.reviewRestricted, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
@@ -241,24 +241,24 @@ class _TraceabilityTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final container = traceability.container;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
         SectionCard<RawMaterialUsage>(
-          title: l10n.rawMaterialsUsed,
+          title: i18n.rawMaterialsUsed,
           section: Section(traceability.rawMaterials),
-          emptyMessage: l10n.rawMaterialsUsedEmpty,
+          emptyMessage: i18n.rawMaterialsUsedEmpty,
           itemBuilder: (context, u) => SectionRow(
             leading: const Icon(Icons.science_outlined, color: AppColors.primary),
-            title: u.rawMaterialName ?? l10n.materialNumber(u.rawMaterialId),
+            title: u.rawMaterialName ?? i18n.materialNumber(u.rawMaterialId),
             subtitle: [
               Formatters.dateTime(u.usageDate, locale),
               if (u.stockBefore != null || u.stockAfter != null)
-                l10n.stockBeforeAfter(Formatters.number(u.stockBefore, locale), Formatters.number(u.stockAfter, locale)),
-              if (u.inventoryReceiptId != null) l10n.receiptNumber(u.inventoryReceiptId!),
+                i18n.stockBeforeAfter(Formatters.number(u.stockBefore, locale), Formatters.number(u.stockAfter, locale)),
+              if (u.inventoryReceiptId != null) i18n.receiptNumber(u.inventoryReceiptId!),
             ].join(' · '),
             trailing: Text(
               '${Formatters.number(u.quantityUsed, locale)} ${u.unit ?? ''}'.trim(),
@@ -268,9 +268,9 @@ class _TraceabilityTab extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<BatchEquipmentUsage>(
-          title: l10n.equipmentUsed,
+          title: i18n.equipmentUsed,
           section: Section(traceability.equipment),
-          emptyMessage: l10n.noEquipmentUsed,
+          emptyMessage: i18n.noEquipmentUsed,
           itemBuilder: (context, e) => SectionRow(
             leading: const Icon(Icons.precision_manufacturing_outlined, color: AppColors.primary),
             title: e.equipmentName,
@@ -279,9 +279,9 @@ class _TraceabilityTab extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<BatchStaffParticipation>(
-          title: l10n.participatingStaff,
+          title: i18n.participatingStaff,
           section: Section(traceability.staff),
-          emptyMessage: l10n.noParticipatingStaff,
+          emptyMessage: i18n.noParticipatingStaff,
           itemBuilder: (context, s) => SectionRow(
             leading: const Icon(Icons.badge_outlined, color: AppColors.primary),
             title: s.staffName,
@@ -290,13 +290,13 @@ class _TraceabilityTab extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         InfoCard(
-          title: l10n.container,
+          title: i18n.container,
           child: container == null
-              ? Text(l10n.noContainerAssigned)
+              ? Text(i18n.noContainerAssigned)
               : ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.kitchen_outlined, color: AppColors.primary),
-                  title: Text(container.containerName ?? l10n.equipmentNumber(container.containerMonitorId)),
+                  title: Text(container.containerName ?? i18n.equipmentNumber(container.containerMonitorId)),
                   subtitle: Text(Formatters.dateTime(container.assignedAt, locale)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/telemetry/history?deviceId=${container.containerMonitorId}'),
@@ -315,13 +315,13 @@ class _HistoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
         SectionCard<AuditLogEntry>(
-          title: l10n.auditLog,
+          title: i18n.auditLog,
           section: detail.auditLogs,
           maxItems: 20,
           itemBuilder: (context, log) => SectionRow(
@@ -335,7 +335,7 @@ class _HistoryTab extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<ComplianceEvent>(
-          title: l10n.complianceEvents,
+          title: i18n.complianceEvents,
           section: detail.events,
           maxItems: 20,
           itemBuilder: (context, ev) => SectionRow(

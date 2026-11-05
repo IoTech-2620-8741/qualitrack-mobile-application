@@ -80,7 +80,7 @@ class _QualiTrackAppState extends State<QualiTrackApp> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      onGenerateTitle: (context) => context.l10n.appTitle,
+      onGenerateTitle: (context) => context.i18n.appTitle,
       theme: AppTheme.light(),
       scrollBehavior: const AppScrollBehavior(),
       routerConfig: _router,

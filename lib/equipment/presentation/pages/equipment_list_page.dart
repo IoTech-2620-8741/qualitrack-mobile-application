@@ -17,30 +17,30 @@ class EquipmentListPage extends StatelessWidget {
   const EquipmentListPage({super.key});
 
   String _filterLabel(BuildContext context, EquipmentFilter filter) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return switch (filter) {
-      EquipmentFilter.all => l10n.filterAll,
-      EquipmentFilter.attention => l10n.needsAttention,
-      EquipmentFilter.iotDevices => l10n.iotDevices,
-      EquipmentFilter.operational => l10n.equipmentOperational,
-      EquipmentFilter.maintenance => l10n.equipmentMaintenance,
-      EquipmentFilter.outOfService => l10n.equipmentOutOfService,
-      EquipmentFilter.inactive => l10n.inactive,
+      EquipmentFilter.all => i18n.filterAll,
+      EquipmentFilter.attention => i18n.needsAttention,
+      EquipmentFilter.iotDevices => i18n.iotDevices,
+      EquipmentFilter.operational => i18n.equipmentOperational,
+      EquipmentFilter.maintenance => i18n.equipmentMaintenance,
+      EquipmentFilter.outOfService => i18n.equipmentOutOfService,
+      EquipmentFilter.inactive => i18n.inactive,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     void reload() => context.read<EquipmentListBloc>().add(const EquipmentListRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.equipmentTitle)),
+      appBar: AppBar(title: Text(i18n.equipmentTitle)),
       body: BlocBuilder<EquipmentListBloc, EquipmentListState>(
         builder: (context, state) => RemoteStateView<List<EquipmentOverview>>(
           state: state.remote,
           onRetry: reload,
           emptyIcon: Icons.precision_manufacturing_outlined,
-          emptyMessage: l10n.equipmentEmpty,
+          emptyMessage: i18n.equipmentEmpty,
           builder: (context, all) {
             final items = state.visible;
             final attention = all.where((e) => e.needsAttention).length;
@@ -50,12 +50,12 @@ class EquipmentListPage extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
                   PageHeader(
-                    title: l10n.equipmentTitle,
-                    subtitle: l10n.equipmentSummary(all.length, attention),
+                    title: i18n.equipmentTitle,
+                    subtitle: i18n.equipmentSummary(all.length, attention),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   SearchField(
-                    hint: l10n.searchEquipment,
+                    hint: i18n.searchEquipment,
                     onChanged: (q) => context.read<EquipmentListBloc>().add(EquipmentQueryChanged(q)),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -68,7 +68,7 @@ class EquipmentListPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (items.isEmpty)
-                    SizedBox(height: 220, child: EmptyView(title: l10n.noResults))
+                    SizedBox(height: 220, child: EmptyView(title: i18n.noResults))
                   else
                     for (final item in items) ...[
                       EquipmentCard(item: item),
@@ -91,7 +91,7 @@ class EquipmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     final e = item.equipment;
     return Card(
@@ -134,16 +134,16 @@ class EquipmentCard extends StatelessWidget {
                 spacing: AppSpacing.sm,
                 runSpacing: AppSpacing.xs,
                 children: [
-                  StatusBadge(label: e.statusLabel(l10n), tone: e.status.tone),
+                  StatusBadge(label: e.statusLabel(i18n), tone: e.status.tone),
                   if (e.deviceType != null) ...[
-                    StatusBadge(label: e.deviceType!.label(l10n), tone: BadgeTone.info, icon: Icons.sensors),
+                    StatusBadge(label: e.deviceType!.label(i18n), tone: BadgeTone.info, icon: Icons.sensors),
                     if (e.environmentId != null) ConnectionBadge(connected: item.connection?.reachable),
                   ],
                 ],
               ),
               if (e.serialNumber != null) ...[
                 const SizedBox(height: AppSpacing.xs),
-                Text('${l10n.serialNumber}: ${e.serialNumber}', style: theme.textTheme.bodySmall),
+                Text('${i18n.serialNumber}: ${e.serialNumber}', style: theme.textTheme.bodySmall),
               ],
             ],
           ),

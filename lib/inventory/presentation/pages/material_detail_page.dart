@@ -21,10 +21,10 @@ class MaterialDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     void reload() => context.read<MaterialDetailBloc>().add(const MaterialDetailRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.materialDetail)),
+      appBar: AppBar(title: Text(i18n.materialDetail)),
       body: BlocBuilder<MaterialDetailBloc, RemoteState<MaterialDetail>>(
         builder: (context, state) => RemoteStateView<MaterialDetail>(
           state: state,
@@ -46,7 +46,7 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final m = detail.material;
     String qty(double? v, [String? unit]) =>
@@ -57,7 +57,7 @@ class _Body extends StatelessWidget {
         PageHeader(
           title: m.name,
           subtitle: m.code,
-          trailing: StatusBadge(label: m.stockLabel(l10n), tone: m.stockTone),
+          trailing: StatusBadge(label: m.stockLabel(i18n), tone: m.stockTone),
         ),
         const SizedBox(height: AppSpacing.md),
         InfoCard(
@@ -65,47 +65,47 @@ class _Body extends StatelessWidget {
             spacing: AppSpacing.xl,
             runSpacing: AppSpacing.lg,
             children: [
-              if (detail.environmentName != null) KeyValue(label: l10n.environment, value: detail.environmentName!),
-              KeyValue(label: l10n.unit, value: m.unit.isEmpty ? '—' : m.unit),
-              KeyValue(label: l10n.usableStock, value: qty(m.usableStock)),
-              KeyValue(label: l10n.physicalStock, value: qty(m.physicalStock)),
-              KeyValue(label: l10n.minimumStock, value: qty(m.minimumStock)),
+              if (detail.environmentName != null) KeyValue(label: i18n.environment, value: detail.environmentName!),
+              KeyValue(label: i18n.unit, value: m.unit.isEmpty ? '—' : m.unit),
+              KeyValue(label: i18n.usableStock, value: qty(m.usableStock)),
+              KeyValue(label: i18n.physicalStock, value: qty(m.physicalStock)),
+              KeyValue(label: i18n.minimumStock, value: qty(m.minimumStock)),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<InventoryReceipt>(
-          title: l10n.materialLots,
+          title: i18n.materialLots,
           section: detail.receipts,
-          emptyMessage: l10n.receiptsEmpty,
+          emptyMessage: i18n.receiptsEmpty,
           itemBuilder: (context, r) => Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SectionRow(
-                title: r.batchNumber ?? l10n.receiptNumber(r.id),
-                subtitle: '${l10n.supplier}: ${r.supplier ?? '—'}',
-                trailing: StatusBadge(label: r.status.label(l10n), tone: r.status.tone),
+                title: r.batchNumber ?? i18n.receiptNumber(r.id),
+                subtitle: '${i18n.supplier}: ${r.supplier ?? '—'}',
+                trailing: StatusBadge(label: r.status.label(i18n), tone: r.status.tone),
               ),
               const SizedBox(height: AppSpacing.sm),
               Wrap(
                 spacing: AppSpacing.lg,
                 runSpacing: AppSpacing.sm,
                 children: [
-                  KeyValue(label: l10n.initialAmount, value: qty(r.initialAmount, r.unit)),
-                  KeyValue(label: l10n.availableAmount, value: qty(r.availableAmount, r.unit)),
-                  KeyValue(label: l10n.receivedOn, value: Formatters.date(r.receivedOn, locale)),
-                  KeyValue(label: l10n.expiresOn, value: Formatters.date(r.expiresOn, locale)),
+                  KeyValue(label: i18n.initialAmount, value: qty(r.initialAmount, r.unit)),
+                  KeyValue(label: i18n.availableAmount, value: qty(r.availableAmount, r.unit)),
+                  KeyValue(label: i18n.receivedOn, value: Formatters.date(r.receivedOn, locale)),
+                  KeyValue(label: i18n.expiresOn, value: Formatters.date(r.expiresOn, locale)),
                   KeyValue(
-                    label: l10n.usable,
-                    value: r.usable ? l10n.yes : l10n.no,
+                    label: i18n.usable,
+                    value: r.usable ? i18n.yes : i18n.no,
                     valueWidget: StatusBadge(
-                      label: r.usable ? l10n.yes : lotAvailabilityLabel(l10n, r.availability),
+                      label: r.usable ? i18n.yes : lotAvailabilityLabel(i18n, r.availability),
                       tone: r.usable ? BadgeTone.success : BadgeTone.neutral,
                     ),
                   ),
                   if (r.isNearExpiry || r.isExpired)
                     StatusBadge(
-                      label: r.isExpired ? l10n.lotExpired : l10n.lotNearExpiry,
+                      label: r.isExpired ? i18n.lotExpired : i18n.lotNearExpiry,
                       tone: r.isExpired ? BadgeTone.critical : BadgeTone.warning,
                       icon: Icons.event_busy_outlined,
                     ),
@@ -116,14 +116,14 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<InventoryMovement>(
-          title: l10n.movements,
+          title: i18n.movements,
           section: detail.movements,
-          emptyMessage: l10n.movementsEmpty,
+          emptyMessage: i18n.movementsEmpty,
           itemBuilder: (context, mv) {
             final details = <String>[
               if (mv.amount != null) qty(mv.amount, mv.unit),
               if (mv.stockBefore != null || mv.stockAfter != null)
-                l10n.stockBeforeAfter(
+                i18n.stockBeforeAfter(
                   Formatters.number(mv.stockBefore, locale),
                   Formatters.number(mv.stockAfter, locale),
                 ),
@@ -132,7 +132,7 @@ class _Body extends StatelessWidget {
               if (mv.reason != null && mv.reason!.isNotEmpty) mv.reason!,
             ];
             return SectionRow(
-              title: movementTypeLabel(l10n, mv.type),
+              title: movementTypeLabel(i18n, mv.type),
               subtitle: details.join(' · '),
               trailing: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -141,7 +141,7 @@ class _Body extends StatelessWidget {
                   if (mv.productBatchId != null)
                     TextButton(
                       onPressed: () => context.push('/batches/${mv.productBatchId}'),
-                      child: Text(l10n.batchNumberShort(mv.productBatchId!)),
+                      child: Text(i18n.batchNumberShort(mv.productBatchId!)),
                     ),
                 ],
               ),
@@ -150,12 +150,12 @@ class _Body extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<MaterialUsage>(
-          title: l10n.batchesThatUsedIt,
+          title: i18n.batchesThatUsedIt,
           section: detail.usages,
-          emptyMessage: l10n.noBatchesUsedIt,
+          emptyMessage: i18n.noBatchesUsedIt,
           itemBuilder: (context, u) => SectionRow(
             leading: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
-            title: l10n.batchNumberShort(u.batchId),
+            title: i18n.batchNumberShort(u.batchId),
             subtitle: Formatters.dateTime(u.usageDate, locale),
             trailing: TextButton(
               onPressed: () => context.push('/batches/${u.batchId}'),

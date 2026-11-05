@@ -21,7 +21,7 @@ class NotificationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<NotificationsBloc>();
     return BlocConsumer<NotificationsBloc, NotificationsState>(
       listenWhen: (a, b) => a.actionFailure != b.actionFailure && b.actionFailure != null,
@@ -31,15 +31,15 @@ class NotificationsPage extends StatelessWidget {
       )),
       builder: (context, state) => Scaffold(
         appBar: AppBar(
-          title: Text(l10n.notificationsTitle),
+          title: Text(i18n.notificationsTitle),
           actions: [
             IconButton(
-              tooltip: l10n.markAllRead,
+              tooltip: i18n.markAllRead,
               onPressed: state.unread == 0 ? null : () => bloc.add(const NotificationsAllRead()),
               icon: const Icon(Icons.done_all),
             ),
             IconButton(
-              tooltip: l10n.notificationPreferences,
+              tooltip: i18n.notificationPreferences,
               onPressed: () => context.push('/profile/notifications'),
               icon: const Icon(Icons.tune),
             ),
@@ -49,7 +49,7 @@ class NotificationsPage extends StatelessWidget {
           state: state.remote,
           onRetry: () => bloc.add(const NotificationsRequested()),
           emptyIcon: Icons.notifications_none,
-          emptyMessage: l10n.notificationsEmpty,
+          emptyMessage: i18n.notificationsEmpty,
           builder: (context, items) => RefreshIndicator(
             onRefresh: () async => bloc.add(const NotificationsRequested(refresh: true)),
             child: ListView.separated(
@@ -66,36 +66,36 @@ class NotificationsPage extends StatelessWidget {
 }
 
 /// Text of a notice, worded as in QualiTrack Web.
-String notificationText(AppLocalizations l10n, AppNotification n, String locale) {
-  final environment = n.environmentName ?? l10n.anEnvironment;
-  final variable = alertVariable(l10n, n.parameterName ?? '');
+String notificationText(AppLocalizations i18n, AppNotification n, String locale) {
+  final environment = n.environmentName ?? i18n.anEnvironment;
+  final variable = alertVariable(i18n, n.parameterName ?? '');
   final value = n.recordedValue == null ? '—' : Formatters.number(n.recordedValue, locale);
   final unit = n.unit ?? '';
-  final actor = n.actorName ?? l10n.someone;
+  final actor = n.actorName ?? i18n.someone;
   final text = switch (n.type) {
-    NotificationType.alertOpened => l10n.noticeAlertOpened(_severityWord(l10n, n.severity), environment, variable, value, unit),
-    NotificationType.alertEscalated => l10n.noticeAlertEscalated(variable, environment, _levelWord(l10n, n.severity), value, unit),
-    NotificationType.alertAcknowledged => l10n.noticeAlertAcknowledged(actor, variable, environment),
-    NotificationType.alertResolved => l10n.noticeAlertResolved(actor, variable, environment),
-    NotificationType.batchReleased => l10n.noticeBatchReleased(actor, n.subjectName ?? '#${n.subjectId}'),
-    NotificationType.batchRejected => l10n.noticeBatchRejected(actor, n.subjectName ?? '#${n.subjectId}', n.note ?? ''),
+    NotificationType.alertOpened => i18n.noticeAlertOpened(_severityWord(i18n, n.severity), environment, variable, value, unit),
+    NotificationType.alertEscalated => i18n.noticeAlertEscalated(variable, environment, _levelWord(i18n, n.severity), value, unit),
+    NotificationType.alertAcknowledged => i18n.noticeAlertAcknowledged(actor, variable, environment),
+    NotificationType.alertResolved => i18n.noticeAlertResolved(actor, variable, environment),
+    NotificationType.batchReleased => i18n.noticeBatchReleased(actor, n.subjectName ?? '#${n.subjectId}'),
+    NotificationType.batchRejected => i18n.noticeBatchRejected(actor, n.subjectName ?? '#${n.subjectId}', n.note ?? ''),
     NotificationType.unknown => n.note ?? n.subjectName ?? '',
   };
   return text.replaceAll(RegExp(r'\s+\.'), '.').trim();
 }
 
 /// "critical" in "New critical alert in …".
-String _severityWord(AppLocalizations l10n, AlertSeverity severity) => switch (severity) {
-  AlertSeverity.low => l10n.noticeSeverityLow,
-  AlertSeverity.critical => l10n.noticeSeverityCritical,
-  _ => l10n.noticeSeverityWarning,
+String _severityWord(AppLocalizations i18n, AlertSeverity severity) => switch (severity) {
+  AlertSeverity.low => i18n.noticeSeverityLow,
+  AlertSeverity.critical => i18n.noticeSeverityCritical,
+  _ => i18n.noticeSeverityWarning,
 };
 
 /// "critical" in "… rose to critical".
-String _levelWord(AppLocalizations l10n, AlertSeverity severity) => switch (severity) {
-  AlertSeverity.low => l10n.noticeLevelLow,
-  AlertSeverity.critical => l10n.noticeLevelCritical,
-  _ => l10n.noticeLevelWarning,
+String _levelWord(AppLocalizations i18n, AlertSeverity severity) => switch (severity) {
+  AlertSeverity.low => i18n.noticeLevelLow,
+  AlertSeverity.critical => i18n.noticeLevelCritical,
+  _ => i18n.noticeLevelWarning,
 };
 
 class _NotificationTile extends StatelessWidget {
@@ -122,7 +122,7 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final n = notification;
     final theme = Theme.of(context);
@@ -134,7 +134,7 @@ class _NotificationTile extends StatelessWidget {
           child: Icon(_icon, color: _color),
         ),
         title: Text(
-          notificationText(l10n, n, locale),
+          notificationText(i18n, n, locale),
           style: n.isRead ? theme.textTheme.bodyMedium : theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Padding(
@@ -145,7 +145,7 @@ class _NotificationTile extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(Formatters.dateTime(n.occurredAt, locale), style: theme.textTheme.bodySmall),
-              if (!n.isRead) StatusBadge(label: l10n.unread, tone: BadgeTone.info, icon: Icons.fiber_manual_record),
+              if (!n.isRead) StatusBadge(label: i18n.unread, tone: BadgeTone.info, icon: Icons.fiber_manual_record),
             ],
           ),
         ),

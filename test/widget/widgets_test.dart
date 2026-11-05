@@ -155,8 +155,8 @@ void main() {
         ),
       );
 
-      expect(equipmentFixture().typeLabel(context.l10n), 'Container monitor');
-      expect(equipmentFixture(deviceType: null).typeLabel(context.l10n), 'Chamber');
+      expect(equipmentFixture().typeLabel(context.i18n), 'Container monitor');
+      expect(equipmentFixture(deviceType: null).typeLabel(context.i18n), 'Chamber');
       expect(
         rangeText(
           context,

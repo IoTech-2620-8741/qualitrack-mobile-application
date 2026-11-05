@@ -15,7 +15,7 @@ class LoadingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Semantics(
-        label: label ?? context.l10n.loading,
+        label: label ?? context.i18n.loading,
         child: const Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
           child: CircularProgressIndicator(),
@@ -44,14 +44,14 @@ class EmptyView extends StatelessWidget {
     return _CenteredMessage(
       icon: icon,
       iconColor: AppColors.textMuted,
-      title: title ?? context.l10n.noInformation,
+      title: title ?? context.i18n.noInformation,
       message: message,
       action: onRetry == null
           ? null
           : OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.refresh),
+              label: Text(context.i18n.refresh),
             ),
     );
   }
@@ -70,14 +70,14 @@ class ErrorView extends StatelessWidget {
           ? Icons.wifi_off_rounded
           : Icons.error_outline_rounded,
       iconColor: AppColors.critical,
-      title: context.l10n.errorTitle,
+      title: context.i18n.errorTitle,
       message: failureMessage(context, failure),
       action: onRetry == null
           ? null
           : FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.retry),
+              label: Text(context.i18n.retry),
             ),
     );
   }
@@ -141,7 +141,7 @@ class RefreshingBar extends StatelessWidget {
     return SizedBox(
       height: 3,
       child: visible
-          ? Semantics(label: context.l10n.refreshing, child: const LinearProgressIndicator())
+          ? Semantics(label: context.i18n.refreshing, child: const LinearProgressIndicator())
           : null,
     );
   }

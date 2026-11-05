@@ -21,7 +21,7 @@ class SplashPage extends StatelessWidget {
             const QualiTrackLogo(size: 120),
             const SizedBox(height: AppSpacing.xl),
             Semantics(
-              label: context.l10n.checkingSession,
+              label: context.i18n.checkingSession,
               child: const CircularProgressIndicator(),
             ),
           ],

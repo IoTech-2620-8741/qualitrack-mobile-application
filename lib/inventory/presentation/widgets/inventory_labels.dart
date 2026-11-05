@@ -11,34 +11,34 @@ extension ReceiptStatusPresentation on ReceiptStatus {
     ReceiptStatus.unknown => BadgeTone.neutral,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    ReceiptStatus.quarantined => l10n.receiptQuarantined,
-    ReceiptStatus.released => l10n.receiptReleased,
-    ReceiptStatus.observed => l10n.receiptObserved,
-    ReceiptStatus.rejected => l10n.receiptRejected,
-    ReceiptStatus.unknown => l10n.unknown,
+  String label(AppLocalizations i18n) => switch (this) {
+    ReceiptStatus.quarantined => i18n.receiptQuarantined,
+    ReceiptStatus.released => i18n.receiptReleased,
+    ReceiptStatus.observed => i18n.receiptObserved,
+    ReceiptStatus.rejected => i18n.receiptRejected,
+    ReceiptStatus.unknown => i18n.unknown,
   };
 }
 
 extension InventoryMaterialPresentation on InventoryMaterial {
   BadgeTone get stockTone => isBelowMinimum ? BadgeTone.critical : BadgeTone.success;
 
-  String stockLabel(AppLocalizations l10n) => isBelowMinimum ? l10n.belowMinimum : l10n.stockOk;
+  String stockLabel(AppLocalizations i18n) => isBelowMinimum ? i18n.belowMinimum : i18n.stockOk;
 }
 
 /// `RECEIPT`, `REVIEW`, `STORAGE` or `CONSUMPTION`.
-String movementTypeLabel(AppLocalizations l10n, String type) => switch (type) {
-  'RECEIPT' => l10n.movementReceipt,
-  'REVIEW' => l10n.movementReview,
-  'STORAGE' => l10n.movementStorage,
-  'CONSUMPTION' => l10n.movementConsumption,
+String movementTypeLabel(AppLocalizations i18n, String type) => switch (type) {
+  'RECEIPT' => i18n.movementReceipt,
+  'REVIEW' => i18n.movementReview,
+  'STORAGE' => i18n.movementStorage,
+  'CONSUMPTION' => i18n.movementConsumption,
   _ => type,
 };
 
 /// Why a lot cannot be consumed: expired, not received yet, depleted or its status.
-String lotAvailabilityLabel(AppLocalizations l10n, String? availability) => switch (availability) {
-  'EXPIRED' => l10n.lotExpired,
-  'NOT_YET_RECEIVED' => l10n.lotNotYetReceived,
-  'DEPLETED' => l10n.lotDepleted,
-  _ => ReceiptStatus.fromCode(availability).label(l10n),
+String lotAvailabilityLabel(AppLocalizations i18n, String? availability) => switch (availability) {
+  'EXPIRED' => i18n.lotExpired,
+  'NOT_YET_RECEIVED' => i18n.lotNotYetReceived,
+  'DEPLETED' => i18n.lotDepleted,
+  _ => ReceiptStatus.fromCode(availability).label(i18n),
 };

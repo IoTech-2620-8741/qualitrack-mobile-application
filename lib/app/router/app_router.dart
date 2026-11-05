@@ -79,7 +79,7 @@ int? _intParam(String? raw) {
   return value != null && value > 0 ? value : null;
 }
 
-Widget _invalidId(BuildContext context) => Scaffold(appBar: AppBar(), body: EmptyView(title: context.l10n.errorNotFound));
+Widget _invalidId(BuildContext context) => Scaffold(appBar: AppBar(), body: EmptyView(title: context.i18n.errorNotFound));
 
 /// Lets the router listen to the Flutter-free [SessionController].
 class _SessionRefresh extends ChangeNotifier {
@@ -245,7 +245,7 @@ GoRouter createRouter(
         path: AppRoutes.profile,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<ProfileBloc>()..add(const ProfileRequested()),
-          child: ProfilePage(onSignOut: session.signOut, roleLabel: (role, l10n) => role.label(l10n)),
+          child: ProfilePage(onSignOut: session.signOut, roleLabel: (role, i18n) => role.label(i18n)),
         ),
         routes: [
           GoRoute(

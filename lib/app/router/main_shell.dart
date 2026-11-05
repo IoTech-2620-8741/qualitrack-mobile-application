@@ -11,7 +11,7 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return Scaffold(
       body: shell,
       bottomNavigationBar: NavigationBar(
@@ -22,27 +22,27 @@ class MainShell extends StatelessWidget {
           NavigationDestination(
             icon: const Icon(Icons.dashboard_outlined),
             selectedIcon: const Icon(Icons.dashboard),
-            label: l10n.navHome,
+            label: i18n.navHome,
           ),
           NavigationDestination(
             icon: const Icon(Icons.monitor_heart_outlined),
             selectedIcon: const Icon(Icons.monitor_heart),
-            label: l10n.navTelemetry,
+            label: i18n.navTelemetry,
           ),
           NavigationDestination(
             icon: const Icon(Icons.notifications_outlined),
             selectedIcon: const Icon(Icons.notifications),
-            label: l10n.navAlerts,
+            label: i18n.navAlerts,
           ),
           NavigationDestination(
             icon: const Icon(Icons.inventory_2_outlined),
             selectedIcon: const Icon(Icons.inventory_2),
-            label: l10n.navBatches,
+            label: i18n.navBatches,
           ),
           NavigationDestination(
             icon: const Icon(Icons.menu),
             selectedIcon: const Icon(Icons.menu_open),
-            label: l10n.navMore,
+            label: i18n.navMore,
           ),
         ],
       ),
