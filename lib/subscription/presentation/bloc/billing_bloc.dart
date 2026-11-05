@@ -4,7 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../application/billing_queries.dart';
+import '../../application/subscription_facade_service.dart';
+import '../../domain/entities/billing_summary.dart';
 
 final class BillingRequested extends Equatable {
   const BillingRequested({this.refresh = false});
@@ -17,21 +18,21 @@ final class BillingRequested extends Equatable {
 
 class BillingBloc extends Bloc<BillingRequested, RemoteState<BillingSummary>> {
   BillingBloc({
-    required GetBillingSummary getBillingSummary,
+    required SubscriptionFacadeService subscriptionService,
     required LaboratoryId Function() laboratoryId,
-  }) : _getSummary = getBillingSummary,
+  }) : _subscriptionService = subscriptionService,
        _laboratoryId = laboratoryId,
        super(const RemoteState()) {
     on<BillingRequested>(_onRequested);
   }
 
-  final GetBillingSummary _getSummary;
+  final SubscriptionFacadeService _subscriptionService;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(BillingRequested event, Emitter<RemoteState<BillingSummary>> emit) async {
     emit(event.refresh && state.hasData ? state.refreshingState() : state.loading());
     try {
-      final summary = await _getSummary(_laboratoryId());
+      final summary = await _subscriptionService.getBillingSummary(_laboratoryId());
       final empty = summary.active == null && summary.subscriptions.isEmpty;
       emit(state.success(summary, empty: empty));
     } catch (error) {

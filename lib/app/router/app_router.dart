@@ -44,7 +44,7 @@ import '../../reporting/presentation/pages/reports_page.dart';
 import '../../common/presentation/i18n/app_localizations.dart';
 import '../../common/presentation/widgets/state_views.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
-import '../../subscription/presentation/pages/billing_page.dart';
+import '../../subscription/presentation/screens/billing_screen.dart';
 import '../../tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 import '../../tracking/presentation/bloc/telemetry_history_bloc.dart';
 import '../../tracking/presentation/pages/telemetry_dashboard_page.dart';
@@ -231,7 +231,7 @@ GoRouter createRouter(
         path: AppRoutes.billing,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<BillingBloc>()..add(const BillingRequested()),
-          child: const BillingPage(),
+          child: const BillingScreen(),
         ),
       ),
       GoRoute(
