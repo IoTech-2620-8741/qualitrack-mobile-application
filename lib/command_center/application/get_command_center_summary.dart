@@ -99,14 +99,14 @@ class GetCommandCenterSummary {
   const GetCommandCenterSummary({
     required LaboratoryApi laboratoryApi,
     required EquipmentApi equipmentApi,
-    required GetDeviceConnections getConnections,
+    required TelemetryApi telemetryApi,
     required BatchApi batchApi,
     required GetLaboratoryAlerts getAlerts,
     required InventoryApi inventoryApi,
     required SubscriptionApi subscriptionApi,
   }) : _laboratoryApi = laboratoryApi,
        _equipmentApi = equipmentApi,
-       _getConnections = getConnections,
+       _telemetryApi = telemetryApi,
        _batchApi = batchApi,
        _getAlerts = getAlerts,
        _inventoryApi = inventoryApi,
@@ -114,7 +114,7 @@ class GetCommandCenterSummary {
 
   final LaboratoryApi _laboratoryApi;
   final EquipmentApi _equipmentApi;
-  final GetDeviceConnections _getConnections;
+  final TelemetryApi _telemetryApi;
   final BatchApi _batchApi;
   final GetLaboratoryAlerts _getAlerts;
   final InventoryApi _inventoryApi;
@@ -132,7 +132,7 @@ class GetCommandCenterSummary {
       _part(() async {
         final equipments = await _equipmentApi.getEquipments(lab);
         final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();
-        return EquipmentSnapshot(equipments: equipments, connections: await _getConnections(lab, targets));
+        return EquipmentSnapshot(equipments: equipments, connections: await _telemetryApi.getConnections(lab, targets));
       }),
       _part(() async {
         final batches = await _batchApi.getBatches(lab);
