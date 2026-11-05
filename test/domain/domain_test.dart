@@ -10,6 +10,7 @@ import 'package:qualitrack_mobile/iam/domain/password_policy.dart';
 import 'package:qualitrack_mobile/iam/domain/user_role.dart';
 import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
 import 'package:qualitrack_mobile/profile/domain/profile.dart';
+import 'package:qualitrack_mobile/shared/domain/failure.dart';
 import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 
@@ -133,6 +134,15 @@ void main() {
       expect(AlertSeverity.fromCode(null), AlertSeverity.unknown);
       expect(AlertOrigin.fromCode('ENVIRONMENT'), AlertOrigin.environment);
       expect(NotificationType.fromCode('BATCH_RELEASED'), NotificationType.batchReleased);
+    });
+  });
+
+  group('Failure.from', () {
+    test('keeps failures and types unexpected errors', () {
+      const failure = NotFoundFailure(code: 'X');
+      expect(Failure.from(failure), same(failure));
+      expect(Failure.from(const FormatException('bad')), isA<ParsingFailure>());
+      expect(Failure.from(StateError('boom')), isA<UnexpectedFailure>());
     });
   });
 

@@ -7,7 +7,6 @@ import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/profile_use_cases.dart';
 import '../../domain/profile.dart';
@@ -150,7 +149,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _onProfileChanged(profile);
       emit(state.copyWith(remote: state.remote.success(ProfileData(profile: profile, photo: photo, laboratory: laboratory))));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 
@@ -178,7 +177,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _onProfileChanged(updated.profile);
       emit(state.copyWith(remote: state.remote.success(updated), actionStatus: ProfileActionStatus.success));
     } catch (error) {
-      emit(state.copyWith(actionStatus: ProfileActionStatus.failure, actionFailure: ApiExceptionMapper.map(error)));
+      emit(state.copyWith(actionStatus: ProfileActionStatus.failure, actionFailure: Failure.from(error)));
     }
   }
 }

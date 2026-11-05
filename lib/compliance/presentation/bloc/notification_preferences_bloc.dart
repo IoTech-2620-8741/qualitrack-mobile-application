@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../shared/domain/failure.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/compliance_queries.dart';
 import '../../domain/compliance.dart';
@@ -73,7 +72,7 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
     try {
       emit(state.copyWith(remote: state.remote.success(await _getPreferences())));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 
@@ -84,7 +83,7 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
       final saved = await _updatePreferences(event.preferences);
       emit(state.copyWith(remote: state.remote.success(saved), saveStatus: PreferencesSaveStatus.saved));
     } catch (error) {
-      emit(state.copyWith(saveStatus: PreferencesSaveStatus.failure, saveFailure: ApiExceptionMapper.map(error)));
+      emit(state.copyWith(saveStatus: PreferencesSaveStatus.failure, saveFailure: Failure.from(error)));
     }
   }
 }

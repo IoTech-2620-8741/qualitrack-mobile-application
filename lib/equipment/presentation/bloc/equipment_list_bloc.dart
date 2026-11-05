@@ -1,10 +1,10 @@
+import '../../../shared/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../../tracking/application/telemetry_queries.dart';
 import '../../../tracking/domain/telemetry.dart';
@@ -128,7 +128,7 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
       ];
       emit(state.copyWith(remote: state.remote.success(items, empty: items.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }

@@ -1,8 +1,8 @@
+import '../../../shared/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/get_command_center_summary.dart';
 
@@ -38,7 +38,7 @@ class CommandCenterBloc extends Bloc<CommandCenterRequested, RemoteState<Command
     try {
       emit(state.success(await _getSummary(_laboratoryId(), includeSubscription: _includeSubscription)));
     } catch (error) {
-      emit(state.failed(ApiExceptionMapper.map(error)));
+      emit(state.failed(Failure.from(error)));
     }
   }
 }

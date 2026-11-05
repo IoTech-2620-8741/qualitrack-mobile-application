@@ -11,6 +11,14 @@ sealed class Failure extends Equatable implements Exception {
   /// Backend error code (e.g. `VALIDATION_ERROR`, `BATCH_NOT_FOUND`), if any.
   final String? code;
 
+  /// Any error caught outside the data layer as a [Failure]. HTTP and network
+  /// errors already arrive typed from the API client.
+  static Failure from(Object error) => switch (error) {
+    Failure() => error,
+    FormatException() || TypeError() => ParsingFailure(message: error.toString()),
+    _ => UnexpectedFailure(message: error.toString()),
+  };
+
   @override
   List<Object?> get props => [runtimeType, message, code];
 

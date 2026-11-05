@@ -9,7 +9,6 @@ import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../../shared/presentation/view_status.dart';
 import '../../application/telemetry_queries.dart';
@@ -304,7 +303,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       final initial = catalog.devices.any((e) => e.id == requested) ? requested! : catalog.devices.first.id;
       await _select(initial, emit);
     } catch (error) {
-      emit(state.copyWith(catalog: state.catalog.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(catalog: state.catalog.failed(Failure.from(error))));
     }
   }
 
@@ -366,7 +365,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       if (!_paused) _startTimer();
     } catch (error) {
       if (state.selectedDeviceId != deviceId) return;
-      emit(state.copyWith(snapshot: state.snapshot.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(snapshot: state.snapshot.failed(Failure.from(error))));
     }
   }
 
@@ -403,7 +402,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       ));
     } catch (error) {
       if (state.selectedDeviceId != deviceId) return;
-      emit(state.copyWith(snapshot: state.snapshot.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(snapshot: state.snapshot.failed(Failure.from(error))));
       if (error is UnauthorizedFailure) _stopTimer();
     } finally {
       _busy = false;

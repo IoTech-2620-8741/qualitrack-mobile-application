@@ -1,8 +1,8 @@
+import '../../../shared/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/laboratory_queries.dart';
 import '../../domain/laboratory.dart';
@@ -77,7 +77,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
       final catalog = await _getCatalog(_laboratoryId());
       emit(state.copyWith(remote: state.remote.success(catalog, empty: catalog.products.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }

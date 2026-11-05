@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../shared/domain/failure.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/compliance_queries.dart';
 import '../../domain/compliance.dart';
@@ -86,7 +85,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       final items = await _getNotifications();
       emit(state.copyWith(remote: state.remote.success(items, empty: items.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 
@@ -96,7 +95,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       await _markRead(event.notification.id);
       await _reload(emit);
     } catch (error) {
-      emit(state.copyWith(actionFailure: ApiExceptionMapper.map(error)));
+      emit(state.copyWith(actionFailure: Failure.from(error)));
     }
   }
 
@@ -106,7 +105,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       await _markAllRead();
       await _reload(emit);
     } catch (error) {
-      emit(state.copyWith(actionFailure: ApiExceptionMapper.map(error)));
+      emit(state.copyWith(actionFailure: Failure.from(error)));
     }
   }
 

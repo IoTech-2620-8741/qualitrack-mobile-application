@@ -8,7 +8,6 @@ import '../../../reporting/application/reporting_queries.dart';
 import '../../../reporting/domain/reporting.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../../shared/presentation/section.dart';
 import '../../../tracking/application/telemetry_queries.dart';
@@ -143,7 +142,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
         people: (results[7] as Map<int, String>?) ?? const {},
       )));
     } catch (error) {
-      emit(state.failed(ApiExceptionMapper.map(error)));
+      emit(state.failed(Failure.from(error)));
     }
   }
 

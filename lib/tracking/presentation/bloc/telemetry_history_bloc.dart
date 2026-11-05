@@ -1,3 +1,4 @@
+import '../../../shared/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -6,7 +7,6 @@ import '../../../equipment/domain/equipment.dart';
 import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/telemetry_queries.dart';
 import '../../domain/telemetry.dart';
@@ -211,7 +211,7 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
       emit(state.copyWith(selectedDeviceId: id));
       await _load(emit);
     } catch (error) {
-      emit(state.copyWith(catalog: state.catalog.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(catalog: state.catalog.failed(Failure.from(error))));
     }
   }
 
@@ -229,7 +229,7 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
       if (state.selectedDeviceId != deviceId) return;
       emit(state.copyWith(points: state.points.success(points, empty: points.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(points: state.points.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(points: state.points.failed(Failure.from(error))));
     }
   }
 }

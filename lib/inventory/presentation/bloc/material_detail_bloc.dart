@@ -5,7 +5,6 @@ import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../../shared/presentation/section.dart';
 import '../../application/inventory_queries.dart';
@@ -97,7 +96,7 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
         usages: sections[2] as Section<MaterialUsage>,
       )));
     } catch (error) {
-      emit(state.failed(ApiExceptionMapper.map(error)));
+      emit(state.failed(Failure.from(error)));
     }
   }
 

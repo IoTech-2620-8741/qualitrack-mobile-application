@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../shared/domain/failure.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../application/iam_use_cases.dart';
 import '../../application/session_controller.dart';
 
@@ -62,7 +61,7 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
   /// deactivated accounts with 409; all of them are shown as "invalid
   /// credentials" to avoid user enumeration.
   Failure _mapSignInFailure(Object error) {
-    final failure = ApiExceptionMapper.map(error);
+    final failure = Failure.from(error);
     if (failure is NotFoundFailure ||
         failure is ConflictFailure ||
         (failure is BadRequestFailure && failure.code != 'CREDENTIALS_REQUIRED')) {

@@ -7,7 +7,6 @@ import '../../../../reporting/application/reporting_queries.dart';
 import '../../../../reporting/domain/reporting.dart';
 import '../../../../shared/domain/failure.dart';
 import '../../../../shared/domain/value_objects.dart';
-import '../../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../../shared/presentation/section.dart';
 import '../../../application/batch_facade_service.dart';
 import '../../../domain/entities/production_batch.dart';
@@ -58,7 +57,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
     try {
       emit(state.copyWith(detail: state.detail.success(await _load())));
     } catch (error) {
-      emit(state.copyWith(detail: state.detail.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(detail: state.detail.failed(Failure.from(error))));
     }
   }
 
@@ -102,7 +101,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
       // The decision changes the traceability, the audit log and the events.
       emit(state.copyWith(detail: state.detail.success(await _load()), actionStatus: BatchActionStatus.success));
     } catch (error) {
-      emit(state.copyWith(actionStatus: BatchActionStatus.failure, actionFailure: ApiExceptionMapper.map(error)));
+      emit(state.copyWith(actionStatus: BatchActionStatus.failure, actionFailure: Failure.from(error)));
     }
   }
 }
