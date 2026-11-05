@@ -18,9 +18,11 @@ import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dar
 import 'package:qualitrack_mobile/equipment/infrastructure/data_sources/equipment_remote_data_provider.dart';
 import 'package:qualitrack_mobile/equipment/infrastructure/models/equipment_model.dart';
 import 'package:qualitrack_mobile/equipment/infrastructure/repositories/equipment_repository.dart';
-import 'package:qualitrack_mobile/iam/domain/user_role.dart';
-import 'package:qualitrack_mobile/iam/infrastructure/iam_dtos.dart';
-import 'package:qualitrack_mobile/iam/infrastructure/iam_repositories_impl.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_role.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/data_sources/iam_local_data_provider.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/data_sources/iam_remote_data_provider.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/models/authenticated_user_model.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/repositories/iam_repository.dart';
 import 'package:qualitrack_mobile/inventory/infrastructure/data_sources/inventory_remote_data_provider.dart';
 import 'package:qualitrack_mobile/inventory/infrastructure/repositories/inventory_repository.dart';
 import 'package:qualitrack_mobile/laboratory/infrastructure/data_sources/laboratory_remote_data_provider.dart';
@@ -134,14 +136,14 @@ void main() {
 
   group('DTO mapping', () {
     test('authenticated user → session with the temporary password flag', () {
-      final session = AuthenticatedUserDto.fromJson({
+      final session = AuthenticatedUserModel.fromJson({
         'id': 42,
         'username': 'lucia@senkalab.test',
         'token': fakeJwt(expiresAt: DateTime.utc(2030)),
         'roles': ['ROLE_LAB_OPERATOR'],
         'laboratoryId': 7,
         'passwordChangeRequired': true,
-      }).toDomain();
+      });
       expect(session.userId, 42);
       expect(session.roles, [UserRole.labOperator]);
       expect(session.laboratoryId, lab);
@@ -261,18 +263,19 @@ void main() {
 
     test('secure session repository round-trips the session', () async {
       final store = InMemorySecureStore();
-      final repo = SecureSessionRepository(store);
+      final repo = IamRepository(remoteDataProvider: IamRemoteDataProvider(MockApiClient()), localDataProvider: IamLocalDataProvider(store));
       final session = sessionFixture(passwordChangeRequired: true);
-      await repo.save(session);
-      expect(store.values.keys, [SecureSessionRepository.storageKey]);
-      expect(await repo.load(), session);
-      await repo.clear();
-      expect(await repo.load(), isNull);
+      await repo.saveSession(session);
+      expect(store.values.keys, [IamLocalDataProvider.storageKey]);
+      // The stored session comes back as the model, so compare the data.
+      expect((await repo.loadSession())?.props, session.props);
+      await repo.clearSession();
+      expect(await repo.loadSession(), isNull);
     });
 
     test('corrupted stored session is discarded', () async {
-      final store = InMemorySecureStore()..values[SecureSessionRepository.storageKey] = '{broken';
-      expect(await SecureSessionRepository(store).load(), isNull);
+      final store = InMemorySecureStore()..values[IamLocalDataProvider.storageKey] = '{broken';
+      expect(await IamRepository(remoteDataProvider: IamRemoteDataProvider(MockApiClient()), localDataProvider: IamLocalDataProvider(store)).loadSession(), isNull);
       expect(store.values, isEmpty);
     });
 
