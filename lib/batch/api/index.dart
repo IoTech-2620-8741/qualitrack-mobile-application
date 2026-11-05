@@ -10,7 +10,6 @@ import '../domain/entities/production_batch.dart';
 export '../domain/entities/batch_status.dart';
 export '../domain/entities/batch_summary.dart';
 export '../domain/entities/production_batch.dart';
-export '../presentation/widgets/batch_labels.dart';
 
 class BatchApi {
   const BatchApi(this._batchService);

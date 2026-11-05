@@ -4,4 +4,3 @@ library;
 
 export '../application/reporting_queries.dart';
 export '../domain/reporting.dart';
-export '../presentation/pages/reports_page.dart';

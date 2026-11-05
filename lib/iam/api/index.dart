@@ -4,4 +4,3 @@ library;
 
 export '../domain/user_role.dart';
 export '../domain/user_session.dart';
-export '../presentation/widgets/role_labels.dart';
