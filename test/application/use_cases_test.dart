@@ -17,6 +17,7 @@ import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
 import 'package:qualitrack_mobile/profile/domain/entities/user_profile.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/reporting/domain/entities/reporting_entities.dart';
 import 'package:qualitrack_mobile/subscription/application/subscription_facade_service.dart';
 import 'package:qualitrack_mobile/subscription/domain/entities/subscription.dart';
 import 'package:qualitrack_mobile/subscription/domain/entities/subscription_plan.dart';
@@ -279,6 +280,43 @@ void main() {
         throwsA(isA<BadRequestFailure>()),
       );
       verifyNoMoreInteractions(repo);
+    });
+  });
+
+  group('Reporting', () {
+    test('audit trails come newest first, undated entries last', () async {
+      final repo = MockReportingRepository();
+      when(() => repo.getBatchAuditLogs(3)).thenAnswer(
+        (_) async => [
+          const AuditLogEntry(id: 1, action: 'RELEASE'),
+          AuditLogEntry(id: 2, action: 'CREATE', timestamp: DateTime.utc(2026, 9, 1)),
+          AuditLogEntry(id: 3, action: 'UPDATE', timestamp: DateTime.utc(2026, 9, 5)),
+        ],
+      );
+
+      final logs = await reportingFacade(repo).getBatchAuditLogs(3);
+
+      expect(logs.map((e) => e.id), [3, 2, 1]);
+    });
+
+    test('trends of every environment come most severe first', () async {
+      final repo = MockReportingRepository();
+      DeviationTrend trend(String name, {int deviations = 0, int critical = 0}) => DeviationTrend(
+        parameterName: name,
+        equipmentId: 1,
+        direction: TrendDirection.stable,
+        evaluatedReadings: 10,
+        deviationCount: deviations,
+        criticalDeviationCount: critical,
+      );
+      when(() => repo.getDeviationTrends(lab, 3, from: any(named: 'from'), to: any(named: 'to')))
+          .thenAnswer((_) async => [trend('HUMIDITY'), trend('TEMPERATURE', deviations: 2, critical: 1)]);
+      when(() => repo.getDeviationTrends(lab, 4, from: any(named: 'from'), to: any(named: 'to')))
+          .thenAnswer((_) async => [trend('MOTION', deviations: 1)]);
+
+      final trends = await reportingFacade(repo).getDeviationTrends(lab, [3, 4], ReportPeriod.last7Days);
+
+      expect(trends.map((t) => t.parameterName), ['TEMPERATURE', 'MOTION', 'HUMIDITY']);
     });
   });
 
