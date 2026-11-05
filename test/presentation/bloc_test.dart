@@ -18,7 +18,8 @@ import 'package:qualitrack_mobile/iam/application/session_controller.dart';
 import 'package:qualitrack_mobile/iam/domain/onboarding_state.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
-import 'package:qualitrack_mobile/laboratory/application/laboratory_queries.dart';
+import 'package:qualitrack_mobile/laboratory/api/index.dart';
+import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
 import 'package:qualitrack_mobile/reporting/application/reporting_queries.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
@@ -208,7 +209,7 @@ void main() {
     });
 
     AlertsBloc build() => AlertsBloc(
-      getEnvironments: GetEnvironments(labRepo),
+      laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       getEquipments: GetEquipments(equipmentRepo),
       getAlerts: GetLaboratoryAlerts(complianceRepo),
       laboratoryId: () => lab,
@@ -269,8 +270,7 @@ void main() {
       alertId: 1,
       getAlert: GetAlertDetail(repo),
       getEquipment: GetEquipment(equipmentRepo),
-      getEnvironments: GetEnvironments(labRepo),
-      getUserDirectory: GetUserDirectory(labRepo),
+      laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       acknowledge: AcknowledgeAlert(repo),
       resolve: ResolveAlert(repo),
       laboratoryId: () => lab,
@@ -365,7 +365,7 @@ void main() {
           batchService: BatchFacadeService(repository: repo),
           getEvents: GetBatchComplianceEvents(compliance),
           getAuditLogs: GetBatchAuditLogs(reporting),
-          getUserDirectory: GetUserDirectory(labRepo),
+          laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
           laboratoryId: () => lab,
         );
       },
@@ -416,7 +416,7 @@ void main() {
 
     TelemetryDashboardBloc build() => TelemetryDashboardBloc(
       getEquipments: GetEquipments(equipmentRepo),
-      getEnvironments: GetEnvironments(labRepo),
+      laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       getConnection: GetDeviceConnection(telemetryRepo),
       getMeasurements: GetMeasurements(telemetryRepo),
       getProfile: GetEnvironmentalProfile(telemetryRepo),

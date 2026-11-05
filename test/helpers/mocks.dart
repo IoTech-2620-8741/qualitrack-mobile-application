@@ -4,7 +4,7 @@ import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
 import 'package:qualitrack_mobile/iam/domain/iam_repositories.dart';
 import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
-import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
+import 'package:qualitrack_mobile/laboratory/domain/interfaces/laboratory_interface.dart';
 import 'package:qualitrack_mobile/profile/domain/interfaces/profile_interface.dart';
 import 'package:qualitrack_mobile/reporting/domain/reporting.dart';
 import 'package:qualitrack_mobile/common/infrastructure/http/api_client.dart';
@@ -16,7 +16,7 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockSessionRepository extends Mock implements SessionRepository {}
 
-class MockLaboratoryRepository extends Mock implements LaboratoryRepository {}
+class MockLaboratoryRepository extends Mock implements LaboratoryInterface {}
 
 class MockComplianceRepository extends Mock implements ComplianceRepository {}
 
