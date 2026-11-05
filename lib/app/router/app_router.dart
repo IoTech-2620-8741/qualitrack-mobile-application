@@ -35,7 +35,7 @@ import '../../inventory/presentation/bloc/material_detail_bloc.dart';
 import '../../inventory/presentation/pages/inventory_page.dart';
 import '../../inventory/presentation/pages/material_detail_page.dart';
 import '../../laboratory/presentation/bloc/products_bloc.dart';
-import '../../laboratory/presentation/pages/products_page.dart';
+import '../../laboratory/presentation/screens/products_screen.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
 import '../../profile/presentation/screens/profile_screen.dart';
@@ -204,7 +204,7 @@ GoRouter createRouter(
         path: AppRoutes.products,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<ProductsBloc>()..add(const ProductsRequested()),
-          child: const ProductsPage(),
+          child: const ProductsScreen(),
         ),
         routes: [
           GoRoute(
