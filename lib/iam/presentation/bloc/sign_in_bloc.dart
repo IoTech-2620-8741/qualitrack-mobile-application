@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/domain/failure.dart';
-import '../../application/iam_use_cases.dart';
+import '../../application/iam_facade_service.dart';
 import '../../application/session_controller.dart';
 
 sealed class SignInEvent extends Equatable {
@@ -35,21 +35,21 @@ final class SignInState extends Equatable {
 }
 
 class SignInBloc extends Bloc<SignInEvent, SignInState> {
-  SignInBloc({required SignIn signIn, required SessionController session})
-    : _signIn = signIn,
+  SignInBloc({required IamFacadeService iamService, required SessionController session})
+    : _iamService = iamService,
       _session = session,
       super(const SignInState()) {
     on<SignInSubmitted>(_onSubmitted);
   }
 
-  final SignIn _signIn;
+  final IamFacadeService _iamService;
   final SessionController _session;
 
   Future<void> _onSubmitted(SignInSubmitted event, Emitter<SignInState> emit) async {
     if (state.status == SignInStatus.submitting) return;
     emit(const SignInState(status: SignInStatus.submitting));
     try {
-      final session = await _signIn(username: event.username, password: event.password);
+      final session = await _iamService.signIn(username: event.username, password: event.password);
       emit(const SignInState(status: SignInStatus.success));
       await _session.signedIn(session);
     } catch (error) {

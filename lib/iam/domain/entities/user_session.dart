@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
 
-import '../../common/domain/value_objects.dart';
+import '../../../common/domain/value_objects.dart';
 import 'access_token.dart';
 import 'user_role.dart';
 
 /// Authenticated user as returned by the IAM context.
-final class UserSession extends Equatable {
+class UserSession extends Equatable {
   const UserSession({
     required this.userId,
     required this.username,

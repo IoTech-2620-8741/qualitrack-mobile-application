@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/domain/failure.dart';
-import '../../application/iam_use_cases.dart';
+import '../../application/iam_facade_service.dart';
 
 final class PasswordChangeSubmitted extends Equatable {
   const PasswordChangeSubmitted({required this.currentPassword, required this.newPassword});
@@ -27,19 +27,19 @@ final class ChangePasswordState extends Equatable {
 }
 
 class ChangePasswordBloc extends Bloc<PasswordChangeSubmitted, ChangePasswordState> {
-  ChangePasswordBloc({required ChangePassword changePassword})
-    : _changePassword = changePassword,
+  ChangePasswordBloc({required IamFacadeService iamService})
+    : _iamService = iamService,
       super(const ChangePasswordState()) {
     on<PasswordChangeSubmitted>(_onSubmitted);
   }
 
-  final ChangePassword _changePassword;
+  final IamFacadeService _iamService;
 
   Future<void> _onSubmitted(PasswordChangeSubmitted event, Emitter<ChangePasswordState> emit) async {
     if (state.status == ChangePasswordStatus.submitting) return;
     emit(const ChangePasswordState(status: ChangePasswordStatus.submitting));
     try {
-      await _changePassword(currentPassword: event.currentPassword, newPassword: event.newPassword);
+      await _iamService.changePassword(currentPassword: event.currentPassword, newPassword: event.newPassword);
       emit(const ChangePasswordState(status: ChangePasswordStatus.success));
     } catch (error) {
       emit(ChangePasswordState(status: ChangePasswordStatus.failure, failure: Failure.from(error)));

@@ -6,15 +6,15 @@ import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
-import '../../domain/password_policy.dart';
+import '../../domain/logic/password_policy.dart';
 import '../bloc/change_password_bloc.dart';
 import '../widgets/qualitrack_logo.dart';
 
 /// Replaces the password of the signed-in user. When [forced] is true it is
 /// the first sign-in of a staff member with the temporary password received
 /// from the quality manager, and nothing else is available until it changes.
-class ChangePasswordPage extends StatefulWidget {
-  const ChangePasswordPage({
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({
     super.key,
     required this.forced,
     required this.onChanged,
@@ -26,10 +26,10 @@ class ChangePasswordPage extends StatefulWidget {
   final Future<void> Function()? onSignOut;
 
   @override
-  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _current = TextEditingController();
   final _next = TextEditingController();

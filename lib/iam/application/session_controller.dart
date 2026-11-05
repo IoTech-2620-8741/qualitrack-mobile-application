@@ -1,8 +1,8 @@
 import '../../common/domain/failure.dart';
 import '../../common/domain/value_objects.dart';
-import '../domain/onboarding_state.dart';
-import '../domain/user_session.dart';
-import 'iam_use_cases.dart';
+import '../domain/entities/onboarding_step.dart';
+import '../domain/entities/user_session.dart';
+import 'iam_facade_service.dart';
 
 enum SessionStatus { unknown, unauthenticated, passwordChangeRequired, setupRequired, authenticated }
 
@@ -10,20 +10,9 @@ enum SessionStatus { unknown, unauthenticated, passwordChangeRequired, setupRequ
 /// each status change re-evaluates route guards. It is plain Dart: `app/`
 /// adapts the listeners to the router.
 class SessionController {
-  SessionController({
-    required RestoreSession restoreSession,
-    required RememberSession rememberSession,
-    required SignOut signOut,
-    required CheckOnboarding checkOnboarding,
-  }) : _restoreSession = restoreSession,
-       _rememberSession = rememberSession,
-       _signOut = signOut,
-       _checkOnboarding = checkOnboarding;
+  SessionController({required IamFacadeService iamService}) : _iamService = iamService;
 
-  final RestoreSession _restoreSession;
-  final RememberSession _rememberSession;
-  final SignOut _signOut;
-  final CheckOnboarding _checkOnboarding;
+  final IamFacadeService _iamService;
 
   final _listeners = <void Function()>[];
 
@@ -55,7 +44,7 @@ class SessionController {
 
   Future<void> restore() async {
     try {
-      final session = await _restoreSession();
+      final session = await _iamService.restoreSession();
       if (session == null) {
         _set(SessionStatus.unauthenticated, null);
         return;
@@ -83,12 +72,12 @@ class SessionController {
     final session = _session;
     if (session == null) return;
     final updated = session.withPasswordChanged();
-    await _rememberSession(updated);
+    await _iamService.rememberSession(updated);
     await _evaluate(updated);
   }
 
   Future<void> signOut() async {
-    await _signOut();
+    await _iamService.signOut();
     _expired = false;
     _pendingStep = null;
     _set(SessionStatus.unauthenticated, null);
@@ -97,7 +86,7 @@ class SessionController {
   /// Called by the HTTP layer on 401. Idempotent to avoid redirect loops.
   Future<void> expire() async {
     if (_session == null) return;
-    await _signOut();
+    await _iamService.signOut();
     _expired = true;
     _pendingStep = null;
     _set(SessionStatus.unauthenticated, null);
@@ -108,7 +97,7 @@ class SessionController {
   Future<void> _evaluate(UserSession session) async {
     _session = session;
     try {
-      final onboarding = await _checkOnboarding();
+      final onboarding = await _iamService.checkOnboarding();
       if (onboarding.isReady) {
         _pendingStep = null;
         _set(SessionStatus.authenticated, session);

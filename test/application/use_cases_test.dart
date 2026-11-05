@@ -6,7 +6,7 @@ import 'package:qualitrack_mobile/batch/application/batch_facade_service.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/notification_preferences.dart';
-import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
+import 'package:qualitrack_mobile/iam/application/iam_facade_service.dart';
 import 'package:qualitrack_mobile/inventory/application/inventory_facade_service.dart';
 import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/pharmaceutical_product.dart';
@@ -44,46 +44,44 @@ void main() {
   });
 
   group('IAM', () {
-    late MockAuthRepository auth;
-    late MockSessionRepository sessions;
+    late MockIamRepository iam;
 
     setUp(() {
-      auth = MockAuthRepository();
-      sessions = MockSessionRepository();
+      iam = MockIamRepository();
     });
 
     test('sign in trims the username and stores the session', () async {
       final session = sessionFixture();
-      when(() => auth.signIn(username: 'qa@lab.test', password: 'secret')).thenAnswer((_) async => session);
-      when(() => sessions.save(any())).thenAnswer((_) async {});
+      when(() => iam.signIn(username: 'qa@lab.test', password: 'secret')).thenAnswer((_) async => session);
+      when(() => iam.saveSession(any())).thenAnswer((_) async {});
 
-      final result = await SignIn(auth, sessions)(username: '  qa@lab.test ', password: 'secret');
+      final result = await IamFacadeService(repository: iam).signIn(username: '  qa@lab.test ', password: 'secret');
 
       expect(result, session);
-      verify(() => sessions.save(session)).called(1);
+      verify(() => iam.saveSession(session)).called(1);
     });
 
     test('sign in rejects empty credentials without calling the backend', () {
-      expect(() => SignIn(auth, sessions)(username: ' ', password: ''), throwsA(isA<BadRequestFailure>()));
-      verifyNever(() => auth.signIn(username: any(named: 'username'), password: any(named: 'password')));
+      expect(() => IamFacadeService(repository: iam).signIn(username: ' ', password: ''), throwsA(isA<BadRequestFailure>()));
+      verifyNever(() => iam.signIn(username: any(named: 'username'), password: any(named: 'password')));
     });
 
     test('restore clears an expired session', () async {
-      when(() => sessions.load()).thenAnswer((_) async => sessionFixture(expiresAt: DateTime.utc(2020)));
-      when(() => sessions.clear()).thenAnswer((_) async {});
+      when(() => iam.loadSession()).thenAnswer((_) async => sessionFixture(expiresAt: DateTime.utc(2020)));
+      when(() => iam.clearSession()).thenAnswer((_) async {});
 
-      expect(await RestoreSession(sessions)(), isNull);
-      verify(() => sessions.clear()).called(1);
+      expect(await IamFacadeService(repository: iam).restoreSession(), isNull);
+      verify(() => iam.clearSession()).called(1);
     });
 
     test('change password requires both passwords', () async {
       expect(
-        () => ChangePassword(auth)(currentPassword: '', newPassword: 'abcd1234'),
+        () => IamFacadeService(repository: iam).changePassword(currentPassword: '', newPassword: 'abcd1234'),
         throwsA(isA<BadRequestFailure>()),
       );
-      when(() => auth.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).thenAnswer((_) async {});
-      await ChangePassword(auth)(currentPassword: 'old12345', newPassword: 'new12345');
-      verify(() => auth.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).called(1);
+      when(() => iam.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).thenAnswer((_) async {});
+      await IamFacadeService(repository: iam).changePassword(currentPassword: 'old12345', newPassword: 'new12345');
+      verify(() => iam.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).called(1);
     });
   });
 

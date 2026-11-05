@@ -7,8 +7,8 @@ import '../widgets/qualitrack_logo.dart';
 
 /// Shown while the stored session is being validated. Navigation happens in
 /// the router redirect as soon as [SessionController] resolves.
-class SplashPage extends StatelessWidget {
-  const SplashPage({super.key});
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

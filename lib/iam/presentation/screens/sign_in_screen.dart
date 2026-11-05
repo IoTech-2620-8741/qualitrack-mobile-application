@@ -10,8 +10,8 @@ import '../../../common/presentation/widgets/failure_message.dart';
 import '../bloc/sign_in_bloc.dart';
 import '../widgets/qualitrack_logo.dart';
 
-class SignInPage extends StatelessWidget {
-  const SignInPage({super.key, this.sessionExpired = false});
+class SignInScreen extends StatelessWidget {
+  const SignInScreen({super.key, this.sessionExpired = false});
 
   final bool sessionExpired;
 

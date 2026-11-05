@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 
 /// JWT issued by `POST /authentication/sign-in`. Only the `exp` claim is read
 /// on the device; signature validation stays on the server.
-final class AccessToken extends Equatable {
+class AccessToken extends Equatable {
   const AccessToken(this.value, {this.expiresAt});
 
   factory AccessToken.fromJwt(String jwt) =>

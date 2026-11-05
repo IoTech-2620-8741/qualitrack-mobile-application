@@ -13,8 +13,8 @@ import 'package:qualitrack_mobile/compliance/presentation/screens/alerts_screen.
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
-import 'package:qualitrack_mobile/iam/presentation/pages/change_password_page.dart';
-import 'package:qualitrack_mobile/iam/presentation/pages/sign_in_page.dart';
+import 'package:qualitrack_mobile/iam/presentation/screens/change_password_screen.dart';
+import 'package:qualitrack_mobile/iam/presentation/screens/sign_in_screen.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
@@ -54,7 +54,7 @@ void main() {
     });
 
     Future<void> pump(WidgetTester tester, {Locale locale = const Locale('en')}) => tester.pumpLocalized(
-      BlocProvider<SignInBloc>.value(value: bloc, child: const SignInPage()),
+      BlocProvider<SignInBloc>.value(value: bloc, child: const SignInScreen()),
       locale: locale,
     );
 
@@ -110,7 +110,7 @@ void main() {
     Future<void> pump(WidgetTester tester) => tester.pumpLocalized(
       BlocProvider<ChangePasswordBloc>.value(
         value: bloc,
-        child: ChangePasswordPage(forced: true, onChanged: () async {}, onSignOut: () async {}),
+        child: ChangePasswordScreen(forced: true, onChanged: () async {}, onSignOut: () async {}),
       ),
       size: const Size(390, 844),
     );

@@ -9,9 +9,9 @@ import 'package:qualitrack_mobile/compliance/domain/entities/deviation_alert.dar
 import 'package:qualitrack_mobile/equipment/domain/entities/equipment.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/iot_device_type.dart';
-import 'package:qualitrack_mobile/iam/domain/access_token.dart';
-import 'package:qualitrack_mobile/iam/domain/user_role.dart';
-import 'package:qualitrack_mobile/iam/domain/user_session.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/access_token.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_role.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_session.dart';
 import 'package:qualitrack_mobile/inventory/domain/entities/inventory_material.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/environment_usage.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/lab_environment.dart';

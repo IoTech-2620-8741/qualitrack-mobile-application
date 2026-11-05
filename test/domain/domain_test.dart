@@ -10,10 +10,11 @@ import 'package:qualitrack_mobile/compliance/domain/entities/deviation_alert.dar
 import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/iot_device_type.dart';
-import 'package:qualitrack_mobile/iam/domain/access_token.dart';
-import 'package:qualitrack_mobile/iam/domain/onboarding_state.dart';
-import 'package:qualitrack_mobile/iam/domain/password_policy.dart';
-import 'package:qualitrack_mobile/iam/domain/user_role.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/access_token.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/onboarding_state.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/onboarding_step.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_role.dart';
+import 'package:qualitrack_mobile/iam/domain/logic/password_policy.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/environment_usage.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/product_catalog.dart';
 import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';

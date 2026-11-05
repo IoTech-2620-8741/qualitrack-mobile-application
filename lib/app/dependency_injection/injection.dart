@@ -26,12 +26,13 @@ import '../../equipment/infrastructure/data_sources/equipment_remote_data_provid
 import '../../equipment/infrastructure/repositories/equipment_repository.dart';
 import '../../equipment/presentation/bloc/equipment_detail_bloc.dart';
 import '../../equipment/presentation/bloc/equipment_list_bloc.dart';
-import '../../iam/application/iam_use_cases.dart';
+import '../../iam/application/iam_facade_service.dart';
 import '../../iam/application/session_controller.dart';
-import '../../iam/domain/iam_repositories.dart';
-import '../../iam/domain/user_session.dart';
-import '../../iam/infrastructure/iam_remote_data_source.dart';
-import '../../iam/infrastructure/iam_repositories_impl.dart';
+import '../../iam/domain/entities/user_session.dart';
+import '../../iam/domain/interfaces/iam_interface.dart';
+import '../../iam/infrastructure/data_sources/iam_local_data_provider.dart';
+import '../../iam/infrastructure/data_sources/iam_remote_data_provider.dart';
+import '../../iam/infrastructure/repositories/iam_repository.dart';
 import '../../iam/presentation/bloc/change_password_bloc.dart';
 import '../../iam/presentation/bloc/sign_in_bloc.dart';
 import '../../inventory/api/index.dart';
@@ -96,18 +97,13 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton<ApiClient>(() => ApiClient.create(config: sl(), authInterceptor: sl()));
 
   // Identity & Access Management
-  sl.registerLazySingleton(() => IamRemoteDataSource(sl()));
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
-  sl.registerLazySingleton<SessionRepository>(() => SecureSessionRepository(sl()));
-  sl.registerLazySingleton(() => SignIn(sl(), sl()));
-  sl.registerLazySingleton(() => RestoreSession(sl()));
-  sl.registerLazySingleton(() => RememberSession(sl()));
-  sl.registerLazySingleton(() => SignOut(sl()));
-  sl.registerLazySingleton(() => CheckOnboarding(sl()));
-  sl.registerLazySingleton(() => ChangePassword(sl()));
-  sl.registerLazySingleton(
-    () => SessionController(restoreSession: sl(), rememberSession: sl(), signOut: sl(), checkOnboarding: sl()),
+  sl.registerLazySingleton(() => IamRemoteDataProvider(sl()));
+  sl.registerLazySingleton(() => IamLocalDataProvider(sl()));
+  sl.registerLazySingleton<IamInterface>(
+    () => IamRepository(remoteDataProvider: sl(), localDataProvider: sl()),
   );
+  sl.registerLazySingleton(() => IamFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => SessionController(iamService: sl()));
 
   // Laboratory Management
   sl.registerLazySingleton(() => LaboratoryRemoteDataProvider(sl()));
@@ -192,8 +188,8 @@ UserSession _session() {
 }
 
 void _registerBlocs() {
-  sl.registerFactory(() => SignInBloc(signIn: sl(), session: sl()));
-  sl.registerFactory(() => ChangePasswordBloc(changePassword: sl()));
+  sl.registerFactory(() => SignInBloc(iamService: sl(), session: sl()));
+  sl.registerFactory(() => ChangePasswordBloc(iamService: sl()));
   sl.registerFactory(
     () => ProfileBloc(
       profileService: sl(),
