@@ -6,6 +6,7 @@ import '../../shared/domain/failure.dart';
 import '../../shared/domain/value_objects.dart';
 import '../../shared/presentation/section.dart';
 import '../domain/entities/reporting_entities.dart';
+import '../domain/logic/reporting_logic.dart';
 import 'reporting_queries.dart';
 import 'package:equatable/equatable.dart';
 
@@ -25,6 +26,23 @@ final class ReportsData extends Equatable {
   final Section<AuditReport> reports;
   final Map<int, String> environmentNames;
   final Map<int, String> deviceNames;
+
+  List<DeviationTrend> get sortedTrends => sortTrendsBySeverity(trends.items);
+
+  int get criticalTrendsCount => sortedTrends.where((t) => t.severity == DeviationSeverity.critical).length;
+
+  Map<int, List<MeasurementSummary>> get measurementsByEnvironment {
+    final summaries = kpi?.measurementSummaries ?? const <MeasurementSummary>[];
+    final grouped = <int, List<MeasurementSummary>>{};
+    for (final s in summaries) {
+      grouped.putIfAbsent(s.environmentId, () => []).add(s);
+    }
+    return grouped;
+  }
+
+  int get totalReadings =>
+      (kpi?.measurementSummaries ?? const <MeasurementSummary>[])
+          .fold(0, (sum, s) => sum + s.readings);
 
   bool get everythingFailed => kpiFailure != null && trends.failed && reports.failed;
 
