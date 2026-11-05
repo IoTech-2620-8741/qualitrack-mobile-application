@@ -9,7 +9,7 @@ import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/state_views.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/presentation/widgets/telemetry_labels.dart';
+import '../../../tracking/api/index.dart';
 import '../bloc/equipment_list_bloc.dart';
 import '../widgets/equipment_labels.dart';
 

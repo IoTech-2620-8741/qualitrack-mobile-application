@@ -2,12 +2,10 @@ import '../../../shared/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../laboratory/application/laboratory_queries.dart';
-import '../../../laboratory/domain/laboratory.dart';
+import '../../../laboratory/api/index.dart';
 import '../../../shared/domain/value_objects.dart';
 import '../../../shared/presentation/remote_state.dart';
-import '../../../tracking/application/telemetry_queries.dart';
-import '../../../tracking/domain/telemetry.dart';
+import '../../../tracking/api/index.dart';
 import '../../application/equipment_queries.dart';
 import '../../domain/equipment.dart';
 
