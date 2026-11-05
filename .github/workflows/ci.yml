@@ -1,0 +1,22 @@
+# Analyzes and tests every pull request from a feature branch into develop.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  verify:
+    if: startsWith(github.head_ref, 'feature/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
