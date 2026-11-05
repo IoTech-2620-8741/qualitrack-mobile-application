@@ -20,8 +20,9 @@ import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dar
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
-import 'package:qualitrack_mobile/tracking/presentation/pages/telemetry_dashboard_page.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
+import 'package:qualitrack_mobile/tracking/presentation/screens/telemetry_dashboard_screen.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';

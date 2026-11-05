@@ -16,7 +16,14 @@ import 'package:qualitrack_mobile/profile/domain/entities/user_profile.dart';
 import 'package:qualitrack_mobile/profile/domain/logic/personal_data_rules.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_profile.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_state.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_window.dart';
+import 'package:qualitrack_mobile/tracking/domain/logic/telemetry_analysis.dart';
 
 import '../helpers/fixtures.dart';
 

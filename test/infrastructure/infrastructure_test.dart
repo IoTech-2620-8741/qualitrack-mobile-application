@@ -31,8 +31,14 @@ import 'package:qualitrack_mobile/common/infrastructure/http/auth_interceptor.da
 import 'package:qualitrack_mobile/common/infrastructure/http/json_utils.dart';
 import 'package:qualitrack_mobile/subscription/infrastructure/data_sources/subscription_remote_data_provider.dart';
 import 'package:qualitrack_mobile/subscription/infrastructure/repositories/subscription_repository.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
-import 'package:qualitrack_mobile/tracking/infrastructure/telemetry_infrastructure.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_state.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/data_sources/telemetry_remote_data_provider.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/models/device_connection_model.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/models/environmental_profile_model.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/models/measurement_model.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/repositories/telemetry_repository.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -150,7 +156,7 @@ void main() {
     });
 
     test('measurement, profile and connection of Tracking', () {
-      final measurement = const MeasurementDto({
+      final measurement = MeasurementModel.fromJson(const {
         'id': 1,
         'deviceId': 10,
         'environmentId': 3,
@@ -162,12 +168,12 @@ void main() {
         'state': 'WARNING',
         'thresholdValue': 70,
         'profileVersion': 2,
-      }).toDomain();
+      });
       expect(measurement.metric, MonitoredMetric.humidity);
       expect(measurement.state, EnvironmentalState.warning);
       expect(measurement.isNumeric, isTrue);
 
-      final profile = const EnvironmentalProfileDto({
+      final profile = EnvironmentalProfileModel.fromJson(const {
         'version': 4,
         'thresholds': [
           {'metric': 'TEMPERATURE', 'unit': '°C', 'normalMin': 2, 'normalMax': 8, 'criticalMin': 0, 'criticalMax': 10},
@@ -176,16 +182,16 @@ void main() {
           {'metric': 'TEMPERATURE', 'state': 'CRITICAL', 'action': 'COOLING_ON'},
         ],
         'updatedAt': null,
-      }).toDomain();
+      });
       expect(profile.thresholdFor(MonitoredMetric.temperature)?.criticalMax, 10);
       expect(profile.actuationRules.single.state, EnvironmentalState.critical);
 
-      final connection = const DeviceConnectionDto({
+      final connection = DeviceConnectionModel.fromJson(const {
         'deviceId': 10,
         'connectionStatus': 'REQUIRES_REVIEW',
         'lastCommunicationAt': null,
         'expectedPeriodSeconds': 300,
-      }).toDomain();
+      });
       expect(connection.isConnected, isFalse);
     });
 
@@ -328,7 +334,7 @@ void main() {
             '/laboratories/7/environments/3/container-monitors/10/telemetry-measurements',
             query: {'from': from, 'to': to},
           )).thenAnswer((_) async => <Object>[]);
-      final repo = TelemetryRepositoryImpl(TelemetryRemoteDataSource(client));
+      final repo = TelemetryRepository(remoteDataProvider: TelemetryRemoteDataProvider(client));
       final start = DateTime.utc(2026, 10, 5);
       final end = DateTime.utc(2026, 10, 5, 12);
 
@@ -345,7 +351,7 @@ void main() {
     test('a device without profile (404) has a null profile', () async {
       when(() => client.get('/laboratories/7/environments/3/devices/10/environmental-profile'))
           .thenThrow(const NotFoundFailure());
-      final repo = TelemetryRepositoryImpl(TelemetryRemoteDataSource(client));
+      final repo = TelemetryRepository(remoteDataProvider: TelemetryRemoteDataProvider(client));
       expect(
         await repo.getProfile(lab, const TelemetryTarget(deviceId: 10, environmentId: 3, containerMonitor: true)),
         isNull,

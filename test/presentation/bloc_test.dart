@@ -25,8 +25,10 @@ import 'package:qualitrack_mobile/reporting/application/reporting_queries.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
-import 'package:qualitrack_mobile/tracking/application/telemetry_queries.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/tracking/application/telemetry_facade_service.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
 import 'package:qualitrack_mobile/tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 
 import '../helpers/fixtures.dart';
@@ -418,10 +420,7 @@ void main() {
     TelemetryDashboardBloc build() => TelemetryDashboardBloc(
       equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
-      getConnection: GetDeviceConnection(telemetryRepo),
-      getMeasurements: GetMeasurements(telemetryRepo),
-      getProfile: GetEnvironmentalProfile(telemetryRepo),
-      getActuations: GetActuationEvents(telemetryRepo),
+      telemetryService: TelemetryFacadeService(repository: telemetryRepo),
       laboratoryId: () => lab,
       pollInterval: const Duration(milliseconds: 20),
     );

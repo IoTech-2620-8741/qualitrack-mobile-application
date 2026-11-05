@@ -10,7 +10,7 @@ import 'package:qualitrack_mobile/reporting/domain/reporting.dart';
 import 'package:qualitrack_mobile/common/infrastructure/http/api_client.dart';
 import 'package:qualitrack_mobile/common/infrastructure/storage/secure_key_value_store.dart';
 import 'package:qualitrack_mobile/subscription/domain/interfaces/subscription_interface.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/tracking/domain/interfaces/telemetry_interface.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -26,7 +26,7 @@ class MockBatchRepository extends Mock implements BatchInterface {}
 
 class MockEquipmentRepository extends Mock implements EquipmentInterface {}
 
-class MockTelemetryRepository extends Mock implements TelemetryRepository {}
+class MockTelemetryRepository extends Mock implements TelemetryInterface {}
 
 class MockInventoryRepository extends Mock implements InventoryInterface {}
 
