@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:qualitrack_mobile/batch/domain/batch.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/production_batch.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
 import 'package:qualitrack_mobile/iam/domain/access_token.dart';

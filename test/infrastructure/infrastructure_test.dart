@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:qualitrack_mobile/batch/domain/batch.dart';
-import 'package:qualitrack_mobile/batch/infrastructure/batch_infrastructure.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
+import 'package:qualitrack_mobile/batch/infrastructure/data_sources/batch_remote_data_provider.dart';
+import 'package:qualitrack_mobile/batch/infrastructure/models/batch_traceability_model.dart';
+import 'package:qualitrack_mobile/batch/infrastructure/repositories/batch_repository.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/compliance/infrastructure/compliance_infrastructure.dart';
 import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
@@ -193,7 +195,7 @@ void main() {
       expect(equipment.rawStatus, 'CALIBRATING');
       expect(equipment.isIotDevice, isFalse);
 
-      final traceability = const BatchTraceabilityDto({
+      final traceability = BatchTraceabilityModel.fromJson(const {
         'batch': {
           'id': 3,
           'labId': 7,
@@ -215,7 +217,7 @@ void main() {
         'release': {'signedByUserId': 42, 'signatureHash': 'ab12', 'signedAt': '2026-09-05T10:00:00Z'},
         'rejection': null,
         'container': null,
-      }).toDomain();
+      });
       expect(traceability.batch.status, BatchStatus.released);
       expect(traceability.productCode, 'IBU-400');
       expect(traceability.equipment.single.equipmentName, 'Mixer');
@@ -285,7 +287,7 @@ void main() {
         (await EquipmentRepositoryImpl(EquipmentRemoteDataSource(client)).getByLaboratory(lab)).map((e) => e.id),
         [1],
       );
-      expect(await BatchRepositoryImpl(BatchRemoteDataSource(client)).getByLaboratory(lab), isEmpty);
+      expect(await BatchRepository(remoteDataProvider: BatchRemoteDataProvider(client)).getByLaboratory(lab), isEmpty);
     });
 
     test('maintenance is read in the environment of the equipment', () async {
@@ -302,7 +304,7 @@ void main() {
           .thenAnswer((_) async => <String, Object>{});
       when(() => client.post('$path/rejections', body: {'rejectionDate': '2026-09-04', 'reason': 'BPM'}))
           .thenAnswer((_) async => <String, Object>{});
-      final repo = BatchRepositoryImpl(BatchRemoteDataSource(client));
+      final repo = BatchRepository(remoteDataProvider: BatchRemoteDataProvider(client));
 
       await repo.release(lab, batchFixture(), releaseDate: '2026-09-04', notes: 'OK');
       await repo.reject(lab, batchFixture(), rejectionDate: '2026-09-04', reason: 'BPM');
