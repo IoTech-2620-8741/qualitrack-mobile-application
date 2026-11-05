@@ -37,11 +37,30 @@ Domain-Driven Design with one folder per Bounded Context.
 | **Presentation** | BLoCs, pages, widgets, labels (enum → text/tone/icon) | call HTTP or hold business rules |
 
 `shared/` holds cross-cutting pieces (failures, HTTP client, secure storage,
-formatting, localization, reusable widgets). `app/` is the composition root:
-theme, dependency injection (`get_it`), router (`go_router`) and the
+formatting, localization, theme, reusable widgets). `app/` is the composition
+root: dependency injection (`get_it`), router (`go_router`) and the
 `MaterialApp`. `command_center/` is a **UI composition module** (application +
 presentation only) that aggregates read models from several contexts; it is not
 a Bounded Context.
+
+## Dependency rules
+
+Checked by `test/architecture/architecture_test.dart`, which fails the build
+when a file breaks one of them.
+
+| Layer | May import |
+|---|---|
+| `domain` | its own domain and `shared/domain`; only `equatable` as a package |
+| `application` | domain, application, `shared/domain`, `shared/application`, and other contexts' `api/index.dart`; no Flutter |
+| `infrastructure` | domain, infrastructure, `shared/domain`, `shared/infrastructure`; no Flutter, BLoC or router |
+| `presentation` | application, domain entities, `shared/*` except infrastructure, and other contexts' `api/index.dart` |
+| `api` | its own application and domain (the context's public entry point; no widgets) |
+
+- A context reaches another one only through `<context>/api/index.dart`.
+- `shared/` imports no bounded context.
+- Only `app/` and `main.dart` may import anything, including `app/` itself.
+- When `app/` wires a widget of one context into another (e.g. the panel), it
+  passes it in as a parameter instead of letting the context import it.
 
 ## Bounded Contexts
 

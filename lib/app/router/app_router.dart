@@ -81,6 +81,13 @@ int? _intParam(String? raw) {
 
 Widget _invalidId(BuildContext context) => Scaffold(appBar: AppBar(), body: EmptyView(title: context.l10n.errorNotFound));
 
+/// Lets the router listen to the Flutter-free [SessionController].
+class _SessionRefresh extends ChangeNotifier {
+  _SessionRefresh(SessionController session) {
+    session.addListener(notifyListeners);
+  }
+}
+
 GoRouter createRouter(
   SessionController session, {
   required UnreadNotificationsController notifications,
@@ -89,7 +96,7 @@ GoRouter createRouter(
   int? currentUserId() => session.session?.userId;
   return GoRouter(
     initialLocation: AppRoutes.splash,
-    refreshListenable: session,
+    refreshListenable: _SessionRefresh(session),
     redirect: (context, state) => resolveRedirect(
       session.status,
       state.matchedLocation,

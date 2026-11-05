@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../shared/presentation/widgets/connection_badge.dart';
 import '../../../shared/presentation/labels.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../../../shared/presentation/theme/app_spacing.dart';
 import '../../../compliance/api/index.dart';
 import '../../../reporting/api/index.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';

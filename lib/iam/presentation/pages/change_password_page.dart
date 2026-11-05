@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../../../shared/presentation/theme/app_colors.dart';
+import '../../../shared/presentation/theme/app_spacing.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/failure_message.dart';
 import '../../../shared/presentation/widgets/layout_widgets.dart';
