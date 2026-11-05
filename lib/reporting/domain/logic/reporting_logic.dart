@@ -21,3 +21,22 @@ List<AuditLogEntry> sortAuditLogsNewestFirst(List<AuditLogEntry> entries) {
     return right.compareTo(left);
   });
 }
+
+int deviationSeverityRank(DeviationTrend t) => switch (t.severity) {
+  DeviationSeverity.critical => 0,
+  DeviationSeverity.warning => 1,
+  DeviationSeverity.onTrack => 2,
+  DeviationSeverity.noData => 3,
+};
+
+List<DeviationTrend> sortTrendsBySeverity(List<DeviationTrend> trends) {
+  return [...trends]..sort((a, b) {
+    final bySeverity = deviationSeverityRank(a).compareTo(deviationSeverityRank(b));
+    if (bySeverity != 0) return bySeverity;
+    final aPercent = a.timeInRangePercent ?? double.infinity;
+    final bPercent = b.timeInRangePercent ?? double.infinity;
+    final byPercent = aPercent.compareTo(bPercent);
+    if (byPercent != 0) return byPercent;
+    return a.parameterName.compareTo(b.parameterName);
+  });
+}
