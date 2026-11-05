@@ -1,10 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:qualitrack_mobile/batch/application/batch_use_cases.dart';
-import 'package:qualitrack_mobile/batch/domain/batch.dart';
-import 'package:qualitrack_mobile/batch/presentation/bloc/batch_detail_bloc.dart';
-import 'package:qualitrack_mobile/batch/presentation/bloc/batches_bloc.dart';
+import 'package:qualitrack_mobile/batch/application/batch_facade_service.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
+import 'package:qualitrack_mobile/batch/presentation/batch_detail/bloc/bloc.dart';
+import 'package:qualitrack_mobile/batch/presentation/batch_list/bloc/bloc.dart';
 import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
@@ -320,20 +321,20 @@ void main() {
   });
 
   group('Batches', () {
-    blocTest<BatchesBloc, BatchesState>(
+    blocTest<BatchListBloc, BatchListState>(
       'filters by status and search query',
       build: () {
         final repo = MockBatchRepository();
         when(() => repo.getByLaboratory(lab)).thenAnswer(
           (_) async => [batchFixture(id: 1, batchNumber: 'LOT-A'), batchFixture(id: 2, batchNumber: 'LOT-B', status: BatchStatus.released)],
         );
-        return BatchesBloc(getBatches: GetBatches(repo), laboratoryId: () => lab);
+        return BatchListBloc(batchService: BatchFacadeService(repository: repo), laboratoryId: () => lab);
       },
       act: (bloc) async {
-        bloc.add(const BatchesRequested());
+        bloc.add(const BatchListRequested());
         await Future<void>.delayed(Duration.zero);
-        bloc.add(const BatchesFilterChanged(BatchFilter.released));
-        bloc.add(const BatchesQueryChanged('lot-b'));
+        bloc.add(const BatchListFilterChanged(BatchFilter.released));
+        bloc.add(const BatchListQueryChanged('lot-b'));
       },
       verify: (bloc) {
         expect(bloc.state.summary.total, 2);
@@ -361,12 +362,10 @@ void main() {
         when(() => labRepo.getStaff(lab)).thenAnswer((_) async => const []);
         return BatchDetailBloc(
           batchId: 3,
-          getTraceability: GetBatchTraceability(repo),
+          batchService: BatchFacadeService(repository: repo),
           getEvents: GetBatchComplianceEvents(compliance),
           getAuditLogs: GetBatchAuditLogs(reporting),
           getUserDirectory: GetUserDirectory(labRepo),
-          release: ReleaseBatch(repo),
-          reject: RejectBatch(repo),
           laboratoryId: () => lab,
         );
       },

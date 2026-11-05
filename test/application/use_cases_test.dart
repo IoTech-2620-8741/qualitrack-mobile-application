@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:qualitrack_mobile/batch/application/batch_use_cases.dart';
-import 'package:qualitrack_mobile/batch/domain/batch.dart';
+import 'package:qualitrack_mobile/batch/application/batch_facade_service.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
 import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
@@ -152,7 +152,7 @@ void main() {
       when(() => repo.getByLaboratory(lab)).thenAnswer((_) async => [batchFixture(id: 1), batch]);
       when(() => repo.getTraceability(lab, batch)).thenAnswer((_) async => BatchTraceability(batch: batch));
 
-      final traceability = await GetBatchTraceability(repo)(lab, 3);
+      final traceability = await BatchFacadeService(repository: repo).getTraceability(lab, 3);
 
       expect(traceability.batch, batch);
     });
@@ -160,7 +160,7 @@ void main() {
     test('an unknown batch is not found', () {
       final repo = MockBatchRepository();
       when(() => repo.getByLaboratory(lab)).thenAnswer((_) async => [batchFixture(id: 1)]);
-      expect(() => GetBatchTraceability(repo)(lab, 99), throwsA(isA<NotFoundFailure>()));
+      expect(() => BatchFacadeService(repository: repo).getTraceability(lab, 99), throwsA(isA<NotFoundFailure>()));
     });
 
     test('release sends ISO date and trimmed notes', () async {
@@ -168,7 +168,7 @@ void main() {
       final batch = batchFixture();
       when(() => repo.release(lab, batch, releaseDate: '2026-09-04', notes: 'Approved')).thenAnswer((_) async {});
 
-      await ReleaseBatch(repo)(lab, batch, releaseDate: DateTime(2026, 9, 4, 18, 30), notes: ' Approved ');
+      await BatchFacadeService(repository: repo).release(lab, batch, releaseDate: DateTime(2026, 9, 4, 18, 30), notes: ' Approved ');
 
       verify(() => repo.release(lab, batch, releaseDate: '2026-09-04', notes: 'Approved')).called(1);
     });
@@ -176,7 +176,7 @@ void main() {
     test('reject requires a reason', () {
       final repo = MockBatchRepository();
       expect(
-        () => RejectBatch(repo)(lab, batchFixture(), rejectionDate: DateTime(2026), reason: ''),
+        () => BatchFacadeService(repository: repo).reject(lab, batchFixture(), rejectionDate: DateTime(2026), reason: ''),
         throwsA(isA<BadRequestFailure>()),
       );
     });

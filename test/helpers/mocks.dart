@@ -1,5 +1,5 @@
 import 'package:mocktail/mocktail.dart';
-import 'package:qualitrack_mobile/batch/domain/batch.dart';
+import 'package:qualitrack_mobile/batch/domain/interfaces/batch_interface.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
 import 'package:qualitrack_mobile/iam/domain/iam_repositories.dart';
@@ -22,7 +22,7 @@ class MockComplianceRepository extends Mock implements ComplianceRepository {}
 
 class MockNotificationRepository extends Mock implements NotificationRepository {}
 
-class MockBatchRepository extends Mock implements BatchRepository {}
+class MockBatchRepository extends Mock implements BatchInterface {}
 
 class MockEquipmentRepository extends Mock implements EquipmentRepository {}
 
