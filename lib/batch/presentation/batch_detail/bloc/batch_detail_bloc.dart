@@ -17,12 +17,12 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
     required BatchFacadeService batchService,
     required GetBatchComplianceEvents getEvents,
     required GetBatchAuditLogs getAuditLogs,
-    required GetUserDirectory getUserDirectory,
+    required LaboratoryApi laboratoryApi,
     required LaboratoryId Function() laboratoryId,
   }) : _batchService = batchService,
        _getEvents = getEvents,
        _getAuditLogs = getAuditLogs,
-       _getUserDirectory = getUserDirectory,
+       _laboratoryApi = laboratoryApi,
        _laboratoryId = laboratoryId,
        super(const BatchDetailState()) {
     on<BatchDetailRequested>(_onRequested);
@@ -46,7 +46,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
   final BatchFacadeService _batchService;
   final GetBatchComplianceEvents _getEvents;
   final GetBatchAuditLogs _getAuditLogs;
-  final GetUserDirectory _getUserDirectory;
+  final LaboratoryApi _laboratoryApi;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(BatchDetailRequested event, Emitter<BatchDetailState> emit) async {
@@ -78,7 +78,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
   /// Names are a convenience: ids are shown when the staff cannot be read.
   Future<Map<int, String>> _people(LaboratoryId laboratoryId) async {
     try {
-      return await _getUserDirectory(laboratoryId);
+      return await _laboratoryApi.getUserDirectory(laboratoryId);
     } on UnauthorizedFailure {
       rethrow;
     } on Failure {
