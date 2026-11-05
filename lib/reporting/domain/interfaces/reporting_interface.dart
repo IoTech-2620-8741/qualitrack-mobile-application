@@ -16,7 +16,7 @@ import '../entities/kpi_entities.dart';
 ///
 /// @see [KpiDashboard]
 /// @see [AuditReport]
-abstract interface class ReportingRepository {
+abstract interface class ReportingInterface {
   /// Retrieves the KPI Dashboard for a laboratory within a date range.
   ///
   /// @param laboratoryId The laboratory identifier.

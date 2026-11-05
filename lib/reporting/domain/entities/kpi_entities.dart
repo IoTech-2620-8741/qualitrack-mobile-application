@@ -59,7 +59,7 @@ final class MeasurementSummary extends Equatable {
 }
 
 /// Represents the complete KPI dashboard for a laboratory.
-final class KpiDashboard extends Equatable {
+class KpiDashboard extends Equatable {
   const KpiDashboard({
     required this.laboratoryId,
     this.metrics = const [],

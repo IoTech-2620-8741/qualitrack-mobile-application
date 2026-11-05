@@ -7,7 +7,7 @@ import 'package:equatable/equatable.dart';
 import 'reporting_enums.dart';
 
 /// Represents the deviation trend of a specific variable on an equipment.
-final class DeviationTrend extends Equatable {
+class DeviationTrend extends Equatable {
   const DeviationTrend({
     required this.parameterName,
     required this.equipmentId,

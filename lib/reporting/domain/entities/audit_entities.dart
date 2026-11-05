@@ -5,7 +5,7 @@ library;
 import 'package:equatable/equatable.dart';
 
 /// Represents an audit report (PDF or CSV) available for download.
-final class AuditReport extends Equatable {
+class AuditReport extends Equatable {
   const AuditReport({
     required this.id,
     required this.reportType,
@@ -38,7 +38,7 @@ final class AuditReport extends Equatable {
 }
 
 /// Represents an entry in the system's audit log.
-final class AuditLogEntry extends Equatable {
+class AuditLogEntry extends Equatable {
   const AuditLogEntry({
     required this.id,
     required this.action,
