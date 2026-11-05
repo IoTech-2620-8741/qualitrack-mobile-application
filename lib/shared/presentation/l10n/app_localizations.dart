@@ -523,6 +523,30 @@ class AppLocalizations {
       .replaceAll('{date}', date);
   String get viewAll => _t('viewAll');
   String get you => _t('you');
+  String get overallHealth => _t('overallHealth');
+  String get healthOnTrack => _t('healthOnTrack');
+  String get healthAtRisk => _t('healthAtRisk');
+  String get healthCritical => _t('healthCritical');
+  String get healthNoData => _t('healthNoData');
+  String tabDeviations(int count) => _t('tabDeviations')
+      .replaceAll('{count}', '$count');
+  String get tabMeasurements => _t('tabMeasurements');
+  String get tabHistory => _t('tabHistory');
+  String get noData => _t('noData');
+  String get seeMore => _t('seeMore');
+  String get seeAll => _t('seeAll');
+  String totalReadings(int count) => _t('totalReadings')
+      .replaceAll('{count}', '$count');
+  String eventCount(int count) => _t('eventCount')
+      .replaceAll('{count}', '$count');
+  String eventCountPlural(int count) => _t('eventCountPlural')
+      .replaceAll('{count}', '$count');
+  String get seeLast31Days => _t('seeLast31Days');
+  String get historyIndependentOfPeriod => _t('historyIndependentOfPeriod');
+  String get reportHistoryBanner => _t('reportHistoryBanner');
+  String get swipeHint => _t('swipeHint');
+  String seeMoreCount(int count) => _t('seeMoreCount')
+      .replaceAll('{count}', '$count');
 }
 
 const Map<String, String> _en = {
@@ -945,6 +969,25 @@ const Map<String, String> _en = {
   'until': 'until {date}',
   'viewAll': 'View all',
   'you': 'You',
+  'overallHealth': 'Overall health',
+  'healthOnTrack': 'on target',
+  'healthAtRisk': 'at risk',
+  'healthCritical': 'critical',
+  'healthNoData': 'No data',
+  'tabDeviations': 'Deviations ({count})',
+  'tabMeasurements': 'Measurements',
+  'tabHistory': 'History',
+  'noData': 'No data',
+  'seeMore': 'See more',
+  'seeAll': 'See all',
+  'totalReadings': '{count} readings per variable',
+  'eventCount': '{count} event',
+  'eventCountPlural': '{count} events',
+  'seeLast31Days': 'See last 31 days',
+  'historyIndependentOfPeriod': 'Independent of the selected period',
+  'reportHistoryBanner': 'Reports are generated and downloaded in QualiTrack Web.',
+  'swipeHint': 'Swipe sideways to change section',
+  'seeMoreCount': 'See {count} more',
 };
 
 const Map<String, String> _es = {
@@ -1367,6 +1410,25 @@ const Map<String, String> _es = {
   'until': 'hasta el {date}',
   'viewAll': 'Ver todas',
   'you': 'Tú',
+  'overallHealth': 'Salud general',
+  'healthOnTrack': 'en meta',
+  'healthAtRisk': 'en riesgo',
+  'healthCritical': 'crítico',
+  'healthNoData': 'Sin datos',
+  'tabDeviations': 'Desviaciones ({count})',
+  'tabMeasurements': 'Mediciones',
+  'tabHistory': 'Historial',
+  'noData': 'Sin datos',
+  'seeMore': 'Ver más',
+  'seeAll': 'Ver todos',
+  'totalReadings': '{count} lecturas por variable',
+  'eventCount': '{count} evento',
+  'eventCountPlural': '{count} eventos',
+  'seeLast31Days': 'Ver últimos 31 días',
+  'historyIndependentOfPeriod': 'No depende del período seleccionado',
+  'reportHistoryBanner': 'Los reportes se generan y descargan en QualiTrack Web.',
+  'swipeHint': 'Desliza a los lados para cambiar de sección',
+  'seeMoreCount': 'Ver {count} más',
 };
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
