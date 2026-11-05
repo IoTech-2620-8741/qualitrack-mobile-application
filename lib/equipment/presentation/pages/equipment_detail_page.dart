@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/presentation/widgets/connection_badge.dart';
+import '../../../shared/presentation/labels.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../compliance/api/index.dart';
 import '../../../reporting/api/index.dart';
@@ -13,7 +15,6 @@ import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/section_card.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/api/index.dart';
 import '../../domain/equipment.dart';
 import '../bloc/equipment_detail_bloc.dart';
 import '../widgets/equipment_labels.dart';
@@ -89,7 +90,7 @@ class _DetailBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Align(alignment: Alignment.centerLeft, child: ConnectionBadge(connection: connection)),
+                Align(alignment: Alignment.centerLeft, child: ConnectionBadge(connected: connection?.reachable)),
                 if (connection != null) ...[
                   const SizedBox(height: AppSpacing.sm),
                   Text(
@@ -116,7 +117,7 @@ class _DetailBody extends StatelessWidget {
             itemBuilder: (context, t) {
               final percent = t.timeInRangePercent;
               return SectionRow(
-                leading: Icon(t.direction.icon),
+                leading: Icon(_trendIcon(t.direction)),
                 title: alertVariable(l10n, t.parameterName),
                 subtitle: l10n.deviationsSummary(t.deviationCount, t.criticalDeviationCount),
                 trailing: StatusBadge(
@@ -182,3 +183,10 @@ class _DetailBody extends StatelessWidget {
     );
   }
 }
+
+IconData _trendIcon(TrendDirection direction) => switch (direction) {
+  TrendDirection.increasing => Icons.trending_up,
+  TrendDirection.decreasing => Icons.trending_down,
+  TrendDirection.stable => Icons.trending_flat,
+  TrendDirection.unknown => Icons.remove,
+};

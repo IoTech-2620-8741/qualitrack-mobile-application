@@ -103,6 +103,9 @@ final class DeviceConnection extends Equatable {
 
   bool get isConnected => status == ConnectionStatus.connected;
 
+  /// Null when the backend did not report a known status.
+  bool? get reachable => status == ConnectionStatus.unknown ? null : isConnected;
+
   @override
   List<Object?> get props => [deviceId, status, lastCommunicationAt, expectedPeriodSeconds];
 }

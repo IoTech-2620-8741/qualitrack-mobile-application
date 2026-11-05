@@ -137,6 +137,15 @@ void main() {
     });
   });
 
+  group('DeviceConnection', () {
+    test('reachable is null when the status is unknown', () {
+      DeviceConnection of(ConnectionStatus status) => DeviceConnection(deviceId: 1, status: status);
+      expect(of(ConnectionStatus.unknown).reachable, isNull);
+      expect(of(ConnectionStatus.connected).reachable, isTrue);
+      expect(of(ConnectionStatus.requiresReview).reachable, isFalse);
+    });
+  });
+
   group('Failure.from', () {
     test('keeps failures and types unexpected errors', () {
       const failure = NotFoundFailure(code: 'X');

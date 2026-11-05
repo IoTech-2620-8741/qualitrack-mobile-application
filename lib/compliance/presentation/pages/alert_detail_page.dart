@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/presentation/labels.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
@@ -12,7 +13,6 @@ import '../../../shared/presentation/widgets/failure_message.dart';
 import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/api/index.dart';
 import '../../domain/compliance.dart';
 import '../bloc/alert_detail_bloc.dart';
 import '../widgets/alert_widgets.dart';

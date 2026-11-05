@@ -73,3 +73,9 @@ class StatusBadge extends StatelessWidget {
     );
   }
 }
+
+/// As in Web, any time out of range is highlighted as a warning.
+BadgeTone timeInRangeTone(double? percent) {
+  if (percent == null) return BadgeTone.neutral;
+  return percent < 100 ? BadgeTone.warning : BadgeTone.success;
+}

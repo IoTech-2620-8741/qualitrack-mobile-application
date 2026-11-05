@@ -4,4 +4,3 @@ library;
 
 export '../application/telemetry_queries.dart';
 export '../domain/telemetry.dart';
-export '../presentation/widgets/telemetry_labels.dart';

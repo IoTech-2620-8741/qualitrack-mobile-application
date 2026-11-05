@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/presentation/labels.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
@@ -7,7 +8,6 @@ import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/api/index.dart';
 import '../../domain/compliance.dart';
 
 extension AlertStatusPresentation on AlertStatus {
@@ -48,10 +48,6 @@ extension AlertSeverityPresentation on AlertSeverity {
     AlertSeverity.unknown => l10n.unknown,
   };
 }
-
-/// Localized name of the monitored variable of an alert (e.g. `TEMPERATURE`).
-String alertVariable(AppLocalizations l10n, String parameterName) =>
-    MonitoredMetric.fromCode(parameterName).label(l10n, raw: Formatters.humanize(parameterName));
 
 String formatAlertValue(double? value, String? unit, String locale) {
   if (value == null) return '—';

@@ -6,10 +6,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_typography.dart';
-import '../../../batch/api/index.dart';
-import '../../../compliance/api/index.dart';
 import '../../../iam/api/index.dart';
-import '../../../profile/api/index.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
@@ -21,6 +18,7 @@ import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
 import '../../application/get_command_center_summary.dart';
 import '../bloc/command_center_bloc.dart';
+import '../command_center_views.dart';
 
 /// Panel shown after signing in (US: consult the control panel of the
 /// laboratory), with the same cards as the Web dashboard.
@@ -28,13 +26,11 @@ class CommandCenterPage extends StatelessWidget {
   const CommandCenterPage({
     super.key,
     required this.session,
-    required this.currentProfile,
-    required this.notifications,
+    required this.views,
   });
 
   final UserSession session;
-  final CurrentProfileController currentProfile;
-  final UnreadNotificationsController notifications;
+  final CommandCenterViews views;
 
   @override
   Widget build(BuildContext context) {
@@ -44,21 +40,9 @@ class CommandCenterPage extends StatelessWidget {
       appBar: AppBar(
         title: const BrandTitle(),
         actions: [
-          NotificationBell(controller: notifications),
+          views.notificationBell,
           IconButton(tooltip: l10n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
-          ListenableBuilder(
-            listenable: currentProfile,
-            builder: (context, _) => IconButton(
-              tooltip: l10n.profile,
-              onPressed: () => context.push('/profile'),
-              icon: ProfileAvatar(
-                radius: 16,
-                photo: currentProfile.photo,
-                initials: currentProfile.profile?.initials ??
-                    (session.username.isEmpty ? '?' : session.username[0].toUpperCase()),
-              ),
-            ),
-          ),
+          views.profileButton,
         ],
       ),
       body: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
@@ -71,21 +55,22 @@ class CommandCenterPage extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
                 ListenableBuilder(
-                  listenable: currentProfile,
+                  listenable: views.profileChanges,
                   builder: (context, _) => _Hero(
                     session: session,
-                    name: currentProfile.profile?.displayName ?? session.username,
+                    name: views.displayName() ?? session.username,
+                    views: views,
                     summary: summary,
                   ),
                 ),
                 SectionHeader(title: l10n.keyOperationalMetrics),
                 _Metrics(summary: summary),
                 SectionHeader(title: l10n.openAlerts, subtitle: l10n.openAlertsHint),
-                _OpenAlerts(summary: summary),
+                _OpenAlerts(summary: summary, views: views),
                 SectionHeader(title: l10n.liveTelemetry, subtitle: l10n.liveTelemetryHint),
                 _TelemetryCard(summary: summary),
                 SectionHeader(title: l10n.recentBatches),
-                _RecentBatches(summary: summary),
+                _RecentBatches(summary: summary, views: views),
               ],
             ),
           ),
@@ -99,10 +84,11 @@ String _error(BuildContext context, Failure? failure) =>
     failure == null ? '' : failureMessage(context, failure).split('\n').first;
 
 class _Hero extends StatelessWidget {
-  const _Hero({required this.session, required this.name, required this.summary});
+  const _Hero({required this.session, required this.name, required this.views, required this.summary});
 
   final UserSession session;
   final String name;
+  final CommandCenterViews views;
   final CommandCenterSummary summary;
 
   @override
@@ -113,6 +99,7 @@ class _Hero extends StatelessWidget {
     final alerts = summary.alerts.value;
     final billing = summary.subscription;
     final active = billing?.value?.active;
+    final role = session.primaryRole;
     const light = TextStyle(color: Colors.white70, fontSize: 12);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -133,7 +120,7 @@ class _Hero extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            [session.primaryRole?.label(l10n), lab?.name].whereType<String>().join(' · '),
+            [role == null ? null : views.roleLabel(role, l10n), lab?.name].whereType<String>().join(' · '),
             style: light,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -219,9 +206,10 @@ class _Metrics extends StatelessWidget {
 }
 
 class _OpenAlerts extends StatelessWidget {
-  const _OpenAlerts({required this.summary});
+  const _OpenAlerts({required this.summary, required this.views});
 
   final CommandCenterSummary summary;
+  final CommandCenterViews views;
 
   @override
   Widget build(BuildContext context) {
@@ -234,8 +222,8 @@ class _OpenAlerts extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final alert in open.take(3)) ...[
-          AlertCard(
-            alert: alert,
+          views.alertCard(
+            alert,
             deviceName: summary.equipmentNames[alert.equipmentId],
             environmentName: summary.environmentNames[alert.environmentId],
             onTap: () => context.push('/alerts/${alert.id}'),
@@ -333,9 +321,10 @@ class _MiniStat extends StatelessWidget {
 }
 
 class _RecentBatches extends StatelessWidget {
-  const _RecentBatches({required this.summary});
+  const _RecentBatches({required this.summary, required this.views});
 
   final CommandCenterSummary summary;
+  final CommandCenterViews views;
 
   @override
   Widget build(BuildContext context) {
@@ -352,7 +341,7 @@ class _RecentBatches extends StatelessWidget {
               leading: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
               title: Text(batch.batchNumber),
               subtitle: Text(batch.productName ?? '—', maxLines: 1, overflow: TextOverflow.ellipsis),
-              trailing: BatchStatusBadge(status: batch.status),
+              trailing: views.batchStatusBadge(batch.status),
               onTap: () => context.push('/batches/${batch.id}'),
             ),
         ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/presentation/labels.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
@@ -12,7 +13,6 @@ import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
 import '../../domain/compliance.dart';
 import '../bloc/notifications_bloc.dart';
-import '../widgets/alert_widgets.dart';
 
 /// In-app notices (US: receive notices in the app). Opening one marks it as
 /// read and leads to the alert or the batch.

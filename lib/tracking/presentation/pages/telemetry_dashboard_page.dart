@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/presentation/widgets/connection_badge.dart';
+import '../../../shared/presentation/labels.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -242,7 +244,7 @@ class _StatusRow extends StatelessWidget {
             children: [
               Text(l10n.connectionStatus.toUpperCase(), style: AppTypography.overline),
               const SizedBox(height: AppSpacing.xs),
-              ConnectionBadge(connection: connection),
+              ConnectionBadge(connected: connection.reachable),
               const SizedBox(height: AppSpacing.xs),
               Text('${l10n.lastCommunication}: $lastCommunication', style: theme.textTheme.bodySmall),
             ],
