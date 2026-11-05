@@ -38,13 +38,13 @@ class GetDeviationTrends {
   final ReportingRepository _repository;
   final DateTime Function() _clock;
 
-  Future<List<DeviationTrend>> call(LaboratoryId laboratoryId, Iterable<int> environmentIds, ReportPeriod period) {
+  Future<List<DeviationTrend>> call(LaboratoryId laboratoryId, Iterable<int> environmentIds, ReportPeriod period) async {
     final to = _clock();
     final from = to.subtract(period.duration);
-    return loadAll(
-      environmentIds,
-          (environmentId) => _repository.getDeviationTrends(laboratoryId, environmentId, from: from, to: to),
+    final trends = await loadAll(
+        environmentIds, (environmentId) => _repository.getDeviationTrends(laboratoryId, environmentId, from: from, to: to)
     );
+    return sortTrendsBySeverity(trends);
   }
 }
 
