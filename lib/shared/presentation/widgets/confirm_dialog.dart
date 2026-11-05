@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/app_localizations.dart';
+import '../i18n/app_localizations.dart';
 
 Future<bool> showConfirmDialog(
   BuildContext context, {

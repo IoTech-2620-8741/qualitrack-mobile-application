@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../bloc/unread_notifications_controller.dart';
 
 /// Bell of the app bars with the unread count, as in the Web toolbar.

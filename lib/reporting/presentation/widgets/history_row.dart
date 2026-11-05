@@ -8,7 +8,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/presentation/formatting/context_locale.dart';
 import '../../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../domain/entities/audit_entities.dart';
 import '../widgets/report_labels.dart';
 import 'modern_card.dart';

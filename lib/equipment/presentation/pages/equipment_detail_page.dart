@@ -9,7 +9,7 @@ import '../../../reporting/domain/entities/reporting_entities.dart';
 import '../../../reporting/presentation/widgets/severity_tone.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';

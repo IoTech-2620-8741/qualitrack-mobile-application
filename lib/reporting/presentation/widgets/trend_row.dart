@@ -9,7 +9,7 @@ import '../../../../compliance/presentation/widgets/alert_widgets.dart';
 import '../../../../shared/presentation/formatting/context_locale.dart';
 import '../../../../shared/presentation/formatting/formatters.dart';
 import '../../../../shared/presentation/widgets/status_badge.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../../domain/entities/deviation_entities.dart';
 import '../../domain/entities/reporting_enums.dart';

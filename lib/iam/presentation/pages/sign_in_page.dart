@@ -5,7 +5,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../shared/domain/failure.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../../shared/presentation/widgets/failure_message.dart';
 import '../bloc/sign_in_bloc.dart';
 import '../widgets/qualitrack_logo.dart';

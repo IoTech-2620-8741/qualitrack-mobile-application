@@ -4,7 +4,7 @@
 /// users that they can swipe horizontally to navigate between sections.
 ///
 import 'package:flutter/material.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 
 /// A small text hint that tells the user to swipe to change tabs.
 class SwipeHint extends StatelessWidget {

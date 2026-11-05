@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../domain/failure.dart';
-import '../l10n/app_localizations.dart';
+import '../i18n/app_localizations.dart';
 import 'failure_message.dart';
 
 class LoadingView extends StatelessWidget {

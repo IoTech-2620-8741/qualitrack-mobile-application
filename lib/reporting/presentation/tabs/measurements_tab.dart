@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../screens/all_measurements_page.dart';
 import '../widgets/measurement_row.dart';

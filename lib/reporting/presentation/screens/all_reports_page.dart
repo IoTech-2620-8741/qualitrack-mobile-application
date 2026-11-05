@@ -3,7 +3,7 @@
 ///
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../../shared/presentation/i18n/app_localizations.dart';
 import '../../domain/entities/audit_entities.dart';
 import '../widgets/history_row.dart';
 import '../widgets/empty_states.dart';

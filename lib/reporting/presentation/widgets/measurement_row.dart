@@ -9,7 +9,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../compliance/presentation/widgets/alert_widgets.dart';
 import '../../../../shared/presentation/formatting/context_locale.dart';
 import '../../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../../domain/entities/kpi_entities.dart';
 import 'modern_card.dart';

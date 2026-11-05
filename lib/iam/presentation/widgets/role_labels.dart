@@ -1,4 +1,4 @@
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../domain/user_role.dart';
 
 extension UserRolePresentation on UserRole {

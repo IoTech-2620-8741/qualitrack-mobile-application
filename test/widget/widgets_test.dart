@@ -16,7 +16,7 @@ import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/pages/change_password_page.dart';
 import 'package:qualitrack_mobile/iam/presentation/pages/sign_in_page.dart';
 import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/presentation/l10n/app_localizations.dart';
+import 'package:qualitrack_mobile/shared/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/shared/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/shared/presentation/view_status.dart';
 import 'package:qualitrack_mobile/shared/presentation/widgets/state_views.dart';

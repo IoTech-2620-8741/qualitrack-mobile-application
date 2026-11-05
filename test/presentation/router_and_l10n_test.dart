@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qualitrack_mobile/app/router/app_router.dart';
 import 'package:qualitrack_mobile/app/router/app_routes.dart';
 import 'package:qualitrack_mobile/iam/application/session_controller.dart';
-import 'package:qualitrack_mobile/shared/presentation/l10n/app_localizations.dart';
+import 'package:qualitrack_mobile/shared/presentation/i18n/app_localizations.dart';
 
 void main() {
   group('route guard', () {

@@ -1,4 +1,4 @@
-// Generates lib/shared/presentation/l10n/app_localizations.dart from l10n/strings.tsv.
+// Generates lib/shared/presentation/i18n/app_localizations.dart from i18n/strings.tsv.
 //
 // Columns: key, English, Spanish, optional placeholders ("name:type,name:type").
 // Run from the project root:  dart run tool/generate_l10n.dart
@@ -6,8 +6,8 @@ import 'dart:io';
 
 void main() {
   final root = File(Platform.script.toFilePath()).parent.parent;
-  final source = File('${root.path}/l10n/strings.tsv');
-  final target = File('${root.path}/lib/shared/presentation/l10n/app_localizations.dart');
+  final source = File('${root.path}/i18n/strings.tsv');
+  final target = File('${root.path}/lib/shared/presentation/i18n/app_localizations.dart');
 
   final rows = <({String key, String en, String es, List<(String, String)> params})>[];
   for (final line in source.readAsLinesSync()) {
@@ -38,7 +38,7 @@ void main() {
 
   final out = <String>[
     '// GENERATED CODE - DO NOT MODIFY BY HAND.',
-    '// Source: l10n/strings.tsv — regenerate with `dart run tool/generate_l10n.dart`.',
+    '// Source: i18n/strings.tsv — regenerate with `dart run tool/generate_l10n.dart`.',
     '',
     "import 'package:flutter/foundation.dart';",
     "import 'package:flutter/widgets.dart';",
@@ -121,10 +121,10 @@ void main() {
     '}',
     '',
     'extension AppLocalizationsX on BuildContext {',
-    '  AppLocalizations get l10n => AppLocalizations.of(this);',
+    '  AppLocalizations get i18n => AppLocalizations.of(this);',
     '}',
   ]);
   target.parent.createSync(recursive: true);
   target.writeAsStringSync('${out.join('\n')}\n');
-  stdout.writeln('Generated lib/shared/presentation/l10n/app_localizations.dart with ${rows.length} keys');
+  stdout.writeln('Generated lib/shared/presentation/i18n/app_localizations.dart with ${rows.length} keys');
 }

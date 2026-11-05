@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../../shared/presentation/widgets/failure_message.dart';
 import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../domain/password_policy.dart';

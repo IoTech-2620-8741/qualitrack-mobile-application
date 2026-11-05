@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../shared/presentation/i18n/app_localizations.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
 import '../../domain/batch.dart';
 

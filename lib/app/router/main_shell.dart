@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../shared/presentation/l10n/app_localizations.dart';
+import '../../shared/presentation/i18n/app_localizations.dart';
 
 /// Bottom navigation with the five primary destinations.
 class MainShell extends StatelessWidget {

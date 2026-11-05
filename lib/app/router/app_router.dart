@@ -39,7 +39,7 @@ import '../../profile/presentation/bloc/profile_bloc.dart';
 import '../../profile/presentation/pages/profile_page.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
 import '../../reporting/presentation/screens/reports_page.dart';
-import '../../shared/presentation/l10n/app_localizations.dart';
+import '../../shared/presentation/i18n/app_localizations.dart';
 import '../../shared/presentation/widgets/state_views.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
 import '../../subscription/presentation/pages/billing_page.dart';
