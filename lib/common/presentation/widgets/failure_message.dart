@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../domain/failure.dart';
-import '../l10n/app_localizations.dart';
+import '../i18n/app_localizations.dart';
 
 /// Human readable, localized message for a [Failure]. Backend messages are
 /// appended for validation/conflict errors because they explain the rule.

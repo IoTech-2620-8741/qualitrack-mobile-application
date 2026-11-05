@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/app_localizations.dart';
+import '../i18n/app_localizations.dart';
 import 'status_badge.dart';
 
 /// Connection of a device: [connected] is null when it is not known.

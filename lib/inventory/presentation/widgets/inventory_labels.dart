@@ -1,4 +1,4 @@
-import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/inventory.dart';
 

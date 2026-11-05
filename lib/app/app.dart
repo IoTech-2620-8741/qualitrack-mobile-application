@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../compliance/presentation/bloc/unread_notifications_controller.dart';
 import '../iam/application/session_controller.dart';
 import '../profile/presentation/bloc/current_profile_controller.dart';
-import '../common/presentation/l10n/app_localizations.dart';
+import '../common/presentation/i18n/app_localizations.dart';
 import 'router/app_router.dart';
 import '../common/presentation/theme/app_scroll_behavior.dart';
 import '../common/presentation/theme/app_theme.dart';

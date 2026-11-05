@@ -1,5 +1,5 @@
 import 'formatting/formatters.dart';
-import 'l10n/app_localizations.dart';
+import 'i18n/app_localizations.dart';
 
 /// Localized name of a monitored variable by its backend code (e.g.
 /// `TEMPERATURE`). Keyed by code so any context can name a variable without

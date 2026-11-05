@@ -5,7 +5,7 @@ import '../../iam/domain/user_session.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
-import '../../common/presentation/l10n/app_localizations.dart';
+import '../../common/presentation/i18n/app_localizations.dart';
 import '../../common/presentation/widgets/confirm_dialog.dart';
 import '../../common/presentation/theme/app_colors.dart';
 import '../../common/presentation/theme/app_spacing.dart';
