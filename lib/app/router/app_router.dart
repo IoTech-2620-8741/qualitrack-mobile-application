@@ -26,10 +26,10 @@ import '../../equipment/presentation/screens/equipment_list_screen.dart';
 import '../../iam/application/session_controller.dart';
 import '../../iam/presentation/bloc/change_password_bloc.dart';
 import '../../iam/presentation/bloc/sign_in_bloc.dart';
-import '../../iam/presentation/pages/change_password_page.dart';
-import '../../iam/presentation/pages/setup_required_page.dart';
-import '../../iam/presentation/pages/sign_in_page.dart';
-import '../../iam/presentation/pages/splash_page.dart';
+import '../../iam/presentation/screens/change_password_screen.dart';
+import '../../iam/presentation/screens/setup_required_screen.dart';
+import '../../iam/presentation/screens/sign_in_screen.dart';
+import '../../iam/presentation/screens/splash_screen.dart';
 import '../../inventory/presentation/bloc/inventory_bloc.dart';
 import '../../inventory/presentation/bloc/material_detail_bloc.dart';
 import '../../inventory/presentation/screens/inventory_screen.dart';
@@ -103,20 +103,20 @@ GoRouter createRouter(
       canManageQuality: session.session?.canManageQuality ?? false,
     ),
     routes: [
-      GoRoute(path: AppRoutes.splash, builder: (context, state) => const SplashPage()),
+      GoRoute(path: AppRoutes.splash, builder: (context, state) => const SplashScreen()),
       GoRoute(
         path: AppRoutes.signIn,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<SignInBloc>(),
-          child: SignInPage(sessionExpired: session.sessionExpired),
+          child: SignInScreen(sessionExpired: session.sessionExpired),
         ),
       ),
-      GoRoute(path: AppRoutes.setupRequired, builder: (context, state) => SetupRequiredPage(session: session)),
+      GoRoute(path: AppRoutes.setupRequired, builder: (context, state) => SetupRequiredScreen(session: session)),
       GoRoute(
         path: AppRoutes.changePassword,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<ChangePasswordBloc>(),
-          child: ChangePasswordPage(forced: true, onChanged: session.passwordChanged, onSignOut: session.signOut),
+          child: ChangePasswordScreen(forced: true, onChanged: session.passwordChanged, onSignOut: session.signOut),
         ),
       ),
       // Secondary screens are pushed on the root navigator (above the shell).
@@ -252,7 +252,7 @@ GoRouter createRouter(
             path: 'password',
             builder: (context, state) => BlocProvider(
               create: (_) => sl<ChangePasswordBloc>(),
-              child: ChangePasswordPage(
+              child: ChangePasswordScreen(
                 forced: false,
                 onChanged: () async {
                   if (context.canPop()) context.pop();
@@ -279,7 +279,7 @@ GoRouter createRouter(
                 path: AppRoutes.home,
                 builder: (context, state) {
                   final current = session.session;
-                  if (current == null) return const SplashPage();
+                  if (current == null) return const SplashScreen();
                   return BlocProvider(
                     create: (_) => sl<CommandCenterBloc>()..add(const CommandCenterRequested()),
                     child: CommandCenterPage(
@@ -338,7 +338,7 @@ GoRouter createRouter(
                 path: AppRoutes.more,
                 builder: (context, state) {
                   final current = session.session;
-                  if (current == null) return const SplashPage();
+                  if (current == null) return const SplashScreen();
                   return MorePage(session: current, currentProfile: currentProfile, onSignOut: session.signOut);
                 },
               ),

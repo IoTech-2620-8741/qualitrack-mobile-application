@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../iam/domain/user_session.dart';
+import '../../iam/domain/entities/user_session.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
