@@ -8,6 +8,8 @@ import '../../batch/presentation/batch_list/batch_list_screen.dart';
 import '../../batch/presentation/batch_list/bloc/bloc.dart';
 import '../../command_center/presentation/bloc/command_center_bloc.dart';
 import '../../command_center/presentation/pages/command_center_page.dart';
+import '../../iam/presentation/widgets/role_labels.dart';
+import 'command_center_views.dart';
 import '../../compliance/presentation/bloc/alert_detail_bloc.dart';
 import '../../compliance/presentation/bloc/alerts_bloc.dart';
 import '../../compliance/presentation/bloc/notification_preferences_bloc.dart';
@@ -236,7 +238,7 @@ GoRouter createRouter(
         path: AppRoutes.profile,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<ProfileBloc>()..add(const ProfileRequested()),
-          child: ProfilePage(onSignOut: session.signOut),
+          child: ProfilePage(onSignOut: session.signOut, roleLabel: (role, l10n) => role.label(l10n)),
         ),
         routes: [
           GoRoute(
@@ -275,8 +277,11 @@ GoRouter createRouter(
                     create: (_) => sl<CommandCenterBloc>()..add(const CommandCenterRequested()),
                     child: CommandCenterPage(
                       session: current,
-                      currentProfile: currentProfile,
-                      notifications: notifications,
+                      views: commandCenterViews(
+                        session: current,
+                        currentProfile: currentProfile,
+                        notifications: notifications,
+                      ),
                     ),
                   );
                 },

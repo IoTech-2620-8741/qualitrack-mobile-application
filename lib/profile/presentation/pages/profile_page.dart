@@ -20,9 +20,12 @@ import '../widgets/profile_avatar.dart';
 /// Profile of the signed-in user: photo, personal data, account and access to
 /// the password change and the notification preferences.
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key, required this.onSignOut});
+  const ProfilePage({super.key, required this.onSignOut, required this.roleLabel});
 
   final Future<void> Function() onSignOut;
+
+  /// Provided by the composition root: the role names belong to Identity & Access.
+  final String Function(UserRole role, AppLocalizations l10n) roleLabel;
 
   Future<void> _pickPhoto(BuildContext context) async {
     final bloc = context.read<ProfileBloc>();
@@ -118,7 +121,7 @@ class ProfilePage extends StatelessWidget {
                   alignment: WrapAlignment.center,
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.xs,
-                  children: [for (final role in roles) StatusBadge(label: role.label(l10n), tone: BadgeTone.brand)],
+                  children: [for (final role in roles) StatusBadge(label: roleLabel(role, l10n), tone: BadgeTone.brand)],
                 ),
                 if (busy) ...[const SizedBox(height: AppSpacing.md), const LinearProgressIndicator()],
                 const SizedBox(height: AppSpacing.lg),
