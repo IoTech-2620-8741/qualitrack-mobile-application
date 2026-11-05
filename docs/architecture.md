@@ -134,8 +134,8 @@ read. Every action asks for confirmation and the backend remains the authority.
 
 ## Localization
 
-English (default) and Spanish. Strings live in `l10n/strings.tsv` and
-`dart run tool/generate_l10n.dart` generates `lib/common/presentation/l10n/app_localizations.dart`
+English (default) and Spanish. Strings live in `i18n/strings.tsv` and
+`dart run tool/generate_i18n.dart` generates `lib/common/presentation/i18n/app_localizations.dart`
 (a `LocalizationsDelegate` registered with `flutter_localizations`). A test
 verifies both languages define the same keys.
 
