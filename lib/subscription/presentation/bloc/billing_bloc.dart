@@ -1,8 +1,8 @@
+import '../../../shared/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../application/billing_queries.dart';
 
@@ -35,7 +35,7 @@ class BillingBloc extends Bloc<BillingRequested, RemoteState<BillingSummary>> {
       final empty = summary.active == null && summary.subscriptions.isEmpty;
       emit(state.success(summary, empty: empty));
     } catch (error) {
-      emit(state.failed(ApiExceptionMapper.map(error)));
+      emit(state.failed(Failure.from(error)));
     }
   }
 }
