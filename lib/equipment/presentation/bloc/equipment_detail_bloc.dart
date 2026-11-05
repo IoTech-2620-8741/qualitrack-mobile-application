@@ -70,16 +70,14 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
     required EquipmentFacadeService equipmentService,
     required LaboratoryApi laboratoryApi,
     required TelemetryApi telemetryApi,
-    required GetDeviationTrends getTrends,
+    required ReportingApi reportingApi,
     required ComplianceApi complianceApi,
-    required GetEquipmentAuditLogs getAuditLogs,
     required LaboratoryId Function() laboratoryId,
   }) : _equipmentService = equipmentService,
        _laboratoryApi = laboratoryApi,
        _telemetryApi = telemetryApi,
-       _getTrends = getTrends,
+       _reportingApi = reportingApi,
        _complianceApi = complianceApi,
-       _getAuditLogs = getAuditLogs,
        _laboratoryId = laboratoryId,
        super(const RemoteState()) {
     on<EquipmentDetailRequested>(_onRequested);
@@ -89,9 +87,8 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
   final EquipmentFacadeService _equipmentService;
   final LaboratoryApi _laboratoryApi;
   final TelemetryApi _telemetryApi;
-  final GetDeviationTrends _getTrends;
+  final ReportingApi _reportingApi;
   final ComplianceApi _complianceApi;
-  final GetEquipmentAuditLogs _getAuditLogs;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(EquipmentDetailRequested event, Emitter<RemoteState<EquipmentDetail>> emit) async {
@@ -113,11 +110,11 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
         Section.load(() => _equipmentService.getMaintenanceHistory(lab, equipment)),
         Section.load(() async {
           if (target == null) return const <DeviationTrend>[];
-          final trends = await _getTrends(lab, [target.environmentId], ReportPeriod.last7Days);
+          final trends = await _reportingApi.getDeviationTrends(lab, [target.environmentId], ReportPeriod.last7Days);
           return trends.where((t) => t.equipmentId == equipmentId).toList();
         }),
         Section.load(() => _complianceApi.getEquipmentEvents(lab, equipmentId)),
-        Section.load(() => _getAuditLogs(lab, equipmentId)),
+        Section.load(() => _reportingApi.getEquipmentAuditLogs(lab, equipmentId)),
         _optional(() => _laboratoryApi.getUserDirectory(lab)),
       ]);
       emit(state.success(EquipmentDetail(
