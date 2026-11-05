@@ -4,21 +4,21 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/session_controller.dart';
-import '../../domain/onboarding_state.dart';
+import '../../domain/entities/onboarding_step.dart';
 import '../widgets/qualitrack_logo.dart';
 
 /// Shown when the account has no laboratory or no active subscription.
 /// Setup is performed exclusively in QualiTrack Web.
-class SetupRequiredPage extends StatefulWidget {
-  const SetupRequiredPage({super.key, required this.session});
+class SetupRequiredScreen extends StatefulWidget {
+  const SetupRequiredScreen({super.key, required this.session});
 
   final SessionController session;
 
   @override
-  State<SetupRequiredPage> createState() => _SetupRequiredPageState();
+  State<SetupRequiredScreen> createState() => _SetupRequiredScreenState();
 }
 
-class _SetupRequiredPageState extends State<SetupRequiredPage> {
+class _SetupRequiredScreenState extends State<SetupRequiredScreen> {
   bool _checking = false;
 
   Future<void> _recheck() async {

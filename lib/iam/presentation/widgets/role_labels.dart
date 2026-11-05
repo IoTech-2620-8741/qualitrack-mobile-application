@@ -1,5 +1,5 @@
 import '../../../common/presentation/i18n/app_localizations.dart';
-import '../../domain/user_role.dart';
+import '../../domain/entities/user_role.dart';
 
 extension UserRolePresentation on UserRole {
   String label(AppLocalizations i18n) => switch (this) {
