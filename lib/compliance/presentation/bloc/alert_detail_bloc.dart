@@ -91,13 +91,13 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
   AlertDetailBloc({
     required this.alertId,
     required GetAlertDetail getAlert,
-    required GetEquipment getEquipment,
+    required EquipmentApi equipmentApi,
     required LaboratoryApi laboratoryApi,
     required AcknowledgeAlert acknowledge,
     required ResolveAlert resolve,
     required LaboratoryId Function() laboratoryId,
   }) : _getAlert = getAlert,
-       _getEquipment = getEquipment,
+       _equipmentApi = equipmentApi,
        _laboratoryApi = laboratoryApi,
        _acknowledge = acknowledge,
        _resolve = resolve,
@@ -110,7 +110,7 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
 
   final int alertId;
   final GetAlertDetail _getAlert;
-  final GetEquipment _getEquipment;
+  final EquipmentApi _equipmentApi;
   final LaboratoryApi _laboratoryApi;
   final AcknowledgeAlert _acknowledge;
   final ResolveAlert _resolve;
@@ -129,7 +129,7 @@ class AlertDetailBloc extends Bloc<AlertDetailEvent, AlertDetailState> {
 
   Future<AlertContext> _loadContext(DeviationAlert alert) async {
     final laboratoryId = _laboratoryId();
-    final device = await _optional(() async => (await _getEquipment(laboratoryId, alert.equipmentId)).name);
+    final device = await _optional(() async => (await _equipmentApi.getEquipment(laboratoryId, alert.equipmentId)).name);
     final environment = await _optional(() async {
       for (final item in await _laboratoryApi.getEnvironments(laboratoryId)) {
         if (item.id == alert.environmentId) return item.name;

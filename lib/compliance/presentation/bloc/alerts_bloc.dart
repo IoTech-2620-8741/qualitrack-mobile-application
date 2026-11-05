@@ -84,11 +84,11 @@ final class AlertsState extends Equatable {
 class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
   AlertsBloc({
     required LaboratoryApi laboratoryApi,
-    required GetEquipments getEquipments,
+    required EquipmentApi equipmentApi,
     required GetLaboratoryAlerts getAlerts,
     required LaboratoryId Function() laboratoryId,
   }) : _laboratoryApi = laboratoryApi,
-       _getEquipments = getEquipments,
+       _equipmentApi = equipmentApi,
        _getAlerts = getAlerts,
        _laboratoryId = laboratoryId,
        super(const AlertsState()) {
@@ -97,7 +97,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
   }
 
   final LaboratoryApi _laboratoryApi;
-  final GetEquipments _getEquipments;
+  final EquipmentApi _equipmentApi;
   final GetLaboratoryAlerts _getAlerts;
   final LaboratoryId Function() _laboratoryId;
 
@@ -106,7 +106,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
     emit(state.copyWith(remote: event.refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
       final laboratoryId = _laboratoryId();
-      final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(laboratoryId), _getEquipments(laboratoryId)]);
+      final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(laboratoryId), _equipmentApi.getEquipments(laboratoryId)]);
       final environments = results[0] as List<LabEnvironment>;
       final equipments = results[1] as List<Equipment>;
       final alerts = await _getAlerts(laboratoryId, environments.map((e) => e.id));
