@@ -16,8 +16,9 @@ import 'package:qualitrack_mobile/iam/infrastructure/iam_dtos.dart';
 import 'package:qualitrack_mobile/iam/infrastructure/iam_repositories_impl.dart';
 import 'package:qualitrack_mobile/inventory/infrastructure/inventory_infrastructure.dart';
 import 'package:qualitrack_mobile/laboratory/infrastructure/laboratory_infrastructure.dart';
-import 'package:qualitrack_mobile/profile/domain/profile.dart';
-import 'package:qualitrack_mobile/profile/infrastructure/profile_infrastructure.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
+import 'package:qualitrack_mobile/profile/infrastructure/data_sources/profile_remote_data_provider.dart';
+import 'package:qualitrack_mobile/profile/infrastructure/repositories/profile_repository.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/common/infrastructure/configuration/api_config.dart';
@@ -374,7 +375,7 @@ void main() {
       when(() => client.putBytes('/users/me/profile/photo', any(), contentType: 'image/jpeg'))
           .thenAnswer((_) async => <String, Object>{});
       when(() => client.getBytes('/users/me/profile/photo')).thenThrow(const NotFoundFailure());
-      final repo = ProfileRepositoryImpl(ProfileRemoteDataSource(client));
+      final repo = ProfileRepository(remoteDataProvider: ProfileRemoteDataProvider(client));
 
       await repo.uploadMyPhoto(ProfilePhoto(bytes: bytes, contentType: 'image/jpeg'));
 
