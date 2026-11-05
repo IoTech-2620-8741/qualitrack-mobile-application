@@ -1,15 +1,23 @@
+/// This file contains the History Row widget.
+///
+/// It represents a single audit report item in the list, displaying the
+/// report type, date range, generator name, and generation date.
+///
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/presentation/formatting/context_locale.dart';
 import '../../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../domain/entities/reporting_entities.dart';
+import '../../domain/entities/audit_entities.dart';
 import '../widgets/report_labels.dart';
 import 'modern_card.dart';
 
+/// A widget that displays a single audit report.
 class HistoryRow extends StatelessWidget {
   const HistoryRow({super.key, required this.report});
+
+  /// The audit report entity to display.
   final AuditReport report;
 
   @override
@@ -18,9 +26,11 @@ class HistoryRow extends StatelessWidget {
     final locale = context.localeName;
     final theme = Theme.of(context);
 
+    // --- Format the date range ---
     final from = report.dateRangeFrom;
     final to = report.dateRangeTo;
     final String? rangeText;
+
     if (from != null && to != null) {
       rangeText = '${Formatters.rawDate(from, locale)} – ${Formatters.rawDate(to, locale)}';
     } else if (from != null) {
@@ -34,6 +44,7 @@ class HistoryRow extends StatelessWidget {
     return ModernCard(
       child: Row(
         children: [
+          // 1. Circular icon container
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -43,6 +54,8 @@ class HistoryRow extends StatelessWidget {
             child: const Icon(Icons.description_outlined, color: AppColors.primary, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
+
+          // 2. Main content (Report Type and Subtitle)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,6 +75,8 @@ class HistoryRow extends StatelessWidget {
               ],
             ),
           ),
+
+          // 3. Generation Date (Right aligned)
           Text(
             Formatters.dateTime(report.generatedAt, locale),
             style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey.shade500),

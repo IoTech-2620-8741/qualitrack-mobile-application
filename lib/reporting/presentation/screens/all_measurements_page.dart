@@ -1,3 +1,6 @@
+/// This file contains the screen that displays the complete list of
+/// measurement summaries, grouped by environment, allowing filtering by environment.
+///
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/presentation/l10n/app_localizations.dart';
@@ -7,8 +10,11 @@ import '../widgets/empty_states.dart';
 import '../widgets/environment_header.dart';
 import '../widgets/modern_filter_chip.dart';
 
+/// Screen that displays all measurement summaries.
 class AllMeasurementsPage extends StatefulWidget {
   const AllMeasurementsPage({super.key, required this.data});
+
+  /// The consolidated data from the Facade, containing the measurements.
   final ReportsData data;
 
   @override
@@ -16,14 +22,21 @@ class AllMeasurementsPage extends StatefulWidget {
 }
 
 class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
+  /// Local state to hold the currently selected environment ID.
+  /// Null means "All environments".
   int? _environmentId;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+
+    // Get the map of measurements grouped by environment ID
     final grouped = widget.data.measurementsByEnvironment;
+
+    // Get a sorted list of environment IDs to display in the filter chips
     final environmentIds = grouped.keys.toList()..sort();
 
+    // Filter the grouped measurements based on the selected environment
     final visibleGrouped = _environmentId == null
         ? grouped
         : {if (grouped.containsKey(_environmentId)) _environmentId!: grouped[_environmentId]!};
@@ -36,6 +49,7 @@ class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
+          // 1. Filter bar with environment options (including "All")
           ModernFilterChipBar(
             children: [
               ModernFilterChip(
@@ -53,14 +67,19 @@ class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
           ),
           const SizedBox(height: AppSpacing.md),
 
+          // 2. List of measurements (or empty state)
           if (visibleGrouped.isEmpty)
             EmptyStateView(
               icon: Icons.analytics_outlined,
               message: l10n.noReadingsInPeriod,
             )
           else
+          // Iterate over the grouped measurements
             for (final entry in visibleGrouped.entries) ...[
+              // Display the environment name as a header
               EnvironmentHeader(name: widget.data.environmentNames[entry.key] ?? ''),
+
+              // Display each measurement summary in that environment
               for (final s in entry.value) MeasurementRow(summary: s, data: widget.data),
             ],
         ],

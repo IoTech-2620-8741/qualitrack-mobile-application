@@ -1,15 +1,25 @@
+/// This file contains the screen that displays the complete list of
+/// deviation trends, allowing the user to filter them by severity.
+///
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/presentation/l10n/app_localizations.dart';
-import '../../domain/entities/reporting_entities.dart';
 import '../../application/reporting_facade_service.dart';
+import '../../domain/entities/deviation_entities.dart';
+import '../../domain/entities/reporting_enums.dart';
 import '../widgets/trend_row.dart';
 import '../widgets/empty_states.dart';
 
+/// Internal enum to handle the filtering options on the screen.
 enum _DeviationFilter { all, critical, warning, onTrack, noData }
 
+/// Extension to add behavior to the [_DeviationFilter] enum.
+///
+/// (Extensión para saber si una tendencia coincide con el filtro seleccionado
+/// y para obtener la etiqueta traducida).
 extension on _DeviationFilter {
+  /// Checks if the given [DeviationTrend] matches the current filter.
   bool matches(DeviationTrend t) => switch (this) {
     _DeviationFilter.all => true,
     _DeviationFilter.critical => t.severity == DeviationSeverity.critical,
@@ -18,6 +28,7 @@ extension on _DeviationFilter {
     _DeviationFilter.noData => t.severity == DeviationSeverity.noData,
   };
 
+  /// Returns the localized label with the count of items for each filter.
   String label(AppLocalizations l10n, int count) => switch (this) {
     _DeviationFilter.all => '${l10n.filterAll} $count',
     _DeviationFilter.critical => '${l10n.healthCritical} $count',
@@ -27,8 +38,11 @@ extension on _DeviationFilter {
   };
 }
 
+/// Screen that displays all deviation trends with filtering capabilities.
 class AllDeviationsPage extends StatefulWidget {
   const AllDeviationsPage({super.key, required this.data});
+
+  /// The consolidated data from the Facade, containing the trends.
   final ReportsData data;
 
   @override
@@ -36,13 +50,20 @@ class AllDeviationsPage extends StatefulWidget {
 }
 
 class _AllDeviationsPageState extends State<AllDeviationsPage> {
+  // Estado local para guardar qué filtro está seleccionado actualmente.
   _DeviationFilter _filter = _DeviationFilter.all;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+
+    // Obtenemos las tendencias ordenadas por severidad (desde la Fachada)
     final trends = widget.data.sortedTrends;
+
+    // Función rápida para contar cuántas tendencias hay por cada filtro
     int count(_DeviationFilter f) => trends.where(f.matches).length;
+
+    // Filtramos la lista de tendencias basándonos en el filtro seleccionado
     final visible = trends.where(_filter.matches).toList();
 
     return Scaffold(
@@ -53,6 +74,7 @@ class _AllDeviationsPageState extends State<AllDeviationsPage> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
+          // 1. Fila de botones (Chips) para filtrar por severidad
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -78,12 +100,14 @@ class _AllDeviationsPageState extends State<AllDeviationsPage> {
           ),
           const SizedBox(height: AppSpacing.md),
 
+          // 2. Lista de tendencias (o mensaje de vacío si no hay datos)
           if (visible.isEmpty)
             EmptyStateView(
               icon: Icons.insights_outlined,
               message: l10n.noReadingsInPeriod,
             )
           else
+          // Pintamos cada tendencia usando el widget reutilizable TrendRow
             for (final t in visible) TrendRow(trend: t, data: widget.data),
         ],
       ),
