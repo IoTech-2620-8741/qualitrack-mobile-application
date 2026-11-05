@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/presentation/widgets/connection_badge.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
@@ -9,7 +10,6 @@ import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/state_views.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/api/index.dart';
 import '../bloc/equipment_list_bloc.dart';
 import '../widgets/equipment_labels.dart';
 
@@ -137,7 +137,7 @@ class EquipmentCard extends StatelessWidget {
                   StatusBadge(label: e.statusLabel(l10n), tone: e.status.tone),
                   if (e.deviceType != null) ...[
                     StatusBadge(label: e.deviceType!.label(l10n), tone: BadgeTone.info, icon: Icons.sensors),
-                    if (e.environmentId != null) ConnectionBadge(connection: item.connection),
+                    if (e.environmentId != null) ConnectionBadge(connected: item.connection?.reachable),
                   ],
                 ],
               ),
