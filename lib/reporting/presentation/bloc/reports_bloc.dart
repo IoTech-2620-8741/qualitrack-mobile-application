@@ -80,13 +80,13 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     required GetDeviationTrends getDeviationTrends,
     required GetReportHistory getReportHistory,
     required LaboratoryApi laboratoryApi,
-    required GetEquipments getEquipments,
+    required EquipmentApi equipmentApi,
     required LaboratoryId Function() laboratoryId,
   }) : _getKpi = getKpiDashboard,
        _getTrends = getDeviationTrends,
        _getReports = getReportHistory,
        _laboratoryApi = laboratoryApi,
-       _getEquipments = getEquipments,
+       _equipmentApi = equipmentApi,
        _laboratoryId = laboratoryId,
        super(const ReportsState()) {
     on<ReportsRequested>((event, emit) => _load(emit, refresh: event.refresh));
@@ -101,7 +101,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   final GetDeviationTrends _getTrends;
   final GetReportHistory _getReports;
   final LaboratoryApi _laboratoryApi;
-  final GetEquipments _getEquipments;
+  final EquipmentApi _equipmentApi;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _load(Emitter<ReportsState> emit, {required bool refresh}) async {
@@ -110,7 +110,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     try {
       final lab = _laboratoryId();
       final period = state.period;
-      final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(lab), _getEquipments(lab)]);
+      final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(lab), _equipmentApi.getEquipments(lab)]);
       final environments = results[0] as List<LabEnvironment>;
       final equipments = results[1] as List<Equipment>;
       // Each part loads independently: one failing indicator must not hide the rest.

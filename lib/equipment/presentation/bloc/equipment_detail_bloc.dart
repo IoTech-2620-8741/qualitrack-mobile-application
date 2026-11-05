@@ -9,8 +9,10 @@ import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/section.dart';
 import '../../../tracking/api/index.dart';
-import '../../application/equipment_queries.dart';
-import '../../domain/equipment.dart';
+import '../../application/equipment_facade_service.dart';
+import '../../domain/entities/bpm_parameter_config.dart';
+import '../../domain/entities/equipment.dart';
+import '../../domain/entities/maintenance_record.dart';
 
 /// Everything shown on the equipment detail screen. Secondary sections are
 /// loaded independently so one failing endpoint does not hide the others.
@@ -65,20 +67,16 @@ final class EquipmentDetailRequested extends Equatable {
 class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<EquipmentDetail>> {
   EquipmentDetailBloc({
     required this.equipmentId,
-    required GetEquipment getEquipment,
+    required EquipmentFacadeService equipmentService,
     required LaboratoryApi laboratoryApi,
     required GetDeviceConnection getConnection,
-    required GetBpmConfigs getBpmConfigs,
-    required GetMaintenanceHistory getMaintenance,
     required GetDeviationTrends getTrends,
     required GetEquipmentComplianceEvents getEvents,
     required GetEquipmentAuditLogs getAuditLogs,
     required LaboratoryId Function() laboratoryId,
-  }) : _getEquipment = getEquipment,
+  }) : _equipmentService = equipmentService,
        _laboratoryApi = laboratoryApi,
        _getConnection = getConnection,
-       _getBpmConfigs = getBpmConfigs,
-       _getMaintenance = getMaintenance,
        _getTrends = getTrends,
        _getEvents = getEvents,
        _getAuditLogs = getAuditLogs,
@@ -88,11 +86,9 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
   }
 
   final int equipmentId;
-  final GetEquipment _getEquipment;
+  final EquipmentFacadeService _equipmentService;
   final LaboratoryApi _laboratoryApi;
   final GetDeviceConnection _getConnection;
-  final GetBpmConfigs _getBpmConfigs;
-  final GetMaintenanceHistory _getMaintenance;
   final GetDeviationTrends _getTrends;
   final GetEquipmentComplianceEvents _getEvents;
   final GetEquipmentAuditLogs _getAuditLogs;
@@ -102,7 +98,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
     emit(event.refresh && state.hasData ? state.refreshingState() : state.loading());
     try {
       final lab = _laboratoryId();
-      final equipment = await _getEquipment(lab, equipmentId);
+      final equipment = await _equipmentService.getEquipment(lab, equipmentId);
       final target = targetOf(equipment);
       final environmentId = equipment.environmentId;
       final results = await Future.wait<Object?>([
@@ -113,8 +109,8 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
           return null;
         }),
         target == null ? Future<DeviceConnection?>.value() : _optional(() => _getConnection(lab, target)),
-        Section.load(() => _getBpmConfigs(lab, equipmentId)),
-        Section.load(() => _getMaintenance(lab, equipment)),
+        Section.load(() => _equipmentService.getBpmConfigs(lab, equipmentId)),
+        Section.load(() => _equipmentService.getMaintenanceHistory(lab, equipment)),
         Section.load(() async {
           if (target == null) return const <DeviationTrend>[];
           final trends = await _getTrends(lab, [target.environmentId], ReportPeriod.last7Days);

@@ -15,12 +15,13 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/section_card.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/equipment.dart';
+import '../../domain/entities/bpm_parameter_config.dart';
+import '../../domain/entities/maintenance_record.dart';
 import '../bloc/equipment_detail_bloc.dart';
 import '../widgets/equipment_labels.dart';
 
-class EquipmentDetailPage extends StatelessWidget {
-  const EquipmentDetailPage({super.key, required this.currentUserId});
+class EquipmentDetailScreen extends StatelessWidget {
+  const EquipmentDetailScreen({super.key, required this.currentUserId});
 
   final int? currentUserId;
 

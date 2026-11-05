@@ -13,8 +13,8 @@ import '../../../common/presentation/widgets/status_badge.dart';
 import '../bloc/equipment_list_bloc.dart';
 import '../widgets/equipment_labels.dart';
 
-class EquipmentListPage extends StatelessWidget {
-  const EquipmentListPage({super.key});
+class EquipmentListScreen extends StatelessWidget {
+  const EquipmentListScreen({super.key});
 
   String _filterLabel(BuildContext context, EquipmentFilter filter) {
     final i18n = context.i18n;
