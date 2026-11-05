@@ -7,8 +7,8 @@ import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
 import '../../shared/presentation/l10n/app_localizations.dart';
 import '../../shared/presentation/widgets/confirm_dialog.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
+import '../../shared/presentation/theme/app_colors.dart';
+import '../../shared/presentation/theme/app_spacing.dart';
 import 'app_routes.dart';
 
 /// "Navigation Menu" mockup: secondary destinations of the app.

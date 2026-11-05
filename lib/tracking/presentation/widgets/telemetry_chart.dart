@@ -4,7 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../app/theme/app_colors.dart';
+import '../../../shared/presentation/theme/app_colors.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/state_views.dart';
 import '../../domain/telemetry.dart';

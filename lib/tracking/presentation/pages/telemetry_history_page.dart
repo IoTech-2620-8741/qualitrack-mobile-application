@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
+import '../../../shared/presentation/theme/app_colors.dart';
+import '../../../shared/presentation/theme/app_spacing.dart';
+import '../../../shared/presentation/theme/app_typography.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';

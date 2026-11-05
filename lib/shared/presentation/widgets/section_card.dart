@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../l10n/app_localizations.dart';
 import '../section.dart';
 import 'failure_message.dart';

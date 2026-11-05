@@ -7,8 +7,8 @@ import '../iam/application/session_controller.dart';
 import '../profile/presentation/bloc/current_profile_controller.dart';
 import '../shared/presentation/l10n/app_localizations.dart';
 import 'router/app_router.dart';
-import 'theme/app_scroll_behavior.dart';
-import 'theme/app_theme.dart';
+import '../shared/presentation/theme/app_scroll_behavior.dart';
+import '../shared/presentation/theme/app_theme.dart';
 
 class QualiTrackApp extends StatefulWidget {
   const QualiTrackApp({
