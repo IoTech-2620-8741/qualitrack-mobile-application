@@ -7,7 +7,6 @@ import '../../../laboratory/application/laboratory_queries.dart';
 import '../../../laboratory/domain/laboratory.dart';
 import '../../../shared/domain/failure.dart';
 import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../shared/presentation/remote_state.dart';
 import '../../../shared/presentation/section.dart';
 import '../../application/reporting_queries.dart';
@@ -146,7 +145,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       }
       emit(state.copyWith(remote: state.remote.success(data)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }
