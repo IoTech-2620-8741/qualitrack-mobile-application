@@ -38,7 +38,7 @@ import '../../laboratory/presentation/bloc/products_bloc.dart';
 import '../../laboratory/presentation/pages/products_page.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
-import '../../profile/presentation/pages/profile_page.dart';
+import '../../profile/presentation/screens/profile_screen.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
 import '../../reporting/presentation/pages/reports_page.dart';
 import '../../common/presentation/i18n/app_localizations.dart';
@@ -245,7 +245,7 @@ GoRouter createRouter(
         path: AppRoutes.profile,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<ProfileBloc>()..add(const ProfileRequested()),
-          child: ProfilePage(onSignOut: session.signOut, roleLabel: (role, i18n) => role.label(i18n)),
+          child: ProfileScreen(onSignOut: session.signOut, roleLabel: (role, i18n) => role.label(i18n)),
         ),
         routes: [
           GoRoute(

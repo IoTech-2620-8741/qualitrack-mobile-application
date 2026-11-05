@@ -39,9 +39,10 @@ import '../../laboratory/application/laboratory_queries.dart';
 import '../../laboratory/domain/laboratory.dart';
 import '../../laboratory/infrastructure/laboratory_infrastructure.dart';
 import '../../laboratory/presentation/bloc/products_bloc.dart';
-import '../../profile/application/profile_use_cases.dart';
-import '../../profile/domain/profile.dart';
-import '../../profile/infrastructure/profile_infrastructure.dart';
+import '../../profile/application/profile_facade_service.dart';
+import '../../profile/domain/interfaces/profile_interface.dart';
+import '../../profile/infrastructure/data_sources/profile_remote_data_provider.dart';
+import '../../profile/infrastructure/repositories/profile_repository.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
 import '../../reporting/application/reporting_queries.dart';
@@ -169,14 +170,10 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => GetBillingSummary(sl()));
 
   // Profile
-  sl.registerLazySingleton(() => ProfileRemoteDataSource(sl()));
-  sl.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetMyProfile(sl()));
-  sl.registerLazySingleton(() => UpdateMyProfile(sl()));
-  sl.registerLazySingleton(() => GetMyPhoto(sl()));
-  sl.registerLazySingleton(() => UploadMyPhoto(sl()));
-  sl.registerLazySingleton(() => RemoveMyPhoto(sl()));
-  sl.registerLazySingleton(() => CurrentProfileController(getProfile: sl(), getPhoto: sl()));
+  sl.registerLazySingleton(() => ProfileRemoteDataProvider(sl()));
+  sl.registerLazySingleton<ProfileInterface>(() => ProfileRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => ProfileFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => CurrentProfileController(profileService: sl()));
 
   // Command Center (UI composition)
   sl.registerLazySingleton(
@@ -208,11 +205,7 @@ void _registerBlocs() {
   sl.registerFactory(() => ChangePasswordBloc(changePassword: sl()));
   sl.registerFactory(
     () => ProfileBloc(
-      getProfile: sl(),
-      updateProfile: sl(),
-      getPhoto: sl(),
-      uploadPhoto: sl(),
-      removePhoto: sl(),
+      profileService: sl(),
       getLaboratory: sl(),
       laboratoryId: () => sl<SessionController>().session?.laboratoryId,
       onProfileChanged: (profile) => sl<CurrentProfileController>().changed(profile),

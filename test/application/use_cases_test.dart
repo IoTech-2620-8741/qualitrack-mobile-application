@@ -10,8 +10,10 @@ import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
 import 'package:qualitrack_mobile/inventory/application/inventory_queries.dart';
 import 'package:qualitrack_mobile/laboratory/application/laboratory_queries.dart';
 import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
-import 'package:qualitrack_mobile/profile/application/profile_use_cases.dart';
-import 'package:qualitrack_mobile/profile/domain/profile.dart';
+import 'package:qualitrack_mobile/profile/application/profile_facade_service.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/personal_data.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/user_profile.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/subscription/application/billing_queries.dart';
@@ -250,7 +252,7 @@ void main() {
     test('invalid personal data is not sent', () {
       final repo = MockProfileRepository();
       expect(
-        () => UpdateMyProfile(repo)(const PersonalData(fullName: 'Lucía', dni: '123')),
+        () => ProfileFacadeService(repository: repo).updateMyProfile(const PersonalData(fullName: 'Lucía', dni: '123')),
         throwsA(isA<BadRequestFailure>()),
       );
       verifyNoMoreInteractions(repo);
@@ -259,18 +261,18 @@ void main() {
     test('empty optional fields are sent as null', () async {
       final repo = MockProfileRepository();
       when(() => repo.updateMine(any())).thenAnswer((_) async => const UserProfile(userId: 1, username: 'u'));
-      await UpdateMyProfile(repo)(const PersonalData(fullName: ' Lucía Ramos ', dni: ' ', phoneNumber: '987654321'));
+      await ProfileFacadeService(repository: repo).updateMyProfile(const PersonalData(fullName: ' Lucía Ramos ', dni: ' ', phoneNumber: '987654321'));
       verify(() => repo.updateMine(const PersonalData(fullName: 'Lucía Ramos', phoneNumber: '987654321'))).called(1);
     });
 
     test('photos over 2 MB or of other types are rejected', () {
       final repo = MockProfileRepository();
       expect(
-        () => UploadMyPhoto(repo)(ProfilePhoto(bytes: Uint8List(ProfilePhoto.maxBytes + 1), contentType: 'image/png')),
+        () => ProfileFacadeService(repository: repo).uploadMyPhoto(ProfilePhoto(bytes: Uint8List(ProfilePhoto.maxBytes + 1), contentType: 'image/png')),
         throwsA(isA<BadRequestFailure>()),
       );
       expect(
-        () => UploadMyPhoto(repo)(ProfilePhoto(bytes: Uint8List(10), contentType: 'image/gif')),
+        () => ProfileFacadeService(repository: repo).uploadMyPhoto(ProfilePhoto(bytes: Uint8List(10), contentType: 'image/gif')),
         throwsA(isA<BadRequestFailure>()),
       );
       verifyNoMoreInteractions(repo);
