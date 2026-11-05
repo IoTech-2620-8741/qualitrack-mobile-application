@@ -15,12 +15,12 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
   BatchDetailBloc({
     required this.batchId,
     required BatchFacadeService batchService,
-    required GetBatchComplianceEvents getEvents,
+    required ComplianceApi complianceApi,
     required GetBatchAuditLogs getAuditLogs,
     required LaboratoryApi laboratoryApi,
     required LaboratoryId Function() laboratoryId,
   }) : _batchService = batchService,
-       _getEvents = getEvents,
+       _complianceApi = complianceApi,
        _getAuditLogs = getAuditLogs,
        _laboratoryApi = laboratoryApi,
        _laboratoryId = laboratoryId,
@@ -44,7 +44,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
 
   final int batchId;
   final BatchFacadeService _batchService;
-  final GetBatchComplianceEvents _getEvents;
+  final ComplianceApi _complianceApi;
   final GetBatchAuditLogs _getAuditLogs;
   final LaboratoryApi _laboratoryApi;
   final LaboratoryId Function() _laboratoryId;
@@ -63,7 +63,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
     final laboratoryId = _laboratoryId();
     final traceability = await _batchService.getTraceability(laboratoryId, batchId);
     final sections = await Future.wait<Object>([
-      Section.load(() => _getEvents(batchId)),
+      Section.load(() => _complianceApi.getBatchEvents(batchId)),
       Section.load(() => _getAuditLogs(batchId)),
       _people(laboratoryId),
     ]);
