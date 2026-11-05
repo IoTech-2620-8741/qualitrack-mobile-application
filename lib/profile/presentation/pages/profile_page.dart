@@ -5,8 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../iam/domain/user_role.dart';
-import '../../../iam/presentation/widgets/role_labels.dart';
+import '../../../iam/api/index.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/confirm_dialog.dart';

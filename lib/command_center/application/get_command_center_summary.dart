@@ -1,19 +1,14 @@
 import 'package:equatable/equatable.dart';
 
 import '../../batch/api/index.dart';
-import '../../compliance/application/compliance_queries.dart';
-import '../../compliance/domain/compliance.dart';
-import '../../equipment/application/equipment_queries.dart';
-import '../../equipment/domain/equipment.dart';
-import '../../inventory/application/inventory_queries.dart';
-import '../../inventory/domain/inventory.dart';
-import '../../laboratory/application/laboratory_queries.dart';
-import '../../laboratory/domain/laboratory.dart';
+import '../../compliance/api/index.dart';
+import '../../equipment/api/index.dart';
+import '../../inventory/api/index.dart';
+import '../../laboratory/api/index.dart';
 import '../../shared/domain/failure.dart';
 import '../../shared/domain/value_objects.dart';
-import '../../subscription/application/billing_queries.dart';
-import '../../tracking/application/telemetry_queries.dart';
-import '../../tracking/domain/telemetry.dart';
+import '../../subscription/api/index.dart';
+import '../../tracking/api/index.dart';
 
 /// A value loaded independently for the Command Center.
 final class Part<T> extends Equatable {

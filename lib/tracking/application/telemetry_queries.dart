@@ -1,4 +1,4 @@
-import '../../equipment/domain/equipment.dart';
+import '../../equipment/api/index.dart';
 import '../../shared/domain/failure.dart';
 import '../../shared/domain/value_objects.dart';
 import '../domain/telemetry.dart';

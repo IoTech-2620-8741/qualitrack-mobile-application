@@ -7,8 +7,7 @@ import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/domain/telemetry.dart';
-import '../../../tracking/presentation/widgets/telemetry_labels.dart';
+import '../../../tracking/api/index.dart';
 import '../../domain/compliance.dart';
 
 extension AlertStatusPresentation on AlertStatus {
