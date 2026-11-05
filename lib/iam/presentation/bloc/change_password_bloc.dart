@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../shared/domain/failure.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../application/iam_use_cases.dart';
 
 final class PasswordChangeSubmitted extends Equatable {
@@ -43,7 +42,7 @@ class ChangePasswordBloc extends Bloc<PasswordChangeSubmitted, ChangePasswordSta
       await _changePassword(currentPassword: event.currentPassword, newPassword: event.newPassword);
       emit(const ChangePasswordState(status: ChangePasswordStatus.success));
     } catch (error) {
-      emit(ChangePasswordState(status: ChangePasswordStatus.failure, failure: ApiExceptionMapper.map(error)));
+      emit(ChangePasswordState(status: ChangePasswordStatus.failure, failure: Failure.from(error)));
     }
   }
 }
