@@ -7,8 +7,13 @@ import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
 import 'package:qualitrack_mobile/batch/infrastructure/data_sources/batch_remote_data_provider.dart';
 import 'package:qualitrack_mobile/batch/infrastructure/models/batch_traceability_model.dart';
 import 'package:qualitrack_mobile/batch/infrastructure/repositories/batch_repository.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
-import 'package:qualitrack_mobile/compliance/infrastructure/compliance_infrastructure.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_origin.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/data_sources/compliance_remote_data_provider.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/models/app_notification_model.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/models/deviation_alert_model.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/repositories/compliance_repository.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
 import 'package:qualitrack_mobile/equipment/infrastructure/data_sources/equipment_remote_data_provider.dart';
 import 'package:qualitrack_mobile/equipment/infrastructure/models/equipment_model.dart';
@@ -145,7 +150,7 @@ void main() {
     });
 
     test('deviation alert with its related automatic actions', () {
-      final alert = const DeviationAlertDto(alertJson).toDomain();
+      final alert = DeviationAlertModel.fromJson(alertJson);
       expect(alert.status, AlertStatus.unresolved);
       expect(alert.severity, AlertSeverity.critical);
       expect(alert.origin, AlertOrigin.container);
@@ -236,14 +241,14 @@ void main() {
       expect(traceability.release?.signatureHash, 'ab12');
       expect(traceability.rejection, isNull);
 
-      final notification = const NotificationDto({
+      final notification = AppNotificationModel.fromJson(const {
         'id': 1,
         'type': 'ALERT_ESCALATED',
         'severity': 'CRITICAL',
         'subjectType': 'ALERT',
         'subjectId': 9,
         'readAt': null,
-      }).toDomain();
+      });
       expect(notification.isAboutAlert, isTrue);
       expect(notification.isRead, isFalse);
     });
@@ -278,7 +283,7 @@ void main() {
       when(() => client.post('/deviation-alerts/2/resolutions', body: {'resolutionNotes': 'Door closed'})).thenAnswer(
         (_) async => {...alertJson, 'status': 'RESOLVED'},
       );
-      final repo = ComplianceRepositoryImpl(ComplianceRemoteDataSource(client));
+      final repo = ComplianceRepository(remoteDataProvider: ComplianceRemoteDataProvider(client));
 
       expect((await repo.acknowledge(2)).status, AlertStatus.acknowledged);
       expect((await repo.resolve(2, 'Door closed')).status, AlertStatus.resolved);
@@ -294,7 +299,7 @@ void main() {
       );
       when(() => client.get('/laboratories/7/batches')).thenAnswer((_) async => <Object>[]);
 
-      expect(await ComplianceRepositoryImpl(ComplianceRemoteDataSource(client)).getEnvironmentAlerts(lab, 3), hasLength(1));
+      expect(await ComplianceRepository(remoteDataProvider: ComplianceRemoteDataProvider(client)).getEnvironmentAlerts(lab, 3), hasLength(1));
       expect(
         (await EquipmentRepository(remoteDataProvider: EquipmentRemoteDataProvider(client)).getByLaboratory(lab)).map((e) => e.id),
         [1],

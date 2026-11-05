@@ -2,7 +2,10 @@ import 'dart:convert';
 
 import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/production_batch.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_origin.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/deviation_alert.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/equipment.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/iot_device_type.dart';

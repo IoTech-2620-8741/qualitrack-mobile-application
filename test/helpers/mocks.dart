@@ -1,6 +1,8 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/batch/domain/interfaces/batch_interface.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/application/compliance_facade_service.dart';
+import 'package:qualitrack_mobile/compliance/domain/interfaces/compliance_interface.dart';
+import 'package:qualitrack_mobile/compliance/domain/interfaces/notification_interface.dart';
 import 'package:qualitrack_mobile/equipment/domain/interfaces/equipment_interface.dart';
 import 'package:qualitrack_mobile/iam/domain/iam_repositories.dart';
 import 'package:qualitrack_mobile/inventory/domain/interfaces/inventory_interface.dart';
@@ -18,9 +20,9 @@ class MockSessionRepository extends Mock implements SessionRepository {}
 
 class MockLaboratoryRepository extends Mock implements LaboratoryInterface {}
 
-class MockComplianceRepository extends Mock implements ComplianceRepository {}
+class MockComplianceRepository extends Mock implements ComplianceInterface {}
 
-class MockNotificationRepository extends Mock implements NotificationRepository {}
+class MockNotificationRepository extends Mock implements NotificationInterface {}
 
 class MockBatchRepository extends Mock implements BatchInterface {}
 
@@ -35,6 +37,13 @@ class MockReportingRepository extends Mock implements ReportingRepository {}
 class MockSubscriptionRepository extends Mock implements SubscriptionInterface {}
 
 class MockProfileRepository extends Mock implements ProfileInterface {}
+
+/// Facade over the given repositories; the ones not given are empty mocks.
+ComplianceFacadeService complianceFacade({ComplianceInterface? alerts, NotificationInterface? notifications}) =>
+    ComplianceFacadeService(
+      complianceRepository: alerts ?? MockComplianceRepository(),
+      notificationRepository: notifications ?? MockNotificationRepository(),
+    );
 
 class MockApiClient extends Mock implements ApiClient {}
 
