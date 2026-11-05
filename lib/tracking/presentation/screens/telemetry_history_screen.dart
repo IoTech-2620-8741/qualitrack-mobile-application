@@ -11,16 +11,18 @@ import '../../../common/presentation/view_status.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
-import '../../domain/telemetry.dart';
+import '../../domain/entities/environmental_state.dart';
+import '../../domain/entities/measurement.dart';
+import '../../domain/entities/monitored_metric.dart';
 import '../bloc/telemetry_dashboard_bloc.dart';
 import '../bloc/telemetry_history_bloc.dart';
 import '../widgets/telemetry_labels.dart';
-import 'telemetry_dashboard_page.dart';
+import 'telemetry_dashboard_screen.dart';
 
 /// "Raw Telemetry Data Log" mockup: readings of one device in a period of up
 /// to 31 days.
-class TelemetryHistoryPage extends StatelessWidget {
-  const TelemetryHistoryPage({super.key});
+class TelemetryHistoryScreen extends StatelessWidget {
+  const TelemetryHistoryScreen({super.key});
 
   Future<void> _pickRange(BuildContext context, HistoryRange current) async {
     final bloc = context.read<TelemetryHistoryBloc>();

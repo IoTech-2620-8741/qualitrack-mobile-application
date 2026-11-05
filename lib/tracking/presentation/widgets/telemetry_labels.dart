@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/labels.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/telemetry.dart';
+import '../../domain/entities/environmental_state.dart';
+import '../../domain/entities/monitored_metric.dart';
 
 extension MonitoredMetricPresentation on MonitoredMetric {
   String label(AppLocalizations i18n, {String? raw}) => metricLabel(i18n, code, raw: raw);
