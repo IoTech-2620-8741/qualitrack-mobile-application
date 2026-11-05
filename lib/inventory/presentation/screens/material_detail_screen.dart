@@ -12,12 +12,14 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/section_card.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/inventory.dart';
+import '../../domain/entities/inventory_movement.dart';
+import '../../domain/entities/inventory_receipt.dart';
+import '../../domain/entities/material_usage.dart';
 import '../bloc/material_detail_bloc.dart';
 import '../widgets/inventory_labels.dart';
 
-class MaterialDetailPage extends StatelessWidget {
-  const MaterialDetailPage({super.key});
+class MaterialDetailScreen extends StatelessWidget {
+  const MaterialDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

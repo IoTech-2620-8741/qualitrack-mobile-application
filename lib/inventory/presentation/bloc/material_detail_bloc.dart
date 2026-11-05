@@ -6,8 +6,11 @@ import '../../../common/domain/failure.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/section.dart';
-import '../../application/inventory_queries.dart';
-import '../../domain/inventory.dart';
+import '../../application/inventory_facade_service.dart';
+import '../../domain/entities/inventory_material.dart';
+import '../../domain/entities/inventory_movement.dart';
+import '../../domain/entities/inventory_receipt.dart';
+import '../../domain/entities/material_usage.dart';
 
 final class MaterialDetail extends Equatable {
   const MaterialDetail({
@@ -42,18 +45,10 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
     required this.materialId,
     required this.environmentId,
     required LaboratoryApi laboratoryApi,
-    required GetInventoryMaterials getMaterials,
-    required GetInventoryMaterial getMaterial,
-    required GetMaterialReceipts getReceipts,
-    required GetInventoryMovements getMovements,
-    required GetMaterialUsages getUsages,
+    required InventoryFacadeService inventoryService,
     required LaboratoryId Function() laboratoryId,
   }) : _laboratoryApi = laboratoryApi,
-       _getMaterials = getMaterials,
-       _getMaterial = getMaterial,
-       _getReceipts = getReceipts,
-       _getMovements = getMovements,
-       _getUsages = getUsages,
+       _inventoryService = inventoryService,
        _laboratoryId = laboratoryId,
        super(const RemoteState()) {
     on<MaterialDetailRequested>(_onRequested);
@@ -65,11 +60,7 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
   /// the material is looked up in every environment.
   final int? environmentId;
   final LaboratoryApi _laboratoryApi;
-  final GetInventoryMaterials _getMaterials;
-  final GetInventoryMaterial _getMaterial;
-  final GetMaterialReceipts _getReceipts;
-  final GetInventoryMovements _getMovements;
-  final GetMaterialUsages _getUsages;
+  final InventoryFacadeService _inventoryService;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(MaterialDetailRequested event, Emitter<RemoteState<MaterialDetail>> emit) async {
@@ -79,9 +70,9 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
       final environments = await _laboratoryApi.getEnvironments(lab);
       final material = await _find(lab, environments);
       final sections = await Future.wait<Object>([
-        Section.load(() => _getReceipts(lab, material)),
-        Section.load(() => _getMovements(lab, material)),
-        Section.load(() => _getUsages(lab, material)),
+        Section.load(() => _inventoryService.getReceipts(lab, material)),
+        Section.load(() => _inventoryService.getMovements(lab, material)),
+        Section.load(() => _inventoryService.getUsages(lab, material)),
       ]);
       String? environmentName;
       for (final environment in environments) {
@@ -101,8 +92,8 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
 
   Future<InventoryMaterial> _find(LaboratoryId lab, List<LabEnvironment> environments) async {
     final known = environmentId;
-    if (known != null) return _getMaterial(lab, known, materialId);
-    final materials = await _getMaterials(lab, environments.map((e) => e.id));
+    if (known != null) return _inventoryService.getMaterial(lab, known, materialId);
+    final materials = await _inventoryService.getMaterials(lab, environments.map((e) => e.id));
     for (final material in materials) {
       if (material.id == materialId) return material;
     }
