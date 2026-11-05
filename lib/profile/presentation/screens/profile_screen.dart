@@ -13,14 +13,17 @@ import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/profile.dart';
+import '../../domain/entities/personal_data.dart';
+import '../../domain/entities/profile_photo.dart';
+import '../../domain/entities/user_profile.dart';
+import '../../domain/logic/personal_data_rules.dart';
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_avatar.dart';
 
 /// Profile of the signed-in user: photo, personal data, account and access to
 /// the password change and the notification preferences.
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key, required this.onSignOut, required this.roleLabel});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key, required this.onSignOut, required this.roleLabel});
 
   final Future<void> Function() onSignOut;
 
