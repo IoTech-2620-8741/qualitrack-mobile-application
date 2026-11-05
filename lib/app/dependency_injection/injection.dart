@@ -55,9 +55,11 @@ import '../../common/infrastructure/configuration/api_config.dart';
 import '../../common/infrastructure/http/api_client.dart';
 import '../../common/infrastructure/http/auth_interceptor.dart';
 import '../../common/infrastructure/storage/secure_key_value_store.dart';
-import '../../subscription/application/billing_queries.dart';
-import '../../subscription/domain/subscription.dart';
-import '../../subscription/infrastructure/subscription_infrastructure.dart';
+import '../../subscription/api/index.dart';
+import '../../subscription/application/subscription_facade_service.dart';
+import '../../subscription/domain/interfaces/subscription_interface.dart';
+import '../../subscription/infrastructure/data_sources/subscription_remote_data_provider.dart';
+import '../../subscription/infrastructure/repositories/subscription_repository.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
 import '../../tracking/application/telemetry_queries.dart';
 import '../../tracking/domain/telemetry.dart';
@@ -165,9 +167,10 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => GetBatchAuditLogs(sl()));
 
   // Payments & Subscriptions
-  sl.registerLazySingleton(() => SubscriptionRemoteDataSource(sl()));
-  sl.registerLazySingleton<SubscriptionRepository>(() => SubscriptionRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetBillingSummary(sl()));
+  sl.registerLazySingleton(() => SubscriptionRemoteDataProvider(sl()));
+  sl.registerLazySingleton<SubscriptionInterface>(() => SubscriptionRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => SubscriptionFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => SubscriptionApi(sl()));
 
   // Profile
   sl.registerLazySingleton(() => ProfileRemoteDataProvider(sl()));
@@ -185,7 +188,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
       batchApi: sl(),
       getAlerts: sl(),
       getMaterials: sl(),
-      getBilling: sl(),
+      subscriptionApi: sl(),
     ),
   );
 
@@ -315,5 +318,5 @@ void _registerBlocs() {
       laboratoryId: _laboratoryId,
     ),
   );
-  sl.registerFactory(() => BillingBloc(getBillingSummary: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => BillingBloc(subscriptionService: sl(), laboratoryId: _laboratoryId));
 }
