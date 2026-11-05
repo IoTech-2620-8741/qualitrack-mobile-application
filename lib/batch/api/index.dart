@@ -3,7 +3,7 @@
 /// [BatchApi] and never import the domain or the infrastructure directly.
 library;
 
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/value_objects.dart';
 import '../application/batch_facade_service.dart';
 import '../domain/entities/production_batch.dart';
 

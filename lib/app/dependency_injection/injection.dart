@@ -48,12 +48,12 @@ import '../../reporting/application/reporting_queries.dart';
 import '../../reporting/domain/reporting.dart';
 import '../../reporting/infrastructure/reporting_infrastructure.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
-import '../../shared/infrastructure/configuration/api_config.dart';
-import '../../shared/infrastructure/http/api_client.dart';
-import '../../shared/infrastructure/http/auth_interceptor.dart';
-import '../../shared/infrastructure/storage/secure_key_value_store.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
+import '../../common/infrastructure/configuration/api_config.dart';
+import '../../common/infrastructure/http/api_client.dart';
+import '../../common/infrastructure/http/auth_interceptor.dart';
+import '../../common/infrastructure/storage/secure_key_value_store.dart';
 import '../../subscription/application/billing_queries.dart';
 import '../../subscription/domain/subscription.dart';
 import '../../subscription/infrastructure/subscription_infrastructure.dart';
@@ -71,7 +71,7 @@ final GetIt sl = GetIt.instance;
 Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secureStore}) async {
   await sl.reset();
 
-  // Configuration & shared infrastructure
+  // Configuration & common infrastructure
   sl.registerSingleton<ApiConfig>(config ?? ApiConfig.fromEnvironment());
   sl.registerLazySingleton<SecureKeyValueStore>(() => secureStore ?? FlutterSecureKeyValueStore());
   sl.registerLazySingleton<AuthInterceptor>(

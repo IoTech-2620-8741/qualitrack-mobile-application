@@ -1,6 +1,6 @@
 import '../../equipment/api/index.dart';
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
 import '../domain/telemetry.dart';
 
 /// IoT devices that can report telemetry: equipment with an IoT role that is

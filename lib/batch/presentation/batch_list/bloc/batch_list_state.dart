@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../shared/presentation/remote_state.dart';
+import '../../../../common/presentation/remote_state.dart';
 import '../../../domain/entities/batch_status.dart';
 import '../../../domain/entities/batch_summary.dart';
 import '../../../domain/entities/production_batch.dart';

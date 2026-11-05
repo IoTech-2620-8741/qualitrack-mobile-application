@@ -1,5 +1,5 @@
-import '../../shared/application/bounded_concurrency.dart';
-import '../../shared/domain/value_objects.dart';
+import '../../common/application/bounded_concurrency.dart';
+import '../../common/domain/value_objects.dart';
 import '../domain/laboratory.dart';
 
 class GetLaboratory {

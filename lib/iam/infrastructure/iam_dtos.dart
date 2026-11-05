@@ -1,5 +1,5 @@
-import '../../shared/domain/value_objects.dart';
-import '../../shared/infrastructure/http/json_utils.dart';
+import '../../common/domain/value_objects.dart';
+import '../../common/infrastructure/http/json_utils.dart';
 import '../domain/access_token.dart';
 import '../domain/onboarding_state.dart';
 import '../domain/user_role.dart';

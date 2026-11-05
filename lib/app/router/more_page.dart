@@ -5,10 +5,10 @@ import '../../iam/domain/user_session.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
-import '../../shared/presentation/l10n/app_localizations.dart';
-import '../../shared/presentation/widgets/confirm_dialog.dart';
-import '../../shared/presentation/theme/app_colors.dart';
-import '../../shared/presentation/theme/app_spacing.dart';
+import '../../common/presentation/l10n/app_localizations.dart';
+import '../../common/presentation/widgets/confirm_dialog.dart';
+import '../../common/presentation/theme/app_colors.dart';
+import '../../common/presentation/theme/app_spacing.dart';
 import 'app_routes.dart';
 
 /// "Navigation Menu" mockup: secondary destinations of the app.

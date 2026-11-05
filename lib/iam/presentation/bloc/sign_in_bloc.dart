@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../shared/domain/failure.dart';
+import '../../../common/domain/failure.dart';
 import '../../application/iam_use_cases.dart';
 import '../../application/session_controller.dart';
 

@@ -6,11 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 ///  - domain depends on nothing; application and infrastructure on the domain;
 ///    presentation on the application (and the domain entities it shows);
 ///  - a bounded context uses another one only through its `api/index.dart`;
-///  - `shared/` (the guide's `common`) depends on no bounded context;
+///  - `common/` depends on no bounded context;
 ///  - only `app/` (the composition root) and `main.dart` may know everything.
 const _layers = {'domain', 'application', 'infrastructure', 'presentation', 'api'};
 
-/// Layers a layer may import, inside its context and from `shared/`.
+/// Layers a layer may import, inside its context and from `common/`.
 const _mayImport = {
   'domain': {'domain'},
   'application': {'domain', 'application'},
@@ -55,12 +55,12 @@ String? checkImport(List<String> from, String uri) {
   final targetLayer = target.length > 2 ? target[1] : '';
 
   if (targetContext == 'app') return 'only app/ may import app/';
-  if (targetContext == context || targetContext == 'shared') {
-    if (!_layers.contains(targetLayer)) return null; // e.g. shared/presentation/theme is under presentation anyway
-    if (targetContext == 'shared' && context == 'shared' && targetLayer == layer) return null;
+  if (targetContext == context || targetContext == 'common') {
+    if (!_layers.contains(targetLayer)) return null; // e.g. common/presentation/theme is under presentation anyway
+    if (targetContext == 'common' && context == 'common' && targetLayer == layer) return null;
     return _mayImport[layer]!.contains(targetLayer) ? null : 'the $layer layer must not import the $targetLayer layer';
   }
-  if (context == 'shared') return 'shared/ must not depend on a bounded context ($targetContext)';
+  if (context == 'common') return 'common/ must not depend on a bounded context ($targetContext)';
   if (layer != 'application' && layer != 'presentation') return 'the $layer layer must not import another context';
   final isEntryPoint = target.length == 3 && target[1] == 'api' && target[2] == 'index.dart';
   return isEntryPoint ? null : 'use $targetContext/api/index.dart instead of its internals';
@@ -101,14 +101,14 @@ void main() {
       expect(checkImport(['equipment', 'application', 'a.dart'], '../presentation/b.dart'), isNotNull);
       expect(checkImport(['equipment', 'presentation', 'a.dart'], '../infrastructure/b.dart'), isNotNull);
       expect(checkImport(['equipment', 'presentation', 'pages', 'a.dart'], '../../../tracking/domain/t.dart'), isNotNull);
-      expect(checkImport(['shared', 'presentation', 'a.dart'], '../../batch/api/index.dart'), isNotNull);
+      expect(checkImport(['common', 'presentation', 'a.dart'], '../../batch/api/index.dart'), isNotNull);
       expect(checkImport(['equipment', 'presentation', 'a.dart'], 'package:qualitrack_mobile/app/app.dart'), isNotNull);
     });
 
     test('accepts what the guide allows', () {
       expect(checkImport(['equipment', 'presentation', 'pages', 'a.dart'], '../../../tracking/api/index.dart'), isNull);
-      expect(checkImport(['equipment', 'application', 'a.dart'], '../../shared/domain/failure.dart'), isNull);
-      expect(checkImport(['equipment', 'infrastructure', 'a.dart'], '../../shared/infrastructure/http/api_client.dart'), isNull);
+      expect(checkImport(['equipment', 'application', 'a.dart'], '../../common/domain/failure.dart'), isNull);
+      expect(checkImport(['equipment', 'infrastructure', 'a.dart'], '../../common/infrastructure/http/api_client.dart'), isNull);
       expect(checkImport(['equipment', 'domain', 'a.dart'], 'package:equatable/equatable.dart'), isNull);
       expect(checkImport(['equipment', 'presentation', 'a.dart'], '../application/b.dart'), isNull);
     });

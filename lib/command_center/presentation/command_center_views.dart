@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../../batch/api/index.dart';
 import '../../compliance/api/index.dart';
 import '../../iam/api/index.dart';
-import '../../shared/presentation/l10n/app_localizations.dart';
+import '../../common/presentation/l10n/app_localizations.dart';
 
 /// Widgets of other bounded contexts that the panel shows. The composition
 /// root (`app/`) builds them, so this context never imports another context's

@@ -1,4 +1,4 @@
-import '../../../shared/domain/failure.dart';
+import '../../../common/domain/failure.dart';
 import '../entities/production_batch.dart';
 
 /// Business rules of Product Batch Management. Pure Dart: the facade applies

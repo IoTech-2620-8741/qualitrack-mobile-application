@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../shared/presentation/theme/app_colors.dart';
-import '../../../shared/presentation/theme/app_spacing.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/l10n/app_localizations.dart';
 import '../../application/session_controller.dart';
 import '../../domain/onboarding_state.dart';
 import '../widgets/qualitrack_logo.dart';

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import '../../shared/domain/failure.dart';
-import '../../shared/infrastructure/http/json_utils.dart';
-import '../../shared/infrastructure/storage/secure_key_value_store.dart';
+import '../../common/domain/failure.dart';
+import '../../common/infrastructure/http/json_utils.dart';
+import '../../common/infrastructure/storage/secure_key_value_store.dart';
 import '../domain/iam_repositories.dart';
 import '../domain/onboarding_state.dart';
 import '../domain/user_session.dart';

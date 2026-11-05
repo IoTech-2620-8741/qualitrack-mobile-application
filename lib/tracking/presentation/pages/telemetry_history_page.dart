@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../shared/presentation/theme/app_colors.dart';
-import '../../../shared/presentation/theme/app_spacing.dart';
-import '../../../shared/presentation/theme/app_typography.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/view_status.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
-import '../../../shared/presentation/widgets/remote_state_view.dart';
-import '../../../shared/presentation/widgets/state_views.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_typography.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/view_status.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/remote_state_view.dart';
+import '../../../common/presentation/widgets/state_views.dart';
 import '../../domain/telemetry.dart';
 import '../bloc/telemetry_dashboard_bloc.dart';
 import '../bloc/telemetry_history_bloc.dart';

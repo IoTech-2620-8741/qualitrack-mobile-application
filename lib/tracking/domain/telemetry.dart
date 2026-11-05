@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/value_objects.dart';
 
 /// `MonitoredMetric` of Tracking & Telemetry. Environmental devices measure
 /// air quality and motion; container monitors measure temperature, humidity,

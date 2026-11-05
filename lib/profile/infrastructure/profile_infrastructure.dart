@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import '../../shared/infrastructure/http/api_client.dart';
-import '../../shared/infrastructure/http/json_utils.dart';
+import '../../common/infrastructure/http/api_client.dart';
+import '../../common/infrastructure/http/json_utils.dart';
 import '../domain/profile.dart';
 
 /// `ProfileResource {userId, staffId, username, email, roles, fullName, dni,

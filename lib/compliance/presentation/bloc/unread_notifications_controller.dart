@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../shared/domain/failure.dart';
+import '../../../common/domain/failure.dart';
 import '../../application/compliance_queries.dart';
 
 /// Unread count of the bell, shared by every screen. It refreshes every

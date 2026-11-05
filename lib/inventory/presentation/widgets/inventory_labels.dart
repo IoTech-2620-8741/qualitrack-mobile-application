@@ -1,5 +1,5 @@
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/inventory.dart';
 
 extension ReceiptStatusPresentation on ReceiptStatus {
