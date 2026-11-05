@@ -3,8 +3,10 @@
 /// It is used across the app to display a friendly message (and an optional
 /// action button) when there is no data to show.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A reusable widget to display an empty state.
 class EmptyStateView extends StatelessWidget {
@@ -42,7 +44,7 @@ class EmptyStateView extends StatelessWidget {
           Icon(
             icon,
             size: 48,
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppSpacing.md),
 

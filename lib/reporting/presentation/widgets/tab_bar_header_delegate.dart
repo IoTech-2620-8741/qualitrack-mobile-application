@@ -3,8 +3,10 @@
 /// It is used inside a [SliverPersistentHeader] to keep the [TabBar] pinned
 /// at the top of the screen while the user scrolls through the content.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A delegate that builds a pinned [TabBar] header inside a CustomScrollView/NestedScrollView.
 class TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {

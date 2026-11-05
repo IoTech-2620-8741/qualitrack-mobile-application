@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../shared/presentation/i18n/app_localizations.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../domain/batch.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
+import '../../domain/entities/batch_status.dart';
 
 extension BatchStatusPresentation on BatchStatus {
   BadgeTone get tone => switch (this) {
@@ -21,12 +21,12 @@ extension BatchStatusPresentation on BatchStatus {
     BatchStatus.unknown => Icons.help_outline,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    BatchStatus.pending => l10n.batchPending,
-    BatchStatus.inProgress => l10n.batchInProgress,
-    BatchStatus.released => l10n.batchReleased,
-    BatchStatus.rejected => l10n.batchRejected,
-    BatchStatus.unknown => l10n.unknown,
+  String label(AppLocalizations i18n) => switch (this) {
+    BatchStatus.pending => i18n.batchPending,
+    BatchStatus.inProgress => i18n.batchInProgress,
+    BatchStatus.released => i18n.batchReleased,
+    BatchStatus.rejected => i18n.batchRejected,
+    BatchStatus.unknown => i18n.unknown,
   };
 }
 
@@ -37,5 +37,5 @@ class BatchStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      StatusBadge(label: status.label(context.l10n), tone: status.tone, icon: status.icon);
+      StatusBadge(label: status.label(context.i18n), tone: status.tone, icon: status.icon);
 }

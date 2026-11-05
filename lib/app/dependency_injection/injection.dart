@@ -1,67 +1,83 @@
 import 'package:get_it/get_it.dart';
 
-import '../../batch/application/batch_use_cases.dart';
-import '../../batch/domain/batch.dart';
-import '../../batch/infrastructure/batch_infrastructure.dart';
-import '../../batch/presentation/bloc/batch_detail_bloc.dart';
-import '../../batch/presentation/bloc/batches_bloc.dart';
+import '../../batch/api/index.dart';
+import '../../batch/application/batch_facade_service.dart';
+import '../../batch/domain/interfaces/batch_interface.dart';
+import '../../batch/infrastructure/data_sources/batch_remote_data_provider.dart';
+import '../../batch/infrastructure/repositories/batch_repository.dart';
+import '../../batch/presentation/batch_detail/bloc/batch_detail_bloc.dart';
+import '../../batch/presentation/batch_list/bloc/batch_list_bloc.dart';
 import '../../command_center/application/get_command_center_summary.dart';
 import '../../command_center/presentation/bloc/command_center_bloc.dart';
-import '../../compliance/application/compliance_queries.dart';
-import '../../compliance/domain/compliance.dart';
-import '../../compliance/infrastructure/compliance_infrastructure.dart';
+import '../../compliance/api/index.dart';
+import '../../compliance/application/compliance_facade_service.dart';
+import '../../compliance/domain/interfaces/compliance_interface.dart';
+import '../../compliance/infrastructure/data_sources/compliance_remote_data_provider.dart';
+import '../../compliance/infrastructure/repositories/compliance_repository.dart';
 import '../../compliance/presentation/bloc/alert_detail_bloc.dart';
 import '../../compliance/presentation/bloc/alerts_bloc.dart';
 import '../../compliance/presentation/bloc/notification_preferences_bloc.dart';
 import '../../compliance/presentation/bloc/notifications_bloc.dart';
 import '../../compliance/presentation/bloc/unread_notifications_controller.dart';
-import '../../equipment/application/equipment_queries.dart';
-import '../../equipment/domain/equipment.dart';
-import '../../equipment/infrastructure/equipment_infrastructure.dart';
+import '../../equipment/api/index.dart';
+import '../../equipment/application/equipment_facade_service.dart';
+import '../../equipment/domain/interfaces/equipment_interface.dart';
+import '../../equipment/infrastructure/data_sources/equipment_remote_data_provider.dart';
+import '../../equipment/infrastructure/repositories/equipment_repository.dart';
 import '../../equipment/presentation/bloc/equipment_detail_bloc.dart';
 import '../../equipment/presentation/bloc/equipment_list_bloc.dart';
-import '../../iam/application/iam_use_cases.dart';
+import '../../iam/application/iam_facade_service.dart';
 import '../../iam/application/session_controller.dart';
-import '../../iam/domain/iam_repositories.dart';
-import '../../iam/domain/user_session.dart';
-import '../../iam/infrastructure/iam_remote_data_source.dart';
-import '../../iam/infrastructure/iam_repositories_impl.dart';
+import '../../iam/domain/entities/user_session.dart';
+import '../../iam/domain/interfaces/iam_interface.dart';
+import '../../iam/infrastructure/data_sources/iam_local_data_provider.dart';
+import '../../iam/infrastructure/data_sources/iam_remote_data_provider.dart';
+import '../../iam/infrastructure/repositories/iam_repository.dart';
 import '../../iam/presentation/bloc/change_password_bloc.dart';
 import '../../iam/presentation/bloc/sign_in_bloc.dart';
-import '../../inventory/application/inventory_queries.dart';
-import '../../inventory/domain/inventory.dart';
-import '../../inventory/infrastructure/inventory_infrastructure.dart';
+import '../../inventory/api/index.dart';
+import '../../inventory/application/inventory_facade_service.dart';
+import '../../inventory/domain/interfaces/inventory_interface.dart';
+import '../../inventory/infrastructure/data_sources/inventory_remote_data_provider.dart';
+import '../../inventory/infrastructure/repositories/inventory_repository.dart';
 import '../../inventory/presentation/bloc/inventory_bloc.dart';
 import '../../inventory/presentation/bloc/material_detail_bloc.dart';
-import '../../laboratory/application/laboratory_queries.dart';
-import '../../laboratory/domain/laboratory.dart';
-import '../../laboratory/infrastructure/laboratory_infrastructure.dart';
+import '../../laboratory/api/index.dart';
+import '../../laboratory/application/laboratory_facade_service.dart';
+import '../../laboratory/domain/interfaces/laboratory_interface.dart';
+import '../../laboratory/infrastructure/data_sources/laboratory_remote_data_provider.dart';
+import '../../laboratory/infrastructure/repositories/laboratory_repository.dart';
 import '../../laboratory/presentation/bloc/products_bloc.dart';
-import '../../profile/application/profile_use_cases.dart';
-import '../../profile/domain/profile.dart';
-import '../../profile/infrastructure/profile_infrastructure.dart';
+import '../../profile/application/profile_facade_service.dart';
+import '../../profile/domain/interfaces/profile_interface.dart';
+import '../../profile/infrastructure/data_sources/profile_remote_data_provider.dart';
+import '../../profile/infrastructure/repositories/profile_repository.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
-import '../../reporting/api/reporting-api.dart';
+import '../../reporting/api/reporting_api.dart';
 import '../../reporting/application/reporting_facade_service.dart';
 import '../../reporting/application/reporting_queries.dart';
 import '../../reporting/domain/repositories/reporting_repository.dart';
 import '../../reporting/infrastructure/data_sources/reporting_remote_data_source.dart';
 import '../../reporting/infrastructure/repositories/reporting_repository_impl.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
-import '../../shared/infrastructure/configuration/api_config.dart';
-import '../../shared/infrastructure/http/api_client.dart';
-import '../../shared/infrastructure/http/auth_interceptor.dart';
-import '../../shared/infrastructure/storage/secure_key_value_store.dart';
-import '../../subscription/application/billing_queries.dart';
-import '../../subscription/domain/subscription.dart';
-import '../../subscription/infrastructure/subscription_infrastructure.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
+import '../../common/infrastructure/configuration/api_config.dart';
+import '../../common/infrastructure/http/api_client.dart';
+import '../../common/infrastructure/http/auth_interceptor.dart';
+import '../../common/infrastructure/storage/secure_key_value_store.dart';
+import '../../subscription/api/index.dart';
+import '../../subscription/application/subscription_facade_service.dart';
+import '../../subscription/domain/interfaces/subscription_interface.dart';
+import '../../subscription/infrastructure/data_sources/subscription_remote_data_provider.dart';
+import '../../subscription/infrastructure/repositories/subscription_repository.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
-import '../../tracking/application/telemetry_queries.dart';
-import '../../tracking/domain/telemetry.dart';
-import '../../tracking/infrastructure/telemetry_infrastructure.dart';
+import '../../tracking/api/index.dart';
+import '../../tracking/application/telemetry_facade_service.dart';
+import '../../tracking/domain/interfaces/telemetry_interface.dart';
+import '../../tracking/infrastructure/data_sources/telemetry_remote_data_provider.dart';
+import '../../tracking/infrastructure/repositories/telemetry_repository.dart';
 import '../../tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 import '../../tracking/presentation/bloc/telemetry_history_bloc.dart';
 
@@ -72,7 +88,7 @@ final GetIt sl = GetIt.instance;
 Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secureStore}) async {
   await sl.reset();
 
-  // Configuration & shared infrastructure
+  // Configuration & common infrastructure
   sl.registerSingleton<ApiConfig>(config ?? ApiConfig.fromEnvironment());
   sl.registerLazySingleton<SecureKeyValueStore>(() => secureStore ?? FlutterSecureKeyValueStore());
   sl.registerLazySingleton<AuthInterceptor>(
@@ -84,78 +100,50 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton<ApiClient>(() => ApiClient.create(config: sl(), authInterceptor: sl()));
 
   // Identity & Access Management
-  sl.registerLazySingleton(() => IamRemoteDataSource(sl()));
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
-  sl.registerLazySingleton<SessionRepository>(() => SecureSessionRepository(sl()));
-  sl.registerLazySingleton(() => SignIn(sl(), sl()));
-  sl.registerLazySingleton(() => RestoreSession(sl()));
-  sl.registerLazySingleton(() => RememberSession(sl()));
-  sl.registerLazySingleton(() => SignOut(sl()));
-  sl.registerLazySingleton(() => CheckOnboarding(sl()));
-  sl.registerLazySingleton(() => ChangePassword(sl()));
-  sl.registerLazySingleton(
-    () => SessionController(restoreSession: sl(), rememberSession: sl(), signOut: sl(), checkOnboarding: sl()),
+  sl.registerLazySingleton(() => IamRemoteDataProvider(sl()));
+  sl.registerLazySingleton(() => IamLocalDataProvider(sl()));
+  sl.registerLazySingleton<IamInterface>(
+    () => IamRepository(remoteDataProvider: sl(), localDataProvider: sl()),
   );
+  sl.registerLazySingleton(() => IamFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => SessionController(iamService: sl()));
 
   // Laboratory Management
-  sl.registerLazySingleton(() => LaboratoryRemoteDataSource(sl()));
-  sl.registerLazySingleton<LaboratoryRepository>(() => LaboratoryRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetLaboratory(sl()));
-  sl.registerLazySingleton(() => GetEnvironments(sl()));
-  sl.registerLazySingleton(() => GetProductCatalog(sl()));
-  sl.registerLazySingleton(() => GetUserDirectory(sl()));
+  sl.registerLazySingleton(() => LaboratoryRemoteDataProvider(sl()));
+  sl.registerLazySingleton<LaboratoryInterface>(() => LaboratoryRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => LaboratoryFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => LaboratoryApi(sl()));
 
   // Equipment Management
-  sl.registerLazySingleton(() => EquipmentRemoteDataSource(sl()));
-  sl.registerLazySingleton<EquipmentRepository>(() => EquipmentRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetEquipments(sl()));
-  sl.registerLazySingleton(() => GetEquipment(sl()));
-  sl.registerLazySingleton(() => GetMaintenanceHistory(sl()));
-  sl.registerLazySingleton(() => GetBpmConfigs(sl()));
+  sl.registerLazySingleton(() => EquipmentRemoteDataProvider(sl()));
+  sl.registerLazySingleton<EquipmentInterface>(() => EquipmentRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => EquipmentFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => EquipmentApi(sl()));
 
   // Tracking & Telemetry
-  sl.registerLazySingleton(() => TelemetryRemoteDataSource(sl()));
-  sl.registerLazySingleton<TelemetryRepository>(() => TelemetryRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetDeviceConnection(sl()));
-  sl.registerLazySingleton(() => GetDeviceConnections(sl()));
-  sl.registerLazySingleton(() => GetMeasurements(sl()));
-  sl.registerLazySingleton(() => GetEnvironmentalProfile(sl()));
-  sl.registerLazySingleton(() => GetActuationEvents(sl()));
+  sl.registerLazySingleton(() => TelemetryRemoteDataProvider(sl()));
+  sl.registerLazySingleton<TelemetryInterface>(() => TelemetryRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => TelemetryFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => TelemetryApi(sl()));
 
   // Compliance & Alerting (alerts and in-app notifications)
-  sl.registerLazySingleton(() => ComplianceRemoteDataSource(sl()));
-  sl.registerLazySingleton<ComplianceRepository>(() => ComplianceRepositoryImpl(sl()));
-  sl.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetLaboratoryAlerts(sl()));
-  sl.registerLazySingleton(() => GetAlertDetail(sl()));
-  sl.registerLazySingleton(() => AcknowledgeAlert(sl()));
-  sl.registerLazySingleton(() => ResolveAlert(sl()));
-  sl.registerLazySingleton(() => GetEquipmentComplianceEvents(sl()));
-  sl.registerLazySingleton(() => GetBatchComplianceEvents(sl()));
-  sl.registerLazySingleton(() => GetNotifications(sl()));
-  sl.registerLazySingleton(() => GetUnreadNotificationCount(sl()));
-  sl.registerLazySingleton(() => MarkNotificationRead(sl()));
-  sl.registerLazySingleton(() => MarkAllNotificationsRead(sl()));
-  sl.registerLazySingleton(() => GetNotificationPreferences(sl()));
-  sl.registerLazySingleton(() => UpdateNotificationPreferences(sl()));
-  sl.registerLazySingleton(() => UnreadNotificationsController(getUnreadCount: sl()));
+  sl.registerLazySingleton(() => ComplianceRemoteDataProvider(sl()));
+  sl.registerLazySingleton<ComplianceInterface>(() => ComplianceRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => ComplianceFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => ComplianceApi(sl()));
+  sl.registerLazySingleton(() => UnreadNotificationsController(complianceService: sl()));
 
   // Product Batch Management
-  sl.registerLazySingleton(() => BatchRemoteDataSource(sl()));
-  sl.registerLazySingleton<BatchRepository>(() => BatchRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetBatches(sl()));
-  sl.registerLazySingleton(() => GetBatchTraceability(sl()));
-  sl.registerLazySingleton(() => ReleaseBatch(sl()));
-  sl.registerLazySingleton(() => RejectBatch(sl()));
+  sl.registerLazySingleton(() => BatchRemoteDataProvider(sl()));
+  sl.registerLazySingleton<BatchInterface>(() => BatchRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => BatchFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => BatchApi(sl()));
 
   // Inventory Management
-  sl.registerLazySingleton(() => InventoryRemoteDataSource(sl()));
-  sl.registerLazySingleton<InventoryRepository>(() => InventoryRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetInventoryMaterials(sl()));
-  sl.registerLazySingleton(() => GetInventoryMaterial(sl()));
-  sl.registerLazySingleton(() => GetMaterialReceipts(sl()));
-  sl.registerLazySingleton(() => GetInventoryMovements(sl()));
-  sl.registerLazySingleton(() => GetMaterialUsages(sl()));
+  sl.registerLazySingleton(() => InventoryRemoteDataProvider(sl()));
+  sl.registerLazySingleton<InventoryInterface>(() => InventoryRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => InventoryFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => InventoryApi(sl()));
 
   // Reporting & Audit
   sl.registerLazySingleton(() => ReportingRemoteDataSource(sl()));
@@ -165,35 +153,31 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => GetReportHistory(sl()));
   sl.registerLazySingleton(() => GetEquipmentAuditLogs(sl()));
   sl.registerLazySingleton(() => GetBatchAuditLogs(sl()));
-  sl.registerLazySingleton(() => ReportingFacadeService(getKpiDashboard: sl(), getDeviationTrends: sl(), getReportHistory: sl(), getEnvironments: sl(), getEquipments: sl(),),);
+  sl.registerLazySingleton(() => ReportingFacadeService(getKpiDashboard: sl(), getDeviationTrends: sl(), getReportHistory: sl(), laboratoryApi: sl(), equipmentApi: sl(),),);
   sl.registerLazySingleton(() => ReportingApi(getKpiDashboard: sl(), getDeviationTrends: sl(), getReportHistory: sl(), getEquipmentAuditLogs: sl(), getBatchAuditLogs: sl(),),);
 
   // Payments & Subscriptions
-  sl.registerLazySingleton(() => SubscriptionRemoteDataSource(sl()));
-  sl.registerLazySingleton<SubscriptionRepository>(() => SubscriptionRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetBillingSummary(sl()));
+  sl.registerLazySingleton(() => SubscriptionRemoteDataProvider(sl()));
+  sl.registerLazySingleton<SubscriptionInterface>(() => SubscriptionRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => SubscriptionFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => SubscriptionApi(sl()));
 
   // Profile
-  sl.registerLazySingleton(() => ProfileRemoteDataSource(sl()));
-  sl.registerLazySingleton<ProfileRepository>(() => ProfileRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetMyProfile(sl()));
-  sl.registerLazySingleton(() => UpdateMyProfile(sl()));
-  sl.registerLazySingleton(() => GetMyPhoto(sl()));
-  sl.registerLazySingleton(() => UploadMyPhoto(sl()));
-  sl.registerLazySingleton(() => RemoveMyPhoto(sl()));
-  sl.registerLazySingleton(() => CurrentProfileController(getProfile: sl(), getPhoto: sl()));
+  sl.registerLazySingleton(() => ProfileRemoteDataProvider(sl()));
+  sl.registerLazySingleton<ProfileInterface>(() => ProfileRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => ProfileFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => CurrentProfileController(profileService: sl()));
 
   // Command Center (UI composition)
   sl.registerLazySingleton(
     () => GetCommandCenterSummary(
-      getLaboratory: sl(),
-      getEnvironments: sl(),
-      getEquipments: sl(),
-      getConnections: sl(),
-      getBatches: sl(),
-      getAlerts: sl(),
-      getMaterials: sl(),
-      getBilling: sl(),
+      laboratoryApi: sl(),
+      equipmentApi: sl(),
+      telemetryApi: sl(),
+      batchApi: sl(),
+      complianceApi: sl(),
+      inventoryApi: sl(),
+      subscriptionApi: sl(),
     ),
   );
 
@@ -209,16 +193,12 @@ UserSession _session() {
 }
 
 void _registerBlocs() {
-  sl.registerFactory(() => SignInBloc(signIn: sl(), session: sl()));
-  sl.registerFactory(() => ChangePasswordBloc(changePassword: sl()));
+  sl.registerFactory(() => SignInBloc(iamService: sl(), session: sl()));
+  sl.registerFactory(() => ChangePasswordBloc(iamService: sl()));
   sl.registerFactory(
     () => ProfileBloc(
-      getProfile: sl(),
-      updateProfile: sl(),
-      getPhoto: sl(),
-      uploadPhoto: sl(),
-      removePhoto: sl(),
-      getLaboratory: sl(),
+      profileService: sl(),
+      laboratoryApi: sl(),
       laboratoryId: () => sl<SessionController>().session?.laboratoryId,
       onProfileChanged: (profile) => sl<CurrentProfileController>().changed(profile),
     ),
@@ -230,92 +210,75 @@ void _registerBlocs() {
       includeSubscription: _session().canManageQuality,
     ),
   );
-  sl.registerFactory(() => ProductsBloc(getCatalog: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => ProductsBloc(laboratoryService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactory(
-    () => EquipmentListBloc(getEquipments: sl(), getEnvironments: sl(), getConnections: sl(), laboratoryId: _laboratoryId),
+    () => EquipmentListBloc(equipmentService: sl(), laboratoryApi: sl(), telemetryApi: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<EquipmentDetailBloc, int, void>(
     (id, _) => EquipmentDetailBloc(
       equipmentId: id,
-      getEquipment: sl(),
-      getEnvironments: sl(),
-      getConnection: sl(),
-      getBpmConfigs: sl(),
-      getMaintenance: sl(),
+      equipmentService: sl(),
+      laboratoryApi: sl(),
+      telemetryApi: sl(),
       getTrends: sl(),
-      getEvents: sl(),
+      complianceApi: sl(),
       getAuditLogs: sl(),
-      getUserDirectory: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
     () => TelemetryDashboardBloc(
-      getEquipments: sl(),
-      getEnvironments: sl(),
-      getConnection: sl(),
-      getMeasurements: sl(),
-      getProfile: sl(),
-      getActuations: sl(),
+      equipmentApi: sl(),
+      laboratoryApi: sl(),
+      telemetryService: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
     () => TelemetryHistoryBloc(
-      getEquipments: sl(),
-      getEnvironments: sl(),
-      getMeasurements: sl(),
+      equipmentApi: sl(),
+      laboratoryApi: sl(),
+      telemetryService: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
-    () => AlertsBloc(getEnvironments: sl(), getEquipments: sl(), getAlerts: sl(), laboratoryId: _laboratoryId),
+    () => AlertsBloc(laboratoryApi: sl(), equipmentApi: sl(), complianceService: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<AlertDetailBloc, int, void>(
     (id, _) => AlertDetailBloc(
       alertId: id,
-      getAlert: sl(),
-      getEquipment: sl(),
-      getEnvironments: sl(),
-      getUserDirectory: sl(),
-      acknowledge: sl(),
-      resolve: sl(),
+      complianceService: sl(),
+      equipmentApi: sl(),
+      laboratoryApi: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
   sl.registerFactory(
     () => NotificationsBloc(
-      getNotifications: sl(),
-      markRead: sl(),
-      markAllRead: sl(),
+      complianceService: sl(),
       onReadChanged: () => sl<UnreadNotificationsController>().refresh(),
     ),
   );
-  sl.registerFactory(() => NotificationPreferencesBloc(getPreferences: sl(), updatePreferences: sl()));
-  sl.registerFactory(() => BatchesBloc(getBatches: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => NotificationPreferencesBloc(complianceService: sl()));
+  sl.registerFactory(() => BatchListBloc(batchService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactoryParam<BatchDetailBloc, int, void>(
     (id, _) => BatchDetailBloc(
       batchId: id,
-      getTraceability: sl(),
-      getEvents: sl(),
+      batchService: sl(),
+      complianceApi: sl(),
       getAuditLogs: sl(),
-      getUserDirectory: sl(),
-      release: sl(),
-      reject: sl(),
+      laboratoryApi: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
-  sl.registerFactory(() => InventoryBloc(getEnvironments: sl(), getMaterials: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => InventoryBloc(laboratoryApi: sl(), inventoryService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactoryParam<MaterialDetailBloc, int, int?>(
     (id, environmentId) => MaterialDetailBloc(
       materialId: id,
       environmentId: environmentId,
-      getEnvironments: sl(),
-      getMaterials: sl(),
-      getMaterial: sl(),
-      getReceipts: sl(),
-      getMovements: sl(),
-      getUsages: sl(),
+      laboratoryApi: sl(),
+      inventoryService: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
@@ -326,6 +289,5 @@ void _registerBlocs() {
       laboratoryId: _laboratoryId,
     ),
   );
-
-  sl.registerFactory(() => BillingBloc(getBillingSummary: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => BillingBloc(subscriptionService: sl(), laboratoryId: _laboratoryId));
 }

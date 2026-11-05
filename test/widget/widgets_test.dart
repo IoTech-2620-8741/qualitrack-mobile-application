@@ -3,25 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
-import 'package:qualitrack_mobile/compliance/presentation/pages/alert_detail_page.dart';
-import 'package:qualitrack_mobile/compliance/presentation/pages/alerts_page.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/alert_detail_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/alerts_screen.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
-import 'package:qualitrack_mobile/iam/presentation/pages/change_password_page.dart';
-import 'package:qualitrack_mobile/iam/presentation/pages/sign_in_page.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/presentation/i18n/app_localizations.dart';
-import 'package:qualitrack_mobile/shared/presentation/remote_state.dart';
-import 'package:qualitrack_mobile/shared/presentation/view_status.dart';
-import 'package:qualitrack_mobile/shared/presentation/widgets/state_views.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
-import 'package:qualitrack_mobile/tracking/presentation/pages/telemetry_dashboard_page.dart';
+import 'package:qualitrack_mobile/iam/presentation/screens/change_password_screen.dart';
+import 'package:qualitrack_mobile/iam/presentation/screens/sign_in_screen.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
+import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
+import 'package:qualitrack_mobile/common/presentation/view_status.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
+import 'package:qualitrack_mobile/tracking/presentation/screens/telemetry_dashboard_screen.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -53,7 +54,7 @@ void main() {
     });
 
     Future<void> pump(WidgetTester tester, {Locale locale = const Locale('en')}) => tester.pumpLocalized(
-      BlocProvider<SignInBloc>.value(value: bloc, child: const SignInPage()),
+      BlocProvider<SignInBloc>.value(value: bloc, child: const SignInScreen()),
       locale: locale,
     );
 
@@ -109,7 +110,7 @@ void main() {
     Future<void> pump(WidgetTester tester) => tester.pumpLocalized(
       BlocProvider<ChangePasswordBloc>.value(
         value: bloc,
-        child: ChangePasswordPage(forced: true, onChanged: () async {}, onSignOut: () async {}),
+        child: ChangePasswordScreen(forced: true, onChanged: () async {}, onSignOut: () async {}),
       ),
       size: const Size(390, 844),
     );
@@ -155,8 +156,8 @@ void main() {
         ),
       );
 
-      expect(equipmentFixture().typeLabel(context.l10n), 'Container monitor');
-      expect(equipmentFixture(deviceType: null).typeLabel(context.l10n), 'Chamber');
+      expect(equipmentFixture().typeLabel(context.i18n), 'Container monitor');
+      expect(equipmentFixture(deviceType: null).typeLabel(context.i18n), 'Chamber');
       expect(
         rangeText(
           context,
@@ -199,9 +200,9 @@ void main() {
     late UnreadNotificationsController bell;
 
     setUp(() {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       when(() => repo.getUnreadCount()).thenAnswer((_) async => 2);
-      bell = UnreadNotificationsController(getUnreadCount: GetUnreadNotificationCount(repo));
+      bell = UnreadNotificationsController(complianceService: complianceFacade(repo));
     });
 
     tearDown(() => bell.dispose());
@@ -223,7 +224,7 @@ void main() {
         ),
       );
 
-      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: AlertsPage(notifications: bell)));
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: AlertsScreen(notifications: bell)));
 
       expect(find.text('Temperature'), findsWidgets);
       expect(find.text('Cold storage'), findsWidgets);
@@ -247,7 +248,7 @@ void main() {
     });
 
     Future<void> pump(WidgetTester tester, {required bool canAttend}) => tester.pumpLocalized(
-      BlocProvider<AlertDetailBloc>.value(value: bloc, child: AlertDetailPage(canAttend: canAttend, currentUserId: 42)),
+      BlocProvider<AlertDetailBloc>.value(value: bloc, child: AlertDetailScreen(canAttend: canAttend, currentUserId: 42)),
       size: const Size(390, 844),
     );
 

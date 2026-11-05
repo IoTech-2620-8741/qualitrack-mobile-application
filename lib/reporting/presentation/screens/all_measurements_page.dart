@@ -1,9 +1,11 @@
 /// This file contains the screen that displays the complete list of
 /// measurement summaries, grouped by environment, allowing filtering by environment.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_spacing.dart';
-import '../../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../widgets/measurement_row.dart';
 import '../widgets/empty_states.dart';
@@ -28,7 +30,7 @@ class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
 
     // Get the map of measurements grouped by environment ID
     final grouped = widget.data.measurementsByEnvironment;
@@ -43,7 +45,7 @@ class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.tabMeasurements, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(i18n.tabMeasurements, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: ListView(
@@ -53,7 +55,7 @@ class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
           ModernFilterChipBar(
             children: [
               ModernFilterChip(
-                label: l10n.filterAll,
+                label: i18n.filterAll,
                 selected: _environmentId == null,
                 onSelected: () => setState(() => _environmentId = null),
               ),
@@ -71,7 +73,7 @@ class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
           if (visibleGrouped.isEmpty)
             EmptyStateView(
               icon: Icons.analytics_outlined,
-              message: l10n.noReadingsInPeriod,
+              message: i18n.noReadingsInPeriod,
             )
           else
           // Iterate over the grouped measurements

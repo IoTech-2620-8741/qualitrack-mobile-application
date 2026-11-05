@@ -1,9 +1,11 @@
 /// This file contains the screen that displays the complete history of
 /// audit reports, allowing filtering by report type.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_spacing.dart';
-import '../../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../domain/entities/audit_entities.dart';
 import '../widgets/history_row.dart';
 import '../widgets/empty_states.dart';
@@ -28,7 +30,7 @@ class _AllReportsPageState extends State<AllReportsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
 
     // Extract unique report types and sort them alphabetically for the filter chips
     final types = widget.reports.map((r) => r.reportType).toSet().toList()..sort();
@@ -40,7 +42,7 @@ class _AllReportsPageState extends State<AllReportsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.reportHistory, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(i18n.reportHistory, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: ListView(
@@ -50,13 +52,13 @@ class _AllReportsPageState extends State<AllReportsPage> {
           ModernFilterChipBar(
             children: [
               ModernFilterChip(
-                label: l10n.filterAll,
+                label: i18n.filterAll,
                 selected: _type == null,
                 onSelected: () => setState(() => _type = null),
               ),
               for (final t in types)
                 ModernFilterChip(
-                  label: reportTypeLabel(l10n, t),
+                  label: reportTypeLabel(i18n, t),
                   selected: _type == t,
                   onSelected: () => setState(() => _type = t),
                 ),
@@ -68,7 +70,7 @@ class _AllReportsPageState extends State<AllReportsPage> {
           if (visible.isEmpty)
             EmptyStateView(
               icon: Icons.history,
-              message: l10n.reportHistoryEmpty,
+              message: i18n.reportHistoryEmpty,
             )
           else
           // Display each report using the reusable HistoryRow widget

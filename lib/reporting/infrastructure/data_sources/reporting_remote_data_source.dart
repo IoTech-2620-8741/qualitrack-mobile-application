@@ -3,8 +3,10 @@
 /// It is responsible for making HTTP requests to the backend API
 /// and returning raw DTOs.
 ///
-import '../../../shared/infrastructure/http/api_client.dart';
-import '../../../shared/infrastructure/http/json_utils.dart';
+library;
+
+import '../../../common/infrastructure/http/api_client.dart';
+import '../../../common/infrastructure/http/json_utils.dart';
 import '../dtos/reporting_dtos.dart';
 
 /// Data Source for fetching reporting data from a remote server (REST API).

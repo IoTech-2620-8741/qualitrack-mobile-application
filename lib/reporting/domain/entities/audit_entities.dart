@@ -1,5 +1,7 @@
 /// This file contains the entities related to Audit Reports and Logs.
 ///
+library;
+
 import 'package:equatable/equatable.dart';
 
 /// Represents an audit report (PDF or CSV) available for download.

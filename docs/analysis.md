@@ -26,7 +26,7 @@ Fecha: 2026-09-16 · Fuentes revisadas:
 - **Sin paginación, sin WebSockets, sin push notifications / Firebase** en el backend.
 
 ### Web (referencia de consumo y diseño)
-- Módulos: `iam, laboratory, inventory, equipment, tracking, batch, ca, ra, subscription, shared`, cada uno con `domain/model`, `application/*.store.ts`, `infrastructure/*-api-endpoint.ts + assembler + response`, `presentation/views`.
+- Módulos: `iam, laboratory, inventory, equipment, tracking, batch, ca, ra, subscription, common`, cada uno con `domain/model`, `application/*.store.ts`, `infrastructure/*-api-endpoint.ts + assembler + response`, `presentation/views`.
 - Sesión en `localStorage` (token, roles, laboratoryId) + `iam-interceptor` (Bearer) + guards `iamGuard`/`onboardingGuard`.
 - `DashboardStore` compone laboratorio, inventario, lotes, equipos, alertas (agregadas por equipo con concurrencia 4), mediciones y suscripción; stock bajo = `usableStock < minimumStock`.
 - Inventory oculta la revisión si el usuario no es `ROLE_ADMIN`/`ROLE_QA_MANAGER`.
@@ -88,7 +88,7 @@ DDD por Bounded Context, cuatro capas por módulo (detalle en `architecture.md`)
 - **application**: casos de uso (queries/commands) que dependen de interfaces de repositorio.
 - **infrastructure**: DTOs (`fromJson` → `toDomain`), remote data sources sobre un único `ApiClient` (Dio), implementaciones de repositorio.
 - **presentation**: BLoC (events/states), pages, widgets.
-- **shared**: `Failure` tipado, `ApiClient`, `AuthInterceptor`, `ApiExceptionMapper`, `ApiConfig` (`--dart-define=API_BASE_URL`), `SecureSessionStorage`, widgets de estado (loading/empty/error/retry), badges accesibles.
+- **common**: `Failure` tipado, `ApiClient`, `AuthInterceptor`, `ApiExceptionMapper`, `ApiConfig` (`--dart-define=API_BASE_URL`), `SecureSessionStorage`, widgets de estado (loading/empty/error/retry), badges accesibles.
 - **app**: `QualiTrackApp`, `AppRouter` (go_router con `redirect` + `refreshListenable` de sesión), `injection.dart` (get_it), tema (`AppColors`, `AppTypography`, `AppSpacing`, `AppRadius`, `AppTheme`, Material 3), localización.
 - **command_center**: módulo de composición de UI (application + presentation) que consume casos de uso de otros BCs; no es un Bounded Context.
 
@@ -104,8 +104,8 @@ lib/
 │   ├── dependency_injection/injection.dart
 │   ├── router/app_router.dart, app_routes.dart, main_shell.dart
 │   ├── theme/app_colors.dart, app_typography.dart, app_spacing.dart, app_radius.dart, app_theme.dart
-│   └── l10n/app_localizations.dart (+ en/es)
-├── shared/
+│   └── i18n/app_localizations.dart (+ en/es)
+├── common/
 │   ├── domain/failure.dart, session/user_role.dart
 │   ├── application/use_case.dart
 │   ├── infrastructure/
@@ -130,7 +130,7 @@ lib/
 | Etapa | Contenido | Commit sugerido |
 |---|---|---|
 | 1 | Análisis y documentación (este archivo, `mobile-api-mapping.md`, `architecture.md`) | `docs: add mobile analysis and API mapping` |
-| 2 | Proyecto Flutter, pubspec, lints, shared/core, theme, networking, secure storage, DI, routing | `chore: initialize QualiTrack Flutter application` |
+| 2 | Proyecto Flutter, pubspec, lints, common/core, theme, networking, secure storage, DI, routing | `chore: initialize QualiTrack Flutter application` |
 | 3 | IAM: splash, sign-in, sesión JWT, onboarding, logout, 401 | `feat(iam): implement mobile authentication` |
 | 4 | Equipment (lista, filtros, detalle, mantenimiento, BPM) | `feat(equipment): add equipment monitoring` |
 | 5 | Tracking & Telemetry (dashboard, polling, gráfico, historial) | `feat(tracking): add live telemetry monitoring` |

@@ -5,8 +5,10 @@
 /// It also handles tap interactions with an ink ripple effect.
 ///
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A reusable, styled card widget with tap interaction support.
 class ModernCard extends StatelessWidget {
@@ -31,13 +33,13 @@ class ModernCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             // A very subtle shadow to give it a floating appearance without being overwhelming
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         // A faint border helps define the card's edges on white backgrounds
-        border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: Material(
         // Material is required to show the InkWell ripple effect properly on top of a Container

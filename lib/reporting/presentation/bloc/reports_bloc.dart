@@ -1,10 +1,12 @@
 /// This file contains the Events, State, and BLoC for the Reports screen.
 ///
+library;
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../shared/presentation/remote_state.dart';
+import '../../../common/domain/failure.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
 import '../../application/reporting_facade_service.dart';
 import '../../domain/entities/reporting_enums.dart';
 
@@ -112,7 +114,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       emit(state.copyWith(remote: state.remote.success(data)));
 
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }

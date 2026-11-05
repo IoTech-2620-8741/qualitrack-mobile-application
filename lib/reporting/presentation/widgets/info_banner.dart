@@ -3,9 +3,11 @@
 /// It is used to display a subtle informational message with an icon,
 /// like a note or a tip, usually at the top of a screen or section.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A reusable widget to display an informational message.
 class InfoBanner extends StatelessWidget {
@@ -22,14 +24,14 @@ class InfoBanner extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         // Use a very light version of the primary color for the background
-        color: AppColors.primary.withOpacity(0.08),
+        color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start, // Align items to top in case text is long
         children: [
           // Icon to draw attention
-          Icon(Icons.info_outline, color: AppColors.primary, size: 20),
+          const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
           const SizedBox(width: AppSpacing.sm),
 
           // Expanded allows the text to wrap to the next line if it's too long

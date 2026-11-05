@@ -3,6 +3,8 @@
 /// It is a reusable text button with an icon, used across the Reporting
 /// screens to navigate to a full list of items (e.g., "See all", "See 7 more").
 ///
+library;
+
 import 'package:flutter/material.dart';
 
 /// A reusable button to navigate to a "See All" screen.

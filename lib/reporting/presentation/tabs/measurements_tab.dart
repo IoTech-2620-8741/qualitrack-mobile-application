@@ -4,10 +4,12 @@
 /// shows the total reading count, and provides a button to view the
 /// complete list of measurements.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../screens/all_measurements_page.dart';
 import '../widgets/measurement_row.dart';
@@ -35,7 +37,7 @@ class MeasurementsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
 
     // Get the measurements grouped by environment ID
@@ -50,9 +52,9 @@ class MeasurementsTab extends StatelessWidget {
           // 1. Empty state with an action to expand the time period
             EmptyStateView(
               icon: Icons.analytics_outlined,
-              message: l10n.noReadingsInPeriod,
+              message: i18n.noReadingsInPeriod,
               onAction: onSeeLast31Days,
-              actionLabel: l10n.seeLast31Days,
+              actionLabel: i18n.seeLast31Days,
             )
           else ...[
             // 2. Iterate over the grouped measurements
@@ -81,7 +83,7 @@ class MeasurementsTab extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                l10n.totalReadings(data.totalReadings),
+                i18n.totalReadings(data.totalReadings),
                 style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
               ),
             ),
@@ -90,7 +92,7 @@ class MeasurementsTab extends StatelessWidget {
             // 4. Button to view all measurements
             SeeMoreButton(
               icon: Icons.list_alt,
-              label: l10n.seeAll,
+              label: i18n.seeAll,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => AllMeasurementsPage(data: data)),
               ),

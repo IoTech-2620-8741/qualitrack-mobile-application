@@ -3,8 +3,10 @@
 /// It acts as a bridge between the Domain layer (which uses Entities and DateTime)
 /// and the Infrastructure layer (which uses DTOs and String timestamps).
 ///
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/json_utils.dart';
+library;
+
+import '../../../common/domain/value_objects.dart';
+import '../../../common/infrastructure/http/json_utils.dart';
 import '../../domain/entities/reporting_entities.dart';
 import '../../domain/repositories/reporting_repository.dart';
 import '../data_sources/reporting_remote_data_source.dart';

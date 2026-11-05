@@ -1,10 +1,12 @@
 /// This file contains the screen that displays the complete list of
 /// deviation trends, allowing the user to filter them by severity.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
-import '../../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../../domain/entities/deviation_entities.dart';
 import '../../domain/entities/reporting_enums.dart';
@@ -29,12 +31,12 @@ extension on _DeviationFilter {
   };
 
   /// Returns the localized label with the count of items for each filter.
-  String label(AppLocalizations l10n, int count) => switch (this) {
-    _DeviationFilter.all => '${l10n.filterAll} $count',
-    _DeviationFilter.critical => '${l10n.healthCritical} $count',
-    _DeviationFilter.warning => '${l10n.healthAtRisk} $count',
-    _DeviationFilter.onTrack => '${l10n.healthOnTrack} $count',
-    _DeviationFilter.noData => '${l10n.noData} $count',
+  String label(AppLocalizations i18n, int count) => switch (this) {
+    _DeviationFilter.all => '${i18n.filterAll} $count',
+    _DeviationFilter.critical => '${i18n.healthCritical} $count',
+    _DeviationFilter.warning => '${i18n.healthAtRisk} $count',
+    _DeviationFilter.onTrack => '${i18n.healthOnTrack} $count',
+    _DeviationFilter.noData => '${i18n.noData} $count',
   };
 }
 
@@ -55,7 +57,7 @@ class _AllDeviationsPageState extends State<AllDeviationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
 
     // Obtenemos las tendencias ordenadas por severidad (desde la Fachada)
     final trends = widget.data.sortedTrends;
@@ -68,7 +70,7 @@ class _AllDeviationsPageState extends State<AllDeviationsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.deviationsLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(i18n.deviationsLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: ListView(
@@ -83,11 +85,11 @@ class _AllDeviationsPageState extends State<AllDeviationsPage> {
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: ChoiceChip(
-                    label: Text(f.label(l10n, count(f))),
+                    label: Text(f.label(i18n, count(f))),
                     selected: isSelected,
                     onSelected: (_) => setState(() => _filter = f),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    selectedColor: AppColors.primary.withOpacity(0.15),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
                     labelStyle: TextStyle(
                       color: isSelected ? AppColors.primary : Colors.grey.shade700,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -104,7 +106,7 @@ class _AllDeviationsPageState extends State<AllDeviationsPage> {
           if (visible.isEmpty)
             EmptyStateView(
               icon: Icons.insights_outlined,
-              message: l10n.noReadingsInPeriod,
+              message: i18n.noReadingsInPeriod,
             )
           else
           // Pintamos cada tendencia usando el widget reutilizable TrendRow

@@ -3,9 +3,11 @@
 /// Queries orchestrate calls to the repository and apply the necessary
 /// domain logic (such as sorting or date calculation) before returning the data.
 ///
+library;
 
-import '../../shared/application/bounded_concurrency.dart';
-import '../../shared/domain/value_objects.dart';
+
+import '../../common/application/bounded_concurrency.dart';
+import '../../common/domain/value_objects.dart';
 import '../domain/entities/audit_entities.dart';
 import '../domain/entities/deviation_entities.dart';
 import '../domain/entities/kpi_entities.dart';

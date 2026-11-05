@@ -2,8 +2,10 @@
 /// DTOs are responsible for mapping raw JSON data from the API
 /// into domain entities.
 ///
+library;
 
-import '../../../../shared/infrastructure/http/json_utils.dart';
+
+import '../../../common/infrastructure/http/json_utils.dart';
 import '../../domain/entities/kpi_entities.dart';
 import '../../domain/entities/reporting_enums.dart';
 

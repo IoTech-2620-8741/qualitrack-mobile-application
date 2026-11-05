@@ -2,29 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_radius.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../batch/presentation/widgets/batch_labels.dart';
-import '../../../compliance/presentation/bloc/unread_notifications_controller.dart';
-import '../../../compliance/presentation/widgets/alert_widgets.dart';
-import '../../../compliance/presentation/widgets/notification_bell.dart';
-import '../../../iam/domain/user_session.dart';
-import '../../../iam/presentation/widgets/role_labels.dart';
-import '../../../profile/presentation/bloc/current_profile_controller.dart';
-import '../../../profile/presentation/widgets/profile_avatar.dart';
-import '../../../shared/domain/failure.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
-import '../../../shared/presentation/remote_state.dart';
-import '../../../shared/presentation/widgets/failure_message.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
-import '../../../shared/presentation/widgets/remote_state_view.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_radius.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_typography.dart';
+import '../../../iam/api/index.dart';
+import '../../../common/domain/failure.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/remote_state.dart';
+import '../../../common/presentation/widgets/failure_message.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/remote_state_view.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
 import '../../application/get_command_center_summary.dart';
 import '../bloc/command_center_bloc.dart';
+import '../command_center_views.dart';
 
 /// Panel shown after signing in (US: consult the control panel of the
 /// laboratory), with the same cards as the Web dashboard.
@@ -32,37 +26,23 @@ class CommandCenterPage extends StatelessWidget {
   const CommandCenterPage({
     super.key,
     required this.session,
-    required this.currentProfile,
-    required this.notifications,
+    required this.views,
   });
 
   final UserSession session;
-  final CurrentProfileController currentProfile;
-  final UnreadNotificationsController notifications;
+  final CommandCenterViews views;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     void reload() => context.read<CommandCenterBloc>().add(const CommandCenterRequested(refresh: true));
     return Scaffold(
       appBar: AppBar(
         title: const BrandTitle(),
         actions: [
-          NotificationBell(controller: notifications),
-          IconButton(tooltip: l10n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
-          ListenableBuilder(
-            listenable: currentProfile,
-            builder: (context, _) => IconButton(
-              tooltip: l10n.profile,
-              onPressed: () => context.push('/profile'),
-              icon: ProfileAvatar(
-                radius: 16,
-                photo: currentProfile.photo,
-                initials: currentProfile.profile?.initials ??
-                    (session.username.isEmpty ? '?' : session.username[0].toUpperCase()),
-              ),
-            ),
-          ),
+          views.notificationBell,
+          IconButton(tooltip: i18n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
+          views.profileButton,
         ],
       ),
       body: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
@@ -75,21 +55,22 @@ class CommandCenterPage extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
                 ListenableBuilder(
-                  listenable: currentProfile,
+                  listenable: views.profileChanges,
                   builder: (context, _) => _Hero(
                     session: session,
-                    name: currentProfile.profile?.displayName ?? session.username,
+                    name: views.displayName() ?? session.username,
+                    views: views,
                     summary: summary,
                   ),
                 ),
-                SectionHeader(title: l10n.keyOperationalMetrics),
+                SectionHeader(title: i18n.keyOperationalMetrics),
                 _Metrics(summary: summary),
-                SectionHeader(title: l10n.openAlerts, subtitle: l10n.openAlertsHint),
-                _OpenAlerts(summary: summary),
-                SectionHeader(title: l10n.liveTelemetry, subtitle: l10n.liveTelemetryHint),
+                SectionHeader(title: i18n.openAlerts, subtitle: i18n.openAlertsHint),
+                _OpenAlerts(summary: summary, views: views),
+                SectionHeader(title: i18n.liveTelemetry, subtitle: i18n.liveTelemetryHint),
                 _TelemetryCard(summary: summary),
-                SectionHeader(title: l10n.recentBatches),
-                _RecentBatches(summary: summary),
+                SectionHeader(title: i18n.recentBatches),
+                _RecentBatches(summary: summary, views: views),
               ],
             ),
           ),
@@ -103,20 +84,22 @@ String _error(BuildContext context, Failure? failure) =>
     failure == null ? '' : failureMessage(context, failure).split('\n').first;
 
 class _Hero extends StatelessWidget {
-  const _Hero({required this.session, required this.name, required this.summary});
+  const _Hero({required this.session, required this.name, required this.views, required this.summary});
 
   final UserSession session;
   final String name;
+  final CommandCenterViews views;
   final CommandCenterSummary summary;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final lab = summary.laboratory.value;
     final alerts = summary.alerts.value;
     final billing = summary.subscription;
     final active = billing?.value?.active;
+    final role = session.primaryRole;
     const light = TextStyle(color: Colors.white70, fontSize: 12);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -132,12 +115,12 @@ class _Hero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.welcomeUser(name),
+            i18n.welcomeUser(name),
             style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            [session.primaryRole?.label(l10n), lab?.name].whereType<String>().join(' · '),
+            [role == null ? null : views.roleLabel(role, i18n), lab?.name].whereType<String>().join(' · '),
             style: light,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -148,15 +131,15 @@ class _Hero extends StatelessWidget {
               if (alerts != null)
                 StatusBadge(
                   label: alerts.summary.critical > 0
-                      ? l10n.criticalAlertsCount(alerts.summary.critical)
-                      : l10n.noCriticalAlerts,
+                      ? i18n.criticalAlertsCount(alerts.summary.critical)
+                      : i18n.noCriticalAlerts,
                   tone: alerts.summary.critical > 0 ? BadgeTone.critical : BadgeTone.success,
                 ),
               if (billing != null && billing.isOk)
                 StatusBadge(
                   label: active == null
-                      ? l10n.noActiveSubscription
-                      : '${l10n.plan}: ${billing.value!.plan?.name ?? active.planCode} · ${l10n.until(Formatters.date(active.currentPeriodEnd, locale))}',
+                      ? i18n.noActiveSubscription
+                      : '${i18n.plan}: ${billing.value!.plan?.name ?? active.planCode} · ${i18n.until(Formatters.date(active.currentPeriodEnd, locale))}',
                   tone: active == null ? BadgeTone.warning : BadgeTone.brand,
                 ),
             ],
@@ -177,7 +160,7 @@ class _Metrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final eq = summary.equipment;
     final batches = summary.batches;
     final alerts = summary.alerts;
@@ -186,33 +169,33 @@ class _Metrics extends StatelessWidget {
     return ResponsiveGrid(
       children: [
         MetricTile(
-          label: l10n.equipmentTitle,
+          label: i18n.equipmentTitle,
           value: _value(eq, (v) => '${v.total}'),
-          caption: eq.isOk ? l10n.operationalCount(eq.value!.operational) : _error(context, eq.failure),
+          caption: eq.isOk ? i18n.operationalCount(eq.value!.operational) : _error(context, eq.failure),
           icon: Icons.precision_manufacturing_outlined,
           color: AppColors.info,
           onTap: () => context.push('/equipment'),
         ),
         MetricTile(
-          label: l10n.batchesInProgress,
+          label: i18n.batchesInProgress,
           value: _value(batches, (v) => '${v.summary.inProgress}'),
-          caption: batches.isOk ? l10n.pendingCount(batches.value!.summary.pending) : _error(context, batches.failure),
+          caption: batches.isOk ? i18n.pendingCount(batches.value!.summary.pending) : _error(context, batches.failure),
           icon: Icons.inventory_2_outlined,
           color: AppColors.primary,
           onTap: () => context.go('/batches'),
         ),
         MetricTile(
-          label: l10n.openAlerts,
+          label: i18n.openAlerts,
           value: _value(alerts, (v) => '${v.summary.open}'),
-          caption: alerts.isOk ? l10n.criticalCount(alerts.value!.summary.critical) : _error(context, alerts.failure),
+          caption: alerts.isOk ? i18n.criticalCount(alerts.value!.summary.critical) : _error(context, alerts.failure),
           icon: Icons.notifications_active_outlined,
           color: AppColors.critical,
           onTap: () => context.go('/alerts'),
         ),
         MetricTile(
-          label: l10n.lowStock,
+          label: i18n.lowStock,
           value: lowStock == null ? '—' : '$lowStock',
-          caption: materials.isOk ? l10n.materialsCount(materials.value!.length) : _error(context, materials.failure),
+          caption: materials.isOk ? i18n.materialsCount(materials.value!.length) : _error(context, materials.failure),
           icon: Icons.science_outlined,
           color: AppColors.warning,
           onTap: () => context.push('/inventory'),
@@ -223,23 +206,24 @@ class _Metrics extends StatelessWidget {
 }
 
 class _OpenAlerts extends StatelessWidget {
-  const _OpenAlerts({required this.summary});
+  const _OpenAlerts({required this.summary, required this.views});
 
   final CommandCenterSummary summary;
+  final CommandCenterViews views;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final part = summary.alerts;
     if (!part.isOk) return InfoCard(child: Text(failureMessage(context, part.failure!)));
     final open = part.value!.open;
-    if (open.isEmpty) return InfoCard(child: Text(l10n.noOpenAlerts));
+    if (open.isEmpty) return InfoCard(child: Text(i18n.noOpenAlerts));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final alert in open.take(3)) ...[
-          AlertCard(
-            alert: alert,
+          views.alertCard(
+            alert,
             deviceName: summary.equipmentNames[alert.equipmentId],
             environmentName: summary.environmentNames[alert.environmentId],
             onTap: () => context.push('/alerts/${alert.id}'),
@@ -249,7 +233,7 @@ class _OpenAlerts extends StatelessWidget {
         if (open.length > 3)
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton(onPressed: () => context.go('/alerts'), child: Text(l10n.viewAll)),
+            child: TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
           ),
       ],
     );
@@ -263,7 +247,7 @@ class _TelemetryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final eq = summary.equipment;
     if (!eq.isOk) return InfoCard(child: Text(failureMessage(context, eq.failure!)));
     final snapshot = eq.value!;
@@ -287,8 +271,8 @@ class _TelemetryCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       snapshot.devices == 0
-                          ? l10n.telemetryNoDevices
-                          : l10n.connectedOfTotal(snapshot.connected, snapshot.devices),
+                          ? i18n.telemetryNoDevices
+                          : i18n.connectedOfTotal(snapshot.connected, snapshot.devices),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
@@ -298,9 +282,9 @@ class _TelemetryCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  Expanded(child: _MiniStat(label: l10n.iotDevices, value: snapshot.devices)),
-                  Expanded(child: _MiniStat(label: l10n.connected, value: snapshot.connected)),
-                  Expanded(child: _MiniStat(label: l10n.requiresReview, value: review, alert: review > 0)),
+                  Expanded(child: _MiniStat(label: i18n.iotDevices, value: snapshot.devices)),
+                  Expanded(child: _MiniStat(label: i18n.connected, value: snapshot.connected)),
+                  Expanded(child: _MiniStat(label: i18n.requiresReview, value: review, alert: review > 0)),
                 ],
               ),
             ],
@@ -337,17 +321,18 @@ class _MiniStat extends StatelessWidget {
 }
 
 class _RecentBatches extends StatelessWidget {
-  const _RecentBatches({required this.summary});
+  const _RecentBatches({required this.summary, required this.views});
 
   final CommandCenterSummary summary;
+  final CommandCenterViews views;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final part = summary.batches;
     if (!part.isOk) return InfoCard(child: Text(failureMessage(context, part.failure!)));
     final recent = part.value!.recent;
-    if (recent.isEmpty) return InfoCard(child: Text(l10n.batchesEmpty));
+    if (recent.isEmpty) return InfoCard(child: Text(i18n.batchesEmpty));
     return Card(
       child: Column(
         children: [
@@ -356,7 +341,7 @@ class _RecentBatches extends StatelessWidget {
               leading: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
               title: Text(batch.batchNumber),
               subtitle: Text(batch.productName ?? '—', maxLines: 1, overflow: TextOverflow.ellipsis),
-              trailing: BatchStatusBadge(status: batch.status),
+              trailing: views.batchStatusBadge(batch.status),
               onTap: () => context.push('/batches/${batch.id}'),
             ),
         ],

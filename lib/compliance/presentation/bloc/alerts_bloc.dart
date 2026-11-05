@@ -1,15 +1,15 @@
+import '../../../common/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../equipment/application/equipment_queries.dart';
-import '../../../equipment/domain/equipment.dart';
-import '../../../laboratory/application/laboratory_queries.dart';
-import '../../../laboratory/domain/laboratory.dart';
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../shared/presentation/remote_state.dart';
-import '../../application/compliance_queries.dart';
-import '../../domain/compliance.dart';
+import '../../../equipment/api/index.dart';
+import '../../../laboratory/api/index.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
+import '../../application/compliance_facade_service.dart';
+import '../../domain/entities/alert_status.dart';
+import '../../domain/entities/alert_summary.dart';
+import '../../domain/entities/deviation_alert.dart';
 
 enum AlertFilter { open, all, unresolved, acknowledged, resolved, critical }
 
@@ -85,22 +85,22 @@ final class AlertsState extends Equatable {
 /// from the mobile app).
 class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
   AlertsBloc({
-    required GetEnvironments getEnvironments,
-    required GetEquipments getEquipments,
-    required GetLaboratoryAlerts getAlerts,
+    required LaboratoryApi laboratoryApi,
+    required EquipmentApi equipmentApi,
+    required ComplianceFacadeService complianceService,
     required LaboratoryId Function() laboratoryId,
-  }) : _getEnvironments = getEnvironments,
-       _getEquipments = getEquipments,
-       _getAlerts = getAlerts,
+  }) : _laboratoryApi = laboratoryApi,
+       _equipmentApi = equipmentApi,
+       _complianceService = complianceService,
        _laboratoryId = laboratoryId,
        super(const AlertsState()) {
     on<AlertsRequested>(_onRequested);
     on<AlertsFilterChanged>((e, emit) => emit(state.copyWith(filter: e.filter)));
   }
 
-  final GetEnvironments _getEnvironments;
-  final GetEquipments _getEquipments;
-  final GetLaboratoryAlerts _getAlerts;
+  final LaboratoryApi _laboratoryApi;
+  final EquipmentApi _equipmentApi;
+  final ComplianceFacadeService _complianceService;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(AlertsRequested event, Emitter<AlertsState> emit) async {
@@ -108,10 +108,10 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
     emit(state.copyWith(remote: event.refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
       final laboratoryId = _laboratoryId();
-      final results = await Future.wait<Object>([_getEnvironments(laboratoryId), _getEquipments(laboratoryId)]);
+      final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(laboratoryId), _equipmentApi.getEquipments(laboratoryId)]);
       final environments = results[0] as List<LabEnvironment>;
       final equipments = results[1] as List<Equipment>;
-      final alerts = await _getAlerts(laboratoryId, environments.map((e) => e.id));
+      final alerts = await _complianceService.getLaboratoryAlerts(laboratoryId, environments.map((e) => e.id));
       final data = AlertsData(
         alerts: alerts,
         deviceNames: {for (final e in equipments) e.id: e.name},
@@ -119,7 +119,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
       );
       emit(state.copyWith(remote: state.remote.success(data, empty: alerts.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }

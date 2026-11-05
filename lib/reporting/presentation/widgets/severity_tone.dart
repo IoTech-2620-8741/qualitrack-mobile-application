@@ -3,8 +3,10 @@
 /// It maps domain enums (like TrendDirection and DeviationSeverity) to
 /// visual elements (like Icons and BadgeTones) used in the UI.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../../shared/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/entities/reporting_enums.dart';
 
 /// Extension to provide an icon for each [TrendDirection].

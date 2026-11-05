@@ -3,13 +3,15 @@
 /// It represents a single measurement summary item, displaying the metric name,
 /// device, and its average/min-max values or event count (if it's a movement metric).
 ///
+library;
+
 
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../compliance/presentation/widgets/alert_widgets.dart';
-import '../../../../shared/presentation/formatting/context_locale.dart';
-import '../../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/labels.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../../domain/entities/kpi_entities.dart';
 import 'modern_card.dart';
@@ -26,7 +28,7 @@ class MeasurementRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
 
@@ -43,7 +45,7 @@ class MeasurementRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  alertVariable(l10n, summary.metric), // Translates metric codes
+                  alertVariable(i18n, summary.metric), // Translates metric codes
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
@@ -63,8 +65,8 @@ class MeasurementRow extends StatelessWidget {
               // If it's a movement, show the event count
                 Text(
                   summary.readings == 1
-                      ? l10n.eventCount(summary.readings)
-                      : l10n.eventCountPlural(summary.readings),
+                      ? i18n.eventCount(summary.readings)
+                      : i18n.eventCountPlural(summary.readings),
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 )
               else
@@ -82,7 +84,7 @@ class MeasurementRow extends StatelessWidget {
               // Only show min/max if it's NOT a movement
               if (!isMovement)
                 Text(
-                  l10n.minMax(
+                  i18n.minMax(
                     Formatters.number(summary.minimum, locale),
                     Formatters.number(summary.maximum, locale),
                   ),

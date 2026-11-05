@@ -1,6 +1,8 @@
-import '../../../shared/presentation/i18n/app_localizations.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../domain/equipment.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
+import '../../domain/entities/equipment.dart';
+import '../../domain/entities/equipment_status.dart';
+import '../../domain/entities/iot_device_type.dart';
 
 extension EquipmentStatusPresentation on EquipmentStatus {
   BadgeTone get tone => switch (this) {
@@ -11,27 +13,27 @@ extension EquipmentStatusPresentation on EquipmentStatus {
     EquipmentStatus.unknown => BadgeTone.neutral,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    EquipmentStatus.operational => l10n.equipmentOperational,
-    EquipmentStatus.maintenance => l10n.equipmentMaintenance,
-    EquipmentStatus.outOfService => l10n.equipmentOutOfService,
-    EquipmentStatus.inactive => l10n.inactive,
-    EquipmentStatus.unknown => l10n.unknown,
+  String label(AppLocalizations i18n) => switch (this) {
+    EquipmentStatus.operational => i18n.equipmentOperational,
+    EquipmentStatus.maintenance => i18n.equipmentMaintenance,
+    EquipmentStatus.outOfService => i18n.equipmentOutOfService,
+    EquipmentStatus.inactive => i18n.inactive,
+    EquipmentStatus.unknown => i18n.unknown,
   };
 }
 
 extension EquipmentLabel on Equipment {
-  String statusLabel(AppLocalizations l10n) =>
-      status == EquipmentStatus.unknown && rawStatus != null ? rawStatus! : status.label(l10n);
+  String statusLabel(AppLocalizations i18n) =>
+      status == EquipmentStatus.unknown && rawStatus != null ? rawStatus! : status.label(i18n);
 
   /// IoT devices are named by their role, as in QualiTrack Web: the backend
   /// stores the role code (`CONTAINER_MONITOR`) as their type.
-  String? typeLabel(AppLocalizations l10n) => deviceType?.label(l10n) ?? type;
+  String? typeLabel(AppLocalizations i18n) => deviceType?.label(i18n) ?? type;
 }
 
 extension IotDeviceTypePresentation on IotDeviceType {
-  String label(AppLocalizations l10n) => switch (this) {
-    IotDeviceType.environmentalDevice => l10n.environmentalDevice,
-    IotDeviceType.containerMonitor => l10n.containerMonitor,
+  String label(AppLocalizations i18n) => switch (this) {
+    IotDeviceType.environmentalDevice => i18n.environmentalDevice,
+    IotDeviceType.containerMonitor => i18n.containerMonitor,
   };
 }

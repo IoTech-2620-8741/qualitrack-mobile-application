@@ -1,20 +1,14 @@
 import 'package:equatable/equatable.dart';
 
-import '../../batch/application/batch_use_cases.dart';
-import '../../batch/domain/batch.dart';
-import '../../compliance/application/compliance_queries.dart';
-import '../../compliance/domain/compliance.dart';
-import '../../equipment/application/equipment_queries.dart';
-import '../../equipment/domain/equipment.dart';
-import '../../inventory/application/inventory_queries.dart';
-import '../../inventory/domain/inventory.dart';
-import '../../laboratory/application/laboratory_queries.dart';
-import '../../laboratory/domain/laboratory.dart';
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
-import '../../subscription/application/billing_queries.dart';
-import '../../tracking/application/telemetry_queries.dart';
-import '../../tracking/domain/telemetry.dart';
+import '../../batch/api/index.dart';
+import '../../compliance/api/index.dart';
+import '../../equipment/api/index.dart';
+import '../../inventory/api/index.dart';
+import '../../laboratory/api/index.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
+import '../../subscription/api/index.dart';
+import '../../tracking/api/index.dart';
 
 /// A value loaded independently for the Command Center.
 final class Part<T> extends Equatable {
@@ -103,58 +97,55 @@ final class CommandCenterSummary extends Equatable {
 
 class GetCommandCenterSummary {
   const GetCommandCenterSummary({
-    required GetLaboratory getLaboratory,
-    required GetEnvironments getEnvironments,
-    required GetEquipments getEquipments,
-    required GetDeviceConnections getConnections,
-    required GetBatches getBatches,
-    required GetLaboratoryAlerts getAlerts,
-    required GetInventoryMaterials getMaterials,
-    required GetBillingSummary getBilling,
-  }) : _getLaboratory = getLaboratory,
-       _getEnvironments = getEnvironments,
-       _getEquipments = getEquipments,
-       _getConnections = getConnections,
-       _getBatches = getBatches,
-       _getAlerts = getAlerts,
-       _getMaterials = getMaterials,
-       _getBilling = getBilling;
+    required LaboratoryApi laboratoryApi,
+    required EquipmentApi equipmentApi,
+    required TelemetryApi telemetryApi,
+    required BatchApi batchApi,
+    required ComplianceApi complianceApi,
+    required InventoryApi inventoryApi,
+    required SubscriptionApi subscriptionApi,
+  }) : _laboratoryApi = laboratoryApi,
+       _equipmentApi = equipmentApi,
+       _telemetryApi = telemetryApi,
+       _batchApi = batchApi,
+       _complianceApi = complianceApi,
+       _inventoryApi = inventoryApi,
+       _subscriptionApi = subscriptionApi;
 
-  final GetLaboratory _getLaboratory;
-  final GetEnvironments _getEnvironments;
-  final GetEquipments _getEquipments;
-  final GetDeviceConnections _getConnections;
-  final GetBatches _getBatches;
-  final GetLaboratoryAlerts _getAlerts;
-  final GetInventoryMaterials _getMaterials;
-  final GetBillingSummary _getBilling;
+  final LaboratoryApi _laboratoryApi;
+  final EquipmentApi _equipmentApi;
+  final TelemetryApi _telemetryApi;
+  final BatchApi _batchApi;
+  final ComplianceApi _complianceApi;
+  final InventoryApi _inventoryApi;
+  final SubscriptionApi _subscriptionApi;
 
   Future<CommandCenterSummary> call(LaboratoryId lab, {required bool includeSubscription}) async {
-    final environmentsPart = await _part(() => _getEnvironments(lab));
+    final environmentsPart = await _part(() => _laboratoryApi.getEnvironments(lab));
     final environmentIds = environmentsPart.value?.map((e) => e.id).toList();
     Future<Part<T>> perEnvironment<T>(Future<T> Function(List<int> ids) load) => environmentIds == null
         ? Future.value(Part<T>.failed(environmentsPart.failure!))
         : _part(() => load(environmentIds));
 
     final results = await Future.wait<Object?>([
-      _part(() => _getLaboratory(lab)),
+      _part(() => _laboratoryApi.getLaboratory(lab)),
       _part(() async {
-        final equipments = await _getEquipments(lab);
+        final equipments = await _equipmentApi.getEquipments(lab);
         final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();
-        return EquipmentSnapshot(equipments: equipments, connections: await _getConnections(lab, targets));
+        return EquipmentSnapshot(equipments: equipments, connections: await _telemetryApi.getConnections(lab, targets));
       }),
       _part(() async {
-        final batches = await _getBatches(lab);
+        final batches = await _batchApi.getBatches(lab);
         final recent = [...batches]..sort((a, b) => b.id.compareTo(a.id));
         return BatchOverview(summary: BatchSummary.of(batches), recent: recent.take(4).toList());
       }),
       perEnvironment((ids) async {
-        final alerts = await _getAlerts(lab, ids);
+        final alerts = await _complianceApi.getLaboratoryAlerts(lab, ids);
         final open = alerts.where((a) => a.isOpen).toList();
         return AlertOverview(summary: AlertSummary.of(alerts), open: open);
       }),
-      perEnvironment((ids) => _getMaterials(lab, ids)),
-      includeSubscription ? _part(() => _getBilling(lab)) : Future<Part<BillingSummary>?>.value(),
+      perEnvironment((ids) => _inventoryApi.getMaterials(lab, ids)),
+      includeSubscription ? _part(() => _subscriptionApi.getBillingSummary(lab)) : Future<Part<BillingSummary>?>.value(),
     ]);
 
     return CommandCenterSummary(

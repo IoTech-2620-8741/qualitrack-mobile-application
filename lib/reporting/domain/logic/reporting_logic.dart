@@ -3,6 +3,8 @@
 ///
 /// It has no dependencies on Flutter, databases, or infrastructure.
 ///
+library;
+
 import '../entities/audit_entities.dart';
 import '../entities/deviation_entities.dart';
 import '../entities/reporting_enums.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qualitrack_mobile/app/theme/app_theme.dart';
-import 'package:qualitrack_mobile/shared/presentation/i18n/app_localizations.dart';
+import 'package:qualitrack_mobile/common/presentation/theme/app_theme.dart';
+import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 
 extension PumpApp on WidgetTester {
   Future<void> pumpLocalized(

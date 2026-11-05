@@ -3,9 +3,11 @@
 /// It displays the top deviation trends (limited to 5), provides an empty
 /// state with an action to expand the period, and a button to view all deviations.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../widgets/trend_row.dart';
 import '../widgets/empty_states.dart';
@@ -36,7 +38,7 @@ class DeviationsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
 
     // Get the trends sorted by severity (Critical > Warning > On Track > No Data)
     final trends = data.sortedTrends;
@@ -51,9 +53,9 @@ class DeviationsTab extends StatelessWidget {
           // to try the "Last 31 days" period.
             EmptyStateView(
               icon: Icons.insights_outlined,
-              message: l10n.noReadingsInPeriod,
+              message: i18n.noReadingsInPeriod,
               onAction: onSeeLast31Days,
-              actionLabel: l10n.seeLast31Days,
+              actionLabel: i18n.seeLast31Days,
             )
           else ...[
             // 2. Display the first 5 trends
@@ -65,7 +67,7 @@ class DeviationsTab extends StatelessWidget {
               SeeMoreButton(
                 alignment: Alignment.centerLeft,
                 icon: Icons.expand_more,
-                label: l10n.seeMoreCount(trends.length - _maxVisible),
+                label: i18n.seeMoreCount(trends.length - _maxVisible),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => AllDeviationsPage(data: data)),
                 ),

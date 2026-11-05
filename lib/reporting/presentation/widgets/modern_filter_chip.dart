@@ -3,9 +3,11 @@
 /// They are highly reusable UI components used to display selectable
 /// filters in a modern, pill-shaped style with horizontal scrolling.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A single modern, pill-shaped filter chip.
 class ModernFilterChip extends StatelessWidget {
@@ -37,7 +39,7 @@ class ModernFilterChip extends StatelessWidget {
 
         // Styling
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        selectedColor: AppColors.primary.withOpacity(0.15),
+        selectedColor: AppColors.primary.withValues(alpha: 0.15),
         labelStyle: TextStyle(
           color: selected ? AppColors.primary : Colors.grey.shade700,
           fontWeight: selected ? FontWeight.bold : FontWeight.normal,

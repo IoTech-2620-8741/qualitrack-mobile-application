@@ -1,5 +1,6 @@
 /// This file contains all the enumerations used across the Reporting domain.
 ///
+library;
 
 /// Defines the predefined time periods used to calculate indicators.
 enum ReportPeriod {

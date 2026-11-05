@@ -3,7 +3,9 @@
 /// The infrastructure layer is the only one responsible for implementing
 /// this interface (e.g., by calling a REST API or a local database).
 ///
-import '../../../shared/domain/value_objects.dart';
+library;
+
+import '../../../common/domain/value_objects.dart';
 import '../entities/audit_entities.dart';
 import '../entities/deviation_entities.dart';
 import '../entities/kpi_entities.dart';

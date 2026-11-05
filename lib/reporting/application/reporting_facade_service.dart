@@ -6,14 +6,14 @@
 ///
 /// @author Vitaly Baca Camargo
 ///
+library;
 
-import '../../equipment/application/equipment_queries.dart';
-import '../../equipment/domain/equipment.dart';
-import '../../laboratory/application/laboratory_queries.dart';
-import '../../laboratory/domain/laboratory.dart';
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
-import '../../shared/presentation/section.dart';
+
+import '../../equipment/api/index.dart';
+import '../../laboratory/api/index.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
+import '../../common/application/section.dart';
 import '../domain/entities/audit_entities.dart';
 import '../domain/entities/deviation_entities.dart';
 import '../domain/entities/kpi_entities.dart';
@@ -83,15 +83,15 @@ class ReportingFacadeService {
     required this.getKpiDashboard,
     required this.getDeviationTrends,
     required this.getReportHistory,
-    required this.getEnvironments,
-    required this.getEquipments,
+    required this.laboratoryApi,
+    required this.equipmentApi,
   });
 
   final GetKpiDashboard getKpiDashboard;
   final GetDeviationTrends getDeviationTrends;
   final GetReportHistory getReportHistory;
-  final GetEnvironments getEnvironments;
-  final GetEquipments getEquipments;
+  final LaboratoryApi laboratoryApi;
+  final EquipmentApi equipmentApi;
 
   /// Loads and consolidates all data needed for the reports screen.
   ///
@@ -105,7 +105,7 @@ class ReportingFacadeService {
   ///
   Future<ReportsData> loadReportsData(LaboratoryId lab, ReportPeriod period) async {
     // 1. Fetch data from other contexts concurrently
-    final results = await Future.wait<Object>([getEnvironments(lab), getEquipments(lab)]);
+    final results = await Future.wait<Object>([laboratoryApi.getEnvironments(lab), equipmentApi.getEquipments(lab)]);
     final environments = results[0] as List<LabEnvironment>;
     final equipments = results[1] as List<Equipment>;
 

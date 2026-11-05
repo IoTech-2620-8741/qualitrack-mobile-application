@@ -3,10 +3,12 @@
 /// It displays a horizontal list of chips to select the time period
 /// (24 hours, 7 days, 31 days) for the reports.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../domain/entities/reporting_enums.dart';
 import '../bloc/reports_bloc.dart';
 import '../widgets/report_labels.dart';
@@ -23,7 +25,7 @@ class PeriodFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
@@ -41,14 +43,14 @@ class PeriodFilter extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: ChoiceChip(
-                    label: Text(reportPeriodLabel(l10n, p)),
+                    label: Text(reportPeriodLabel(i18n, p)),
                     selected: isSelected,
                     // Dispatch the event to the BLoC when tapped
                     onSelected: (_) => bloc.add(ReportsPeriodChanged(p)),
 
                     // Styling (same as ModernFilterChip)
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    selectedColor: AppColors.primary.withOpacity(0.15),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
                     labelStyle: TextStyle(
                       color: isSelected ? AppColors.primary : Colors.grey.shade700,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

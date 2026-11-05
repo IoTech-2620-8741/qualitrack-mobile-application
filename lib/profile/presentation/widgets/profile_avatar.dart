@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_colors.dart';
 
 /// Photo of the user, or the initials when there is none.
 class ProfileAvatar extends StatelessWidget {

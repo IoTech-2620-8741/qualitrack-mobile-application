@@ -3,9 +3,11 @@
 /// It is used as a section title to group data by environment
 /// (e.g., in the Measurements screen).
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A simple header widget that displays the environment name in uppercase.
 class EnvironmentHeader extends StatelessWidget {

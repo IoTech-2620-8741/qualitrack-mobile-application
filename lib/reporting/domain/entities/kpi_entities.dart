@@ -1,5 +1,7 @@
 /// This file contains the entities related to the KPI Dashboard.
 ///
+library;
+
 
 import 'package:equatable/equatable.dart';
 import 'reporting_enums.dart';

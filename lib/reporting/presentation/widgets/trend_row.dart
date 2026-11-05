@@ -3,13 +3,15 @@
 /// It represents a single deviation trend item, displaying the direction icon,
 /// parameter name, equipment name, deviation counts, and time-in-range badge.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_spacing.dart';
-import '../../../../compliance/presentation/widgets/alert_widgets.dart';
-import '../../../../shared/presentation/formatting/context_locale.dart';
-import '../../../../shared/presentation/formatting/formatters.dart';
-import '../../../../shared/presentation/widgets/status_badge.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/labels.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../../domain/entities/deviation_entities.dart';
 import '../../domain/entities/reporting_enums.dart';
@@ -28,7 +30,7 @@ class TrendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final percent = trend.timeInRangePercent;
     final theme = Theme.of(context);
@@ -50,7 +52,7 @@ class TrendRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(trend.direction.icon, color: iconColor, size: 22),
@@ -63,14 +65,14 @@ class TrendRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  alertVariable(l10n, trend.parameterName),
+                  alertVariable(i18n, trend.parameterName),
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   [
                     data.deviceNames[trend.equipmentId],
-                    l10n.deviationsSummary(trend.deviationCount, trend.criticalDeviationCount),
+                    i18n.deviationsSummary(trend.deviationCount, trend.criticalDeviationCount),
                   ].whereType<String>().join(' · '),
                   style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
                 ),
@@ -80,11 +82,11 @@ class TrendRow extends StatelessWidget {
 
           // 3. Status Badge (Time in range percentage or "No Data")
           trend.severity == DeviationSeverity.noData
-              ? StatusBadge(label: l10n.noData, tone: BadgeTone.neutral)
+              ? StatusBadge(label: i18n.noData, tone: BadgeTone.neutral)
               : StatusBadge(
             label: percent == null
                 ? '—'
-                : l10n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
+                : i18n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
             tone: tone,
           ),
         ],

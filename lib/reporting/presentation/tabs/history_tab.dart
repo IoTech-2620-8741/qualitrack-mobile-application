@@ -4,9 +4,11 @@
 /// that history is independent of the selected period, and the list of the
 /// most recent reports with a button to view all of them.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../widgets/history_row.dart';
 import '../widgets/empty_states.dart';
@@ -30,7 +32,7 @@ class HistoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
 
     // Get the list of reports from the data object
@@ -42,19 +44,19 @@ class HistoryTab extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
           // 1. Information banner explaining that reports are generated on the Web
-          InfoBanner(text: l10n.reportHistoryBanner),
+          InfoBanner(text: i18n.reportHistoryBanner),
           const SizedBox(height: AppSpacing.md),
 
           // 2. Note indicating that the history is independent of the selected period
           Text(
-            l10n.historyIndependentOfPeriod,
+            i18n.historyIndependentOfPeriod,
             style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey.shade600),
           ),
           const SizedBox(height: AppSpacing.md),
 
           // 3. List of reports (or empty state)
           if (reports.isEmpty)
-            EmptyStateView(icon: Icons.history, message: l10n.reportHistoryEmpty)
+            EmptyStateView(icon: Icons.history, message: i18n.reportHistoryEmpty)
           else ...[
             // Display the first 5 reports
             for (final r in reports.take(_maxVisible))
@@ -64,7 +66,7 @@ class HistoryTab extends StatelessWidget {
             if (reports.length > _maxVisible)
               SeeMoreButton(
                 icon: Icons.history,
-                label: l10n.seeAll,
+                label: i18n.seeAll,
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => AllReportsPage(reports: data.reports.items)),
                 ),

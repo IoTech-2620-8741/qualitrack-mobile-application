@@ -1,6 +1,8 @@
 /// This file contains the Data Transfer Objects (DTOs) for Audit data.
 ///
-import '../../../../shared/infrastructure/http/json_utils.dart';
+library;
+
+import '../../../common/infrastructure/http/json_utils.dart';
 import '../../domain/entities/audit_entities.dart';
 
 /// DTO for the Audit Report response.

@@ -3,12 +3,14 @@
 /// It represents a single audit report item in the list, displaying the
 /// report type, date range, generator name, and generation date.
 ///
+library;
+
 import 'package:flutter/material.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_spacing.dart';
-import '../../../../shared/presentation/formatting/context_locale.dart';
-import '../../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../domain/entities/audit_entities.dart';
 import '../widgets/report_labels.dart';
 import 'modern_card.dart';
@@ -22,7 +24,7 @@ class HistoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
 
@@ -48,7 +50,7 @@ class HistoryRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.description_outlined, color: AppColors.primary, size: 22),
@@ -61,7 +63,7 @@ class HistoryRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  reportTypeLabel(l10n, report.reportType),
+                  reportTypeLabel(i18n, report.reportType),
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
