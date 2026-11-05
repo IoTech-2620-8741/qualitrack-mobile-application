@@ -92,11 +92,11 @@ final class EquipmentListState extends Equatable {
 class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
   EquipmentListBloc({
     required GetEquipments getEquipments,
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetDeviceConnections getConnections,
     required LaboratoryId Function() laboratoryId,
   }) : _getEquipments = getEquipments,
-       _getEnvironments = getEnvironments,
+       _laboratoryApi = laboratoryApi,
        _getConnections = getConnections,
        _laboratoryId = laboratoryId,
        super(const EquipmentListState()) {
@@ -106,7 +106,7 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
   }
 
   final GetEquipments _getEquipments;
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetDeviceConnections _getConnections;
   final LaboratoryId Function() _laboratoryId;
 
@@ -115,7 +115,7 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
     emit(state.copyWith(remote: event.refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
       final lab = _laboratoryId();
-      final results = await Future.wait<Object>([_getEquipments(lab), _getEnvironments(lab)]);
+      final results = await Future.wait<Object>([_getEquipments(lab), _laboratoryApi.getEnvironments(lab)]);
       final equipments = results[0] as List<Equipment>;
       final environments = {for (final e in results[1] as List<LabEnvironment>) e.id: e.name};
       final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();
