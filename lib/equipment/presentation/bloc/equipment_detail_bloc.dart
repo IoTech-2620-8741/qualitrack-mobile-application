@@ -69,14 +69,14 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
     required this.equipmentId,
     required EquipmentFacadeService equipmentService,
     required LaboratoryApi laboratoryApi,
-    required GetDeviceConnection getConnection,
+    required TelemetryApi telemetryApi,
     required GetDeviationTrends getTrends,
     required GetEquipmentComplianceEvents getEvents,
     required GetEquipmentAuditLogs getAuditLogs,
     required LaboratoryId Function() laboratoryId,
   }) : _equipmentService = equipmentService,
        _laboratoryApi = laboratoryApi,
-       _getConnection = getConnection,
+       _telemetryApi = telemetryApi,
        _getTrends = getTrends,
        _getEvents = getEvents,
        _getAuditLogs = getAuditLogs,
@@ -88,7 +88,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
   final int equipmentId;
   final EquipmentFacadeService _equipmentService;
   final LaboratoryApi _laboratoryApi;
-  final GetDeviceConnection _getConnection;
+  final TelemetryApi _telemetryApi;
   final GetDeviationTrends _getTrends;
   final GetEquipmentComplianceEvents _getEvents;
   final GetEquipmentAuditLogs _getAuditLogs;
@@ -108,7 +108,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
           }
           return null;
         }),
-        target == null ? Future<DeviceConnection?>.value() : _optional(() => _getConnection(lab, target)),
+        target == null ? Future<DeviceConnection?>.value() : _optional(() => _telemetryApi.getConnection(lab, target)),
         Section.load(() => _equipmentService.getBpmConfigs(lab, equipmentId)),
         Section.load(() => _equipmentService.getMaintenanceHistory(lab, equipment)),
         Section.load(() async {
