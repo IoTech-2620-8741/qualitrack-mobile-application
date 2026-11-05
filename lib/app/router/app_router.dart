@@ -15,10 +15,10 @@ import '../../compliance/presentation/bloc/alerts_bloc.dart';
 import '../../compliance/presentation/bloc/notification_preferences_bloc.dart';
 import '../../compliance/presentation/bloc/notifications_bloc.dart';
 import '../../compliance/presentation/bloc/unread_notifications_controller.dart';
-import '../../compliance/presentation/pages/alert_detail_page.dart';
-import '../../compliance/presentation/pages/alerts_page.dart';
-import '../../compliance/presentation/pages/notification_preferences_page.dart';
-import '../../compliance/presentation/pages/notifications_page.dart';
+import '../../compliance/presentation/screens/alert_detail_screen.dart';
+import '../../compliance/presentation/screens/alerts_screen.dart';
+import '../../compliance/presentation/screens/notification_preferences_screen.dart';
+import '../../compliance/presentation/screens/notifications_screen.dart';
 import '../../equipment/presentation/bloc/equipment_detail_bloc.dart';
 import '../../equipment/presentation/bloc/equipment_list_bloc.dart';
 import '../../equipment/presentation/screens/equipment_detail_screen.dart';
@@ -137,7 +137,7 @@ GoRouter createRouter(
           if (id == null) return _invalidId(context);
           return BlocProvider(
             create: (_) => sl<AlertDetailBloc>(param1: id)..add(const AlertDetailRequested()),
-            child: AlertDetailPage(
+            child: AlertDetailScreen(
               canAttend: session.session?.canAttendAlerts ?? false,
               currentUserId: currentUserId(),
             ),
@@ -238,7 +238,7 @@ GoRouter createRouter(
         path: AppRoutes.notifications,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<NotificationsBloc>()..add(const NotificationsRequested()),
-          child: const NotificationsPage(),
+          child: const NotificationsScreen(),
         ),
       ),
       GoRoute(
@@ -264,7 +264,7 @@ GoRouter createRouter(
             path: 'notifications',
             builder: (context, state) => BlocProvider(
               create: (_) => sl<NotificationPreferencesBloc>()..add(const NotificationPreferencesRequested()),
-              child: const NotificationPreferencesPage(),
+              child: const NotificationPreferencesScreen(),
             ),
           ),
         ],
@@ -316,7 +316,7 @@ GoRouter createRouter(
                 path: AppRoutes.alerts,
                 builder: (context, state) => BlocProvider(
                   create: (_) => sl<AlertsBloc>()..add(const AlertsRequested()),
-                  child: AlertsPage(notifications: notifications),
+                  child: AlertsScreen(notifications: notifications),
                 ),
               ),
             ],
