@@ -3,7 +3,7 @@ import 'package:qualitrack_mobile/batch/domain/interfaces/batch_interface.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
 import 'package:qualitrack_mobile/iam/domain/iam_repositories.dart';
-import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
+import 'package:qualitrack_mobile/inventory/domain/interfaces/inventory_interface.dart';
 import 'package:qualitrack_mobile/laboratory/domain/interfaces/laboratory_interface.dart';
 import 'package:qualitrack_mobile/profile/domain/interfaces/profile_interface.dart';
 import 'package:qualitrack_mobile/reporting/domain/reporting.dart';
@@ -28,7 +28,7 @@ class MockEquipmentRepository extends Mock implements EquipmentRepository {}
 
 class MockTelemetryRepository extends Mock implements TelemetryRepository {}
 
-class MockInventoryRepository extends Mock implements InventoryRepository {}
+class MockInventoryRepository extends Mock implements InventoryInterface {}
 
 class MockReportingRepository extends Mock implements ReportingRepository {}
 

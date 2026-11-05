@@ -7,7 +7,7 @@ import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart'
 import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
 import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
 import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
-import 'package:qualitrack_mobile/inventory/application/inventory_queries.dart';
+import 'package:qualitrack_mobile/inventory/application/inventory_facade_service.dart';
 import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/pharmaceutical_product.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/staff_member.dart';
@@ -245,7 +245,7 @@ void main() {
       when(() => repo.getMaterials(lab, 4)).thenAnswer(
         (_) async => [materialFixture(id: 2, environmentId: 4, name: 'Zinc', stockStatus: 'LOW')],
       );
-      final materials = await GetInventoryMaterials(repo)(lab, [3, 4]);
+      final materials = await InventoryFacadeService(repository: repo).getMaterials(lab, [3, 4]);
       expect(materials.map((m) => m.id), [2, 1]);
     });
   });
