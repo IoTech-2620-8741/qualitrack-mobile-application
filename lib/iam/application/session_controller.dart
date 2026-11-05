@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import '../../shared/domain/failure.dart';
 import '../../shared/domain/value_objects.dart';
 import '../domain/onboarding_state.dart';
@@ -8,9 +6,10 @@ import 'iam_use_cases.dart';
 
 enum SessionStatus { unknown, unauthenticated, passwordChangeRequired, setupRequired, authenticated }
 
-/// Application-wide session state. It is the `refreshListenable` of the
-/// router, so every status change re-evaluates route guards.
-class SessionController extends ChangeNotifier {
+/// Application-wide session state. The router refreshes on every change, so
+/// each status change re-evaluates route guards. It is plain Dart: `app/`
+/// adapts the listeners to the router.
+class SessionController {
   SessionController({
     required RestoreSession restoreSession,
     required RememberSession rememberSession,
@@ -25,6 +24,12 @@ class SessionController extends ChangeNotifier {
   final RememberSession _rememberSession;
   final SignOut _signOut;
   final CheckOnboarding _checkOnboarding;
+
+  final _listeners = <void Function()>[];
+
+  void addListener(void Function() listener) => _listeners.add(listener);
+
+  void removeListener(void Function() listener) => _listeners.remove(listener);
 
   SessionStatus _status = SessionStatus.unknown;
   UserSession? _session;
@@ -135,6 +140,8 @@ class SessionController extends ChangeNotifier {
   void _set(SessionStatus status, UserSession? session) {
     _status = status;
     _session = session;
-    notifyListeners();
+    for (final listener in List.of(_listeners)) {
+      listener();
+    }
   }
 }
