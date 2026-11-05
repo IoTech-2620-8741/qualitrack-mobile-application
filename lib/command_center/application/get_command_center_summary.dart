@@ -98,14 +98,14 @@ final class CommandCenterSummary extends Equatable {
 class GetCommandCenterSummary {
   const GetCommandCenterSummary({
     required LaboratoryApi laboratoryApi,
-    required GetEquipments getEquipments,
+    required EquipmentApi equipmentApi,
     required GetDeviceConnections getConnections,
     required BatchApi batchApi,
     required GetLaboratoryAlerts getAlerts,
     required InventoryApi inventoryApi,
     required SubscriptionApi subscriptionApi,
   }) : _laboratoryApi = laboratoryApi,
-       _getEquipments = getEquipments,
+       _equipmentApi = equipmentApi,
        _getConnections = getConnections,
        _batchApi = batchApi,
        _getAlerts = getAlerts,
@@ -113,7 +113,7 @@ class GetCommandCenterSummary {
        _subscriptionApi = subscriptionApi;
 
   final LaboratoryApi _laboratoryApi;
-  final GetEquipments _getEquipments;
+  final EquipmentApi _equipmentApi;
   final GetDeviceConnections _getConnections;
   final BatchApi _batchApi;
   final GetLaboratoryAlerts _getAlerts;
@@ -130,7 +130,7 @@ class GetCommandCenterSummary {
     final results = await Future.wait<Object?>([
       _part(() => _laboratoryApi.getLaboratory(lab)),
       _part(() async {
-        final equipments = await _getEquipments(lab);
+        final equipments = await _equipmentApi.getEquipments(lab);
         final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();
         return EquipmentSnapshot(equipments: equipments, connections: await _getConnections(lab, targets));
       }),
