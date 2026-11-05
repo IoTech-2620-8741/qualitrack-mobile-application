@@ -215,7 +215,7 @@ void main() {
     AlertsBloc build() => AlertsBloc(
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
-      complianceService: complianceFacade(alerts: complianceRepo),
+      complianceService: complianceFacade(complianceRepo),
       laboratoryId: () => lab,
     );
 
@@ -272,7 +272,7 @@ void main() {
 
     AlertDetailBloc build() => AlertDetailBloc(
       alertId: 1,
-      complianceService: complianceFacade(alerts: repo),
+      complianceService: complianceFacade(repo),
       equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       laboratoryId: () => lab,
@@ -365,7 +365,7 @@ void main() {
         return BatchDetailBloc(
           batchId: 3,
           batchService: BatchFacadeService(repository: repo),
-          complianceApi: ComplianceApi(complianceFacade(alerts: compliance)),
+          complianceApi: ComplianceApi(complianceFacade(compliance)),
           getAuditLogs: GetBatchAuditLogs(reporting),
           laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
           laboratoryId: () => lab,
@@ -468,7 +468,7 @@ void main() {
 
   group('Notifications', () {
     test('opening an unread notice marks it as read and refreshes the bell', () async {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       var read = false;
       const unread = AppNotification(id: 1, type: NotificationType.alertOpened, subjectType: 'ALERT', subjectId: 9);
       final readNotice = AppNotification(
@@ -481,12 +481,12 @@ void main() {
       when(() => repo.getNotifications(limit: 50)).thenAnswer((_) async => [if (read) readNotice else unread]);
       when(() => repo.markRead(1)).thenAnswer((_) async => read = true);
       when(() => repo.getUnreadCount()).thenAnswer((_) async => read ? 0 : 1);
-      final bell = UnreadNotificationsController(complianceService: complianceFacade(notifications: repo));
+      final bell = UnreadNotificationsController(complianceService: complianceFacade(repo));
       await bell.refresh();
       expect(bell.count, 1);
 
       final bloc = NotificationsBloc(
-        complianceService: complianceFacade(notifications: repo),
+        complianceService: complianceFacade(repo),
         onReadChanged: bell.refresh,
       )..add(const NotificationsRequested());
       await Future<void>.delayed(const Duration(milliseconds: 10));

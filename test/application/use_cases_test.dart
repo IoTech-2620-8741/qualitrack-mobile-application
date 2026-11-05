@@ -129,21 +129,21 @@ void main() {
         ],
       );
 
-      final alerts = await complianceFacade(alerts: repo).getLaboratoryAlerts(lab, [3, 4]);
+      final alerts = await complianceFacade(repo).getLaboratoryAlerts(lab, [3, 4]);
 
       expect(alerts.map((a) => a.id), [2, 1]);
     });
 
     test('resolve requires notes before calling the backend', () {
       final repo = MockComplianceRepository();
-      expect(() => complianceFacade(alerts: repo).resolveAlert(1, '  '), throwsA(isA<BadRequestFailure>()));
+      expect(() => complianceFacade(repo).resolveAlert(1, '  '), throwsA(isA<BadRequestFailure>()));
       verifyNoMoreInteractions(repo);
     });
 
     test('preferences only accept warning or critical as minimum severity', () {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       expect(
-        () => complianceFacade(notifications: repo).updatePreferences(
+        () => complianceFacade(repo).updatePreferences(
           const NotificationPreferences(inAppEnabled: true, emailEnabled: false, minimumSeverity: AlertSeverity.low),
         ),
         throwsA(isA<BadRequestFailure>()),

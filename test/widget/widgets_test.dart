@@ -200,9 +200,9 @@ void main() {
     late UnreadNotificationsController bell;
 
     setUp(() {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       when(() => repo.getUnreadCount()).thenAnswer((_) async => 2);
-      bell = UnreadNotificationsController(complianceService: complianceFacade(notifications: repo));
+      bell = UnreadNotificationsController(complianceService: complianceFacade(repo));
     });
 
     tearDown(() => bell.dispose());

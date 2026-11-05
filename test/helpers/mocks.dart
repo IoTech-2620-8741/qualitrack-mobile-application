@@ -2,7 +2,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/batch/domain/interfaces/batch_interface.dart';
 import 'package:qualitrack_mobile/compliance/application/compliance_facade_service.dart';
 import 'package:qualitrack_mobile/compliance/domain/interfaces/compliance_interface.dart';
-import 'package:qualitrack_mobile/compliance/domain/interfaces/notification_interface.dart';
 import 'package:qualitrack_mobile/equipment/domain/interfaces/equipment_interface.dart';
 import 'package:qualitrack_mobile/iam/domain/iam_repositories.dart';
 import 'package:qualitrack_mobile/inventory/domain/interfaces/inventory_interface.dart';
@@ -22,8 +21,6 @@ class MockLaboratoryRepository extends Mock implements LaboratoryInterface {}
 
 class MockComplianceRepository extends Mock implements ComplianceInterface {}
 
-class MockNotificationRepository extends Mock implements NotificationInterface {}
-
 class MockBatchRepository extends Mock implements BatchInterface {}
 
 class MockEquipmentRepository extends Mock implements EquipmentInterface {}
@@ -38,12 +35,9 @@ class MockSubscriptionRepository extends Mock implements SubscriptionInterface {
 
 class MockProfileRepository extends Mock implements ProfileInterface {}
 
-/// Facade over the given repositories; the ones not given are empty mocks.
-ComplianceFacadeService complianceFacade({ComplianceInterface? alerts, NotificationInterface? notifications}) =>
-    ComplianceFacadeService(
-      complianceRepository: alerts ?? MockComplianceRepository(),
-      notificationRepository: notifications ?? MockNotificationRepository(),
-    );
+/// Facade over the given repository; an empty mock when none is given.
+ComplianceFacadeService complianceFacade([ComplianceInterface? repository]) =>
+    ComplianceFacadeService(repository: repository ?? MockComplianceRepository());
 
 class MockApiClient extends Mock implements ApiClient {}
 
