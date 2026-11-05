@@ -40,7 +40,7 @@ import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
 import '../../profile/presentation/screens/profile_screen.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
-import '../../reporting/presentation/pages/reports_page.dart';
+import '../../reporting/presentation/screens/reports_screen.dart';
 import '../../common/presentation/i18n/app_localizations.dart';
 import '../../common/presentation/widgets/state_views.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
@@ -224,7 +224,7 @@ GoRouter createRouter(
         path: AppRoutes.reports,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<ReportsBloc>()..add(const ReportsRequested()),
-          child: const ReportsPage(),
+          child: const ReportsScreen(),
         ),
       ),
       GoRoute(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../i18n/app_localizations.dart';
-import '../section.dart';
+import '../../application/section.dart';
 import 'failure_message.dart';
 import 'layout_widgets.dart';
 

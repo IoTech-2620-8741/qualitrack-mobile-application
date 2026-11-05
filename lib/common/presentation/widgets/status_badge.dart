@@ -4,7 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 
-enum BadgeTone { success, warning, critical, info, neutral, brand }
+enum BadgeTone { success, warning, critical, info, neutral, brand, danger }
 
 extension BadgeToneColors on BadgeTone {
   Color get foreground => switch (this) {
@@ -14,6 +14,7 @@ extension BadgeToneColors on BadgeTone {
     BadgeTone.info => AppColors.info,
     BadgeTone.neutral => AppColors.textSecondary,
     BadgeTone.brand => AppColors.primary,
+    BadgeTone.danger => AppColors.critical,
   };
 
   Color get background => switch (this) {
@@ -23,6 +24,8 @@ extension BadgeToneColors on BadgeTone {
     BadgeTone.info => AppColors.infoContainer,
     BadgeTone.neutral => AppColors.neutralContainer,
     BadgeTone.brand => AppColors.primaryContainer,
+    BadgeTone.danger => AppColors.critical,
+
   };
 
   /// Every tone has its own icon so state is never conveyed by color alone.
@@ -33,6 +36,7 @@ extension BadgeToneColors on BadgeTone {
     BadgeTone.info => Icons.info_outline,
     BadgeTone.neutral => Icons.radio_button_unchecked,
     BadgeTone.brand => Icons.verified_outlined,
+    BadgeTone.danger => Icons.dangerous,
   };
 }
 

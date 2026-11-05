@@ -11,7 +11,7 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/section_card.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../../common/presentation/section.dart';
+import '../../../common/application/section.dart';
 import '../../domain/entities/billing_summary.dart';
 import '../../domain/entities/subscription.dart';
 import '../../domain/entities/subscription_payment.dart';

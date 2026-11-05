@@ -4,7 +4,7 @@ import '../../../../compliance/api/index.dart';
 import '../../../../reporting/api/index.dart';
 import '../../../../common/domain/failure.dart';
 import '../../../../common/presentation/remote_state.dart';
-import '../../../../common/presentation/section.dart';
+import '../../../../common/application/section.dart';
 import '../../../domain/entities/batch_traceability.dart';
 import '../../../domain/entities/production_batch.dart';
 

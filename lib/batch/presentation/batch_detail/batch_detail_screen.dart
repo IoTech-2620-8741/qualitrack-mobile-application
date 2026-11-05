@@ -14,7 +14,7 @@ import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/section_card.dart';
-import '../../../common/presentation/section.dart';
+import '../../../common/application/section.dart';
 import '../../domain/entities/batch_traceability.dart';
 import '../widgets/batch_labels.dart';
 import '../widgets/batch_review_sheet.dart';

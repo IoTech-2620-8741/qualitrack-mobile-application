@@ -54,9 +54,11 @@ import '../../profile/infrastructure/data_sources/profile_remote_data_provider.d
 import '../../profile/infrastructure/repositories/profile_repository.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
-import '../../reporting/application/reporting_queries.dart';
-import '../../reporting/domain/reporting.dart';
-import '../../reporting/infrastructure/reporting_infrastructure.dart';
+import '../../reporting/api/index.dart';
+import '../../reporting/application/reporting_facade_service.dart';
+import '../../reporting/domain/interfaces/reporting_interface.dart';
+import '../../reporting/infrastructure/data_sources/reporting_remote_data_provider.dart';
+import '../../reporting/infrastructure/repositories/reporting_repository.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
 import '../../common/domain/failure.dart';
 import '../../common/domain/value_objects.dart';
@@ -143,13 +145,12 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => InventoryApi(sl()));
 
   // Reporting & Audit
-  sl.registerLazySingleton(() => ReportingRemoteDataSource(sl()));
-  sl.registerLazySingleton<ReportingRepository>(() => ReportingRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetKpiDashboard(sl()));
-  sl.registerLazySingleton(() => GetDeviationTrends(sl()));
-  sl.registerLazySingleton(() => GetReportHistory(sl()));
-  sl.registerLazySingleton(() => GetEquipmentAuditLogs(sl()));
-  sl.registerLazySingleton(() => GetBatchAuditLogs(sl()));
+  sl.registerLazySingleton(() => ReportingRemoteDataProvider(sl()));
+  sl.registerLazySingleton<ReportingInterface>(() => ReportingRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(
+    () => ReportingFacadeService(repository: sl(), laboratoryApi: sl(), equipmentApi: sl()),
+  );
+  sl.registerLazySingleton(() => ReportingApi(sl()));
 
   // Payments & Subscriptions
   sl.registerLazySingleton(() => SubscriptionRemoteDataProvider(sl()));
@@ -215,9 +216,8 @@ void _registerBlocs() {
       equipmentService: sl(),
       laboratoryApi: sl(),
       telemetryApi: sl(),
-      getTrends: sl(),
+      reportingApi: sl(),
       complianceApi: sl(),
-      getAuditLogs: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
@@ -262,7 +262,7 @@ void _registerBlocs() {
       batchId: id,
       batchService: sl(),
       complianceApi: sl(),
-      getAuditLogs: sl(),
+      reportingApi: sl(),
       laboratoryApi: sl(),
       laboratoryId: _laboratoryId,
     ),
@@ -277,13 +277,10 @@ void _registerBlocs() {
       laboratoryId: _laboratoryId,
     ),
   );
+
   sl.registerFactory(
-    () => ReportsBloc(
-      getKpiDashboard: sl(),
-      getDeviationTrends: sl(),
-      getReportHistory: sl(),
-      laboratoryApi: sl(),
-      equipmentApi: sl(),
+        () => ReportsBloc(
+      reportingService: sl(),
       laboratoryId: _laboratoryId,
     ),
   );

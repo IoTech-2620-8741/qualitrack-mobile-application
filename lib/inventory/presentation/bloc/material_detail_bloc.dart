@@ -5,7 +5,7 @@ import '../../../laboratory/api/index.dart';
 import '../../../common/domain/failure.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../../common/presentation/section.dart';
+import '../../../common/application/section.dart';
 import '../../application/inventory_facade_service.dart';
 import '../../domain/entities/inventory_material.dart';
 import '../../domain/entities/inventory_movement.dart';

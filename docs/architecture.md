@@ -107,12 +107,7 @@ passes it in (see `app/router/command_center_views.dart`).
 | `inventory` | `InventoryApi` | `command_center` |
 | `subscription` | `SubscriptionApi` | `command_center` |
 | `iam` | entities only (`UserRole`, `UserSession`) | `command_center`, `profile` |
-| `reporting` | queries and entities | `batch`, `equipment` |
-
-> **Migration status.** Every context above except `reporting` has the layout
-> described here. `reporting` still has one file per layer (`reporting.dart`,
-> `reporting_queries.dart`, `reporting_infrastructure.dart`) and is being
-> migrated separately.
+| `reporting` | `ReportingApi` | `batch`, `equipment` |
 
 ## Adding a feature
 

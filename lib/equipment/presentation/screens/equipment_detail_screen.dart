@@ -123,7 +123,7 @@ class _DetailBody extends StatelessWidget {
                 subtitle: i18n.deviationsSummary(t.deviationCount, t.criticalDeviationCount),
                 trailing: StatusBadge(
                   label: percent == null ? '—' : i18n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
-                  tone: timeInRangeTone(percent),
+                  tone: _severityTone(t.severity),
                 ),
               );
             },
@@ -190,4 +190,11 @@ IconData _trendIcon(TrendDirection direction) => switch (direction) {
   TrendDirection.decreasing => Icons.trending_down,
   TrendDirection.stable => Icons.trending_flat,
   TrendDirection.unknown => Icons.remove,
+};
+
+BadgeTone _severityTone(DeviationSeverity severity) => switch (severity) {
+  DeviationSeverity.critical => BadgeTone.critical,
+  DeviationSeverity.warning => BadgeTone.warning,
+  DeviationSeverity.onTrack => BadgeTone.success,
+  DeviationSeverity.noData => BadgeTone.neutral,
 };

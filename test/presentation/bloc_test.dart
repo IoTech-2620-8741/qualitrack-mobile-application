@@ -23,7 +23,7 @@ import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dar
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
 import 'package:qualitrack_mobile/laboratory/api/index.dart';
 import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
-import 'package:qualitrack_mobile/reporting/application/reporting_queries.dart';
+import 'package:qualitrack_mobile/reporting/api/index.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
@@ -359,7 +359,7 @@ void main() {
           batchId: 3,
           batchService: BatchFacadeService(repository: repo),
           complianceApi: ComplianceApi(complianceFacade(compliance)),
-          getAuditLogs: GetBatchAuditLogs(reporting),
+          reportingApi: ReportingApi(reportingFacade(reporting)),
           laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
           laboratoryId: () => lab,
         );
