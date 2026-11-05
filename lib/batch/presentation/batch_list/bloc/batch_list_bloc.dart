@@ -1,7 +1,7 @@
+import '../../../../shared/domain/failure.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/domain/value_objects.dart';
-import '../../../../shared/infrastructure/http/api_exception_mapper.dart';
 import '../../../application/batch_facade_service.dart';
 import 'batch_list_event.dart';
 import 'batch_list_state.dart';
@@ -28,7 +28,7 @@ class BatchListBloc extends Bloc<BatchListEvent, BatchListState> {
       final batches = await _batchService.getBatches(_laboratoryId());
       emit(state.copyWith(remote: state.remote.success(batches, empty: batches.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }
