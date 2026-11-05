@@ -30,9 +30,11 @@ import '../../iam/infrastructure/iam_remote_data_source.dart';
 import '../../iam/infrastructure/iam_repositories_impl.dart';
 import '../../iam/presentation/bloc/change_password_bloc.dart';
 import '../../iam/presentation/bloc/sign_in_bloc.dart';
-import '../../inventory/application/inventory_queries.dart';
-import '../../inventory/domain/inventory.dart';
-import '../../inventory/infrastructure/inventory_infrastructure.dart';
+import '../../inventory/api/index.dart';
+import '../../inventory/application/inventory_facade_service.dart';
+import '../../inventory/domain/interfaces/inventory_interface.dart';
+import '../../inventory/infrastructure/data_sources/inventory_remote_data_provider.dart';
+import '../../inventory/infrastructure/repositories/inventory_repository.dart';
 import '../../inventory/presentation/bloc/inventory_bloc.dart';
 import '../../inventory/presentation/bloc/material_detail_bloc.dart';
 import '../../laboratory/api/index.dart';
@@ -149,13 +151,10 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => BatchApi(sl()));
 
   // Inventory Management
-  sl.registerLazySingleton(() => InventoryRemoteDataSource(sl()));
-  sl.registerLazySingleton<InventoryRepository>(() => InventoryRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetInventoryMaterials(sl()));
-  sl.registerLazySingleton(() => GetInventoryMaterial(sl()));
-  sl.registerLazySingleton(() => GetMaterialReceipts(sl()));
-  sl.registerLazySingleton(() => GetInventoryMovements(sl()));
-  sl.registerLazySingleton(() => GetMaterialUsages(sl()));
+  sl.registerLazySingleton(() => InventoryRemoteDataProvider(sl()));
+  sl.registerLazySingleton<InventoryInterface>(() => InventoryRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => InventoryFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => InventoryApi(sl()));
 
   // Reporting & Audit
   sl.registerLazySingleton(() => ReportingRemoteDataSource(sl()));
@@ -186,7 +185,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
       getConnections: sl(),
       batchApi: sl(),
       getAlerts: sl(),
-      getMaterials: sl(),
+      inventoryApi: sl(),
       subscriptionApi: sl(),
     ),
   );
@@ -291,17 +290,13 @@ void _registerBlocs() {
       laboratoryId: _laboratoryId,
     ),
   );
-  sl.registerFactory(() => InventoryBloc(laboratoryApi: sl(), getMaterials: sl(), laboratoryId: _laboratoryId));
+  sl.registerFactory(() => InventoryBloc(laboratoryApi: sl(), inventoryService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactoryParam<MaterialDetailBloc, int, int?>(
     (id, environmentId) => MaterialDetailBloc(
       materialId: id,
       environmentId: environmentId,
       laboratoryApi: sl(),
-      getMaterials: sl(),
-      getMaterial: sl(),
-      getReceipts: sl(),
-      getMovements: sl(),
-      getUsages: sl(),
+      inventoryService: sl(),
       laboratoryId: _laboratoryId,
     ),
   );

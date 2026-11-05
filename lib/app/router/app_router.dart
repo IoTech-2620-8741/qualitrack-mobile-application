@@ -32,8 +32,8 @@ import '../../iam/presentation/pages/sign_in_page.dart';
 import '../../iam/presentation/pages/splash_page.dart';
 import '../../inventory/presentation/bloc/inventory_bloc.dart';
 import '../../inventory/presentation/bloc/material_detail_bloc.dart';
-import '../../inventory/presentation/pages/inventory_page.dart';
-import '../../inventory/presentation/pages/material_detail_page.dart';
+import '../../inventory/presentation/screens/inventory_screen.dart';
+import '../../inventory/presentation/screens/material_detail_screen.dart';
 import '../../laboratory/presentation/bloc/products_bloc.dart';
 import '../../laboratory/presentation/screens/products_screen.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
@@ -182,7 +182,7 @@ GoRouter createRouter(
         path: AppRoutes.inventory,
         builder: (context, state) => BlocProvider(
           create: (_) => sl<InventoryBloc>()..add(const InventoryRequested()),
-          child: const InventoryPage(),
+          child: const InventoryScreen(),
         ),
         routes: [
           GoRoute(
@@ -194,7 +194,7 @@ GoRouter createRouter(
               return BlocProvider(
                 create: (_) =>
                     sl<MaterialDetailBloc>(param1: id, param2: environmentId)..add(const MaterialDetailRequested()),
-                child: const MaterialDetailPage(),
+                child: const MaterialDetailScreen(),
               );
             },
           ),
