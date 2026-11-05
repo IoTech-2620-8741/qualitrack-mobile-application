@@ -11,6 +11,7 @@ library;
 
 import '../../equipment/api/index.dart';
 import '../../laboratory/api/index.dart';
+import '../../common/application/bounded_concurrency.dart';
 import '../../common/domain/failure.dart';
 import '../../common/domain/value_objects.dart';
 import '../../common/application/section.dart';
@@ -18,8 +19,8 @@ import '../domain/entities/audit_entities.dart';
 import '../domain/entities/deviation_entities.dart';
 import '../domain/entities/kpi_entities.dart';
 import '../domain/entities/reporting_enums.dart';
+import '../domain/interfaces/reporting_interface.dart';
 import '../domain/logic/reporting_logic.dart';
-import 'reporting_queries.dart';
 import 'package:equatable/equatable.dart';
 
 /// Consolidated data container for the reports screen.
@@ -43,9 +44,9 @@ final class ReportsData extends Equatable {
   final Map<int, String> environmentNames;
   final Map<int, String> deviceNames;
 
-  /// Returns the list of deviation trends sorted by severity
+  /// The deviation trends, already sorted by severity by the facade
   /// (Critical > Warning > On Track > No Data).
-  List<DeviationTrend> get sortedTrends => sortTrendsBySeverity(trends.items);
+  List<DeviationTrend> get sortedTrends => trends.items;
 
   /// Returns the count of deviation trends that are marked as critical.
   int get criticalTrendsCount => sortedTrends.where((t) => t.severity == DeviationSeverity.critical).length;
@@ -76,22 +77,63 @@ final class ReportsData extends Equatable {
 
 /// Facade service for the Reporting context.
 ///
-/// This class simplifies the interaction between the Presentation layer (BLoC)
-/// and the multiple use cases (Queries) needed to build the screen.
-class ReportingFacadeService {
-  const ReportingFacadeService({
-    required this.getKpiDashboard,
-    required this.getDeviationTrends,
-    required this.getReportHistory,
-    required this.laboratoryApi,
-    required this.equipmentApi,
-  });
+/// It exposes the use cases of Reporting & Audit to the presentation layer and to
+/// the other contexts (through `ReportingApi`). It only orchestrates: the rules
+/// live in [ReportingLogic] and the data access behind [ReportingInterface].
+class ReportingFacadeService with ReportingLogic {
+  ReportingFacadeService({
+    required ReportingInterface repository,
+    required LaboratoryApi laboratoryApi,
+    required EquipmentApi equipmentApi,
+    DateTime Function()? clock,
+  }) : _repository = repository,
+       _laboratoryApi = laboratoryApi,
+       _equipmentApi = equipmentApi,
+       _clock = clock ?? DateTime.now;
 
-  final GetKpiDashboard getKpiDashboard;
-  final GetDeviationTrends getDeviationTrends;
-  final GetReportHistory getReportHistory;
-  final LaboratoryApi laboratoryApi;
-  final EquipmentApi equipmentApi;
+  final ReportingInterface _repository;
+  final LaboratoryApi _laboratoryApi;
+  final EquipmentApi _equipmentApi;
+  final DateTime Function() _clock;
+
+  /// KPI dashboard of the laboratory for the selected [period].
+  Future<KpiDashboard> getKpiDashboard(LaboratoryId laboratoryId, ReportPeriod period, {int? environmentId}) {
+    final to = _clock();
+    return _repository.getKpiDashboard(
+      laboratoryId,
+      from: to.subtract(period.duration),
+      to: to,
+      environmentId: environmentId,
+    );
+  }
+
+  /// History of generated reports, newest first.
+  Future<List<AuditReport>> getReportHistory(LaboratoryId laboratoryId) async =>
+      sortReportsNewestFirst(await _repository.getLaboratoryReports(laboratoryId));
+
+  /// Deviation trends of every given environment (the backend lists them per
+  /// environment), most severe first.
+  Future<List<DeviationTrend>> getDeviationTrends(
+    LaboratoryId laboratoryId,
+    Iterable<int> environmentIds,
+    ReportPeriod period,
+  ) async {
+    final to = _clock();
+    final from = to.subtract(period.duration);
+    final trends = await loadAll(
+      environmentIds,
+      (environmentId) => _repository.getDeviationTrends(laboratoryId, environmentId, from: from, to: to),
+    );
+    return sortTrendsBySeverity(trends);
+  }
+
+  /// Audit trail of one equipment, newest first.
+  Future<List<AuditLogEntry>> getEquipmentAuditLogs(LaboratoryId laboratoryId, int equipmentId) async =>
+      sortAuditLogsNewestFirst(await _repository.getEquipmentAuditLogs(laboratoryId, equipmentId));
+
+  /// Audit trail of one batch, newest first.
+  Future<List<AuditLogEntry>> getBatchAuditLogs(int batchId) async =>
+      sortAuditLogsNewestFirst(await _repository.getBatchAuditLogs(batchId));
 
   /// Loads and consolidates all data needed for the reports screen.
   ///
@@ -102,15 +144,13 @@ class ReportingFacadeService {
   /// @param lab The current laboratory identifier.
   /// @param period The selected time period.
   /// @return A [Future] containing the [ReportsData] ready for the UI.
-  ///
   Future<ReportsData> loadReportsData(LaboratoryId lab, ReportPeriod period) async {
     // 1. Fetch data from other contexts concurrently
-    final results = await Future.wait<Object>([laboratoryApi.getEnvironments(lab), equipmentApi.getEquipments(lab)]);
+    final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(lab), _equipmentApi.getEquipments(lab)]);
     final environments = results[0] as List<LabEnvironment>;
     final equipments = results[1] as List<Equipment>;
 
     // 2. Fetch KPI data in isolation (if it fails, the rest of the screen loads)
-
     KpiDashboard? kpi;
     Failure? kpiFailure;
     try {
