@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
@@ -15,6 +16,7 @@ import '../../../shared/presentation/widgets/status_badge.dart';
 import '../../domain/inventory.dart';
 import '../bloc/material_detail_bloc.dart';
 import '../widgets/inventory_labels.dart';
+import '../widgets/inventory_receipt_item.dart';
 
 class MaterialDetailPage extends StatelessWidget {
   const MaterialDetailPage({super.key});
@@ -73,47 +75,19 @@ class _Body extends StatelessWidget {
             ],
           ),
         ),
+
         const SizedBox(height: AppSpacing.md),
+
         SectionCard<InventoryReceipt>(
           title: l10n.materialLots,
           section: detail.receipts,
           emptyMessage: l10n.receiptsEmpty,
-          itemBuilder: (context, r) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SectionRow(
-                title: r.batchNumber ?? l10n.receiptNumber(r.id),
-                subtitle: '${l10n.supplier}: ${r.supplier ?? '—'}',
-                trailing: StatusBadge(label: r.status.label(l10n), tone: r.status.tone),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.lg,
-                runSpacing: AppSpacing.sm,
-                children: [
-                  KeyValue(label: l10n.initialAmount, value: qty(r.initialAmount, r.unit)),
-                  KeyValue(label: l10n.availableAmount, value: qty(r.availableAmount, r.unit)),
-                  KeyValue(label: l10n.receivedOn, value: Formatters.date(r.receivedOn, locale)),
-                  KeyValue(label: l10n.expiresOn, value: Formatters.date(r.expiresOn, locale)),
-                  KeyValue(
-                    label: l10n.usable,
-                    value: r.usable ? l10n.yes : l10n.no,
-                    valueWidget: StatusBadge(
-                      label: r.usable ? l10n.yes : lotAvailabilityLabel(l10n, r.availability),
-                      tone: r.usable ? BadgeTone.success : BadgeTone.neutral,
-                    ),
-                  ),
-                  if (r.isNearExpiry || r.isExpired)
-                    StatusBadge(
-                      label: r.isExpired ? l10n.lotExpired : l10n.lotNearExpiry,
-                      tone: r.isExpired ? BadgeTone.critical : BadgeTone.warning,
-                      icon: Icons.event_busy_outlined,
-                    ),
-                ],
-              ),
-            ],
+          itemBuilder: (context, receipt) => InventoryReceiptItem(
+            receipt: receipt,
+            defaultUnit: m.unit,
           ),
         ),
+        
         const SizedBox(height: AppSpacing.md),
         SectionCard<InventoryMovement>(
           title: l10n.movements,
