@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../shared/domain/failure.dart';
-import '../../../shared/presentation/remote_state.dart';
+import '../../../common/domain/failure.dart';
+import '../../../common/presentation/remote_state.dart';
 import '../../application/compliance_queries.dart';
 import '../../domain/compliance.dart';
 

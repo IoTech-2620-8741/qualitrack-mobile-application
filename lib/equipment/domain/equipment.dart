@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/value_objects.dart';
 
 /// `EquipmentStatus` of the Equipment Management context. The API exposes it
 /// as a String, so unknown values are preserved in [Equipment.rawStatus].

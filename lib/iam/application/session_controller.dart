@@ -1,5 +1,5 @@
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
 import '../domain/onboarding_state.dart';
 import '../domain/user_session.dart';
 import 'iam_use_cases.dart';

@@ -5,8 +5,8 @@ import '../../compliance/api/index.dart';
 import '../../equipment/api/index.dart';
 import '../../inventory/api/index.dart';
 import '../../laboratory/api/index.dart';
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
 import '../../subscription/api/index.dart';
 import '../../tracking/api/index.dart';
 

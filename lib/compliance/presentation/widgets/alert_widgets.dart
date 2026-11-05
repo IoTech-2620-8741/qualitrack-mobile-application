@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../shared/presentation/labels.dart';
-import '../../../shared/presentation/theme/app_colors.dart';
-import '../../../shared/presentation/theme/app_spacing.dart';
-import '../../../shared/presentation/theme/app_typography.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/labels.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_typography.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/compliance.dart';
 
 extension AlertStatusPresentation on AlertStatus {

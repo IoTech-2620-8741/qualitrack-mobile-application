@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../shared/presentation/widgets/connection_badge.dart';
-import '../../../shared/presentation/theme/app_colors.dart';
-import '../../../shared/presentation/theme/app_spacing.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
-import '../../../shared/presentation/widgets/remote_state_view.dart';
-import '../../../shared/presentation/widgets/state_views.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/widgets/connection_badge.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/remote_state_view.dart';
+import '../../../common/presentation/widgets/state_views.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
 import '../bloc/equipment_list_bloc.dart';
 import '../widgets/equipment_labels.dart';
 

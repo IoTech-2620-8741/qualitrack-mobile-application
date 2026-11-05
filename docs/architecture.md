@@ -36,7 +36,7 @@ Domain-Driven Design with one folder per Bounded Context.
 | **Infrastructure** | `*Dto.toDomain()`, `*RemoteDataSource`, `*RepositoryImpl`, `ApiClient`, `AuthInterceptor`, `SecureSessionRepository` | leak `DioException` or `Map` to presentation |
 | **Presentation** | BLoCs, pages, widgets, labels (enum → text/tone/icon) | call HTTP or hold business rules |
 
-`shared/` holds cross-cutting pieces (failures, HTTP client, secure storage,
+`common/` holds cross-cutting pieces (failures, HTTP client, secure storage,
 formatting, localization, theme, reusable widgets). `app/` is the composition
 root: dependency injection (`get_it`), router (`go_router`) and the
 `MaterialApp`. `command_center/` is a **UI composition module** (application +
@@ -50,14 +50,14 @@ when a file breaks one of them.
 
 | Layer | May import |
 |---|---|
-| `domain` | its own domain and `shared/domain`; only `equatable` as a package |
-| `application` | domain, application, `shared/domain`, `shared/application`, and other contexts' `api/index.dart`; no Flutter |
-| `infrastructure` | domain, infrastructure, `shared/domain`, `shared/infrastructure`; no Flutter, BLoC or router |
-| `presentation` | application, domain entities, `shared/*` except infrastructure, and other contexts' `api/index.dart` |
+| `domain` | its own domain and `common/domain`; only `equatable` as a package |
+| `application` | domain, application, `common/domain`, `common/application`, and other contexts' `api/index.dart`; no Flutter |
+| `infrastructure` | domain, infrastructure, `common/domain`, `common/infrastructure`; no Flutter, BLoC or router |
+| `presentation` | application, domain entities, `common/*` except infrastructure, and other contexts' `api/index.dart` |
 | `api` | its own application and domain (the context's public entry point; no widgets) |
 
 - A context reaches another one only through `<context>/api/index.dart`.
-- `shared/` imports no bounded context.
+- `common/` imports no bounded context.
 - Only `app/` and `main.dart` may import anything, including `app/` itself.
 - When `app/` wires a widget of one context into another (e.g. the panel), it
   passes it in as a parameter instead of letting the context import it.
@@ -120,7 +120,7 @@ never POSTs telemetry.
 
 **Environments.** Several resources are exposed per environment (alerts,
 materials, products, deviation indicators). Laboratory-wide screens add them up
-with `loadAll` (`shared/application/bounded_concurrency.dart`, 4 requests in
+with `loadAll` (`common/application/bounded_concurrency.dart`, 4 requests in
 flight), the same way QualiTrack Web does.
 
 **Notifications.** `UnreadNotificationsController` keeps the count of the bell
@@ -135,7 +135,7 @@ read. Every action asks for confirmation and the backend remains the authority.
 ## Localization
 
 English (default) and Spanish. Strings live in `l10n/strings.tsv` and
-`dart run tool/generate_l10n.dart` generates `lib/shared/presentation/l10n/app_localizations.dart`
+`dart run tool/generate_l10n.dart` generates `lib/common/presentation/l10n/app_localizations.dart`
 (a `LocalizationsDelegate` registered with `flutter_localizations`). A test
 verifies both languages define the same keys.
 

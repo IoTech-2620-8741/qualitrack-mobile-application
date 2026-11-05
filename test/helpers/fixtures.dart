@@ -9,7 +9,7 @@ import 'package:qualitrack_mobile/iam/domain/user_role.dart';
 import 'package:qualitrack_mobile/iam/domain/user_session.dart';
 import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
 import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 
 /// Test-only fixtures. Production code never uses hardcoded data.

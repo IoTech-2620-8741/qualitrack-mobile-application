@@ -1,5 +1,5 @@
-import '../../shared/infrastructure/http/api_client.dart';
-import '../../shared/infrastructure/http/json_utils.dart';
+import '../../common/infrastructure/http/api_client.dart';
+import '../../common/infrastructure/http/json_utils.dart';
 import 'iam_dtos.dart';
 
 class IamRemoteDataSource {

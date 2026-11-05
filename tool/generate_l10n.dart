@@ -1,4 +1,4 @@
-// Generates lib/shared/presentation/l10n/app_localizations.dart from l10n/strings.tsv.
+// Generates lib/common/presentation/l10n/app_localizations.dart from l10n/strings.tsv.
 //
 // Columns: key, English, Spanish, optional placeholders ("name:type,name:type").
 // Run from the project root:  dart run tool/generate_l10n.dart
@@ -7,7 +7,7 @@ import 'dart:io';
 void main() {
   final root = File(Platform.script.toFilePath()).parent.parent;
   final source = File('${root.path}/l10n/strings.tsv');
-  final target = File('${root.path}/lib/shared/presentation/l10n/app_localizations.dart');
+  final target = File('${root.path}/lib/common/presentation/l10n/app_localizations.dart');
 
   final rows = <({String key, String en, String es, List<(String, String)> params})>[];
   for (final line in source.readAsLinesSync()) {
@@ -126,5 +126,5 @@ void main() {
   ]);
   target.parent.createSync(recursive: true);
   target.writeAsStringSync('${out.join('\n')}\n');
-  stdout.writeln('Generated lib/shared/presentation/l10n/app_localizations.dart with ${rows.length} keys');
+  stdout.writeln('Generated lib/common/presentation/l10n/app_localizations.dart with ${rows.length} keys');
 }

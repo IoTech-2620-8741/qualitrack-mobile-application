@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../shared/domain/failure.dart';
+import '../../../common/domain/failure.dart';
 import '../../application/profile_use_cases.dart';
 import '../../domain/profile.dart';
 

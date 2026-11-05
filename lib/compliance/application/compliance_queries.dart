@@ -1,6 +1,6 @@
-import '../../shared/application/bounded_concurrency.dart';
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
+import '../../common/application/bounded_concurrency.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
 import '../domain/compliance.dart';
 
 /// Alerts of every environment of the laboratory (the backend lists them

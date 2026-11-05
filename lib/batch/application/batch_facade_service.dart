@@ -1,4 +1,4 @@
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/value_objects.dart';
 import '../domain/entities/batch_traceability.dart';
 import '../domain/entities/production_batch.dart';
 import '../domain/interfaces/batch_interface.dart';

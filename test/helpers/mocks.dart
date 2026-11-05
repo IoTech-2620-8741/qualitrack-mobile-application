@@ -7,8 +7,8 @@ import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
 import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
 import 'package:qualitrack_mobile/profile/domain/profile.dart';
 import 'package:qualitrack_mobile/reporting/domain/reporting.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/http/api_client.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/storage/secure_key_value_store.dart';
+import 'package:qualitrack_mobile/common/infrastructure/http/api_client.dart';
+import 'package:qualitrack_mobile/common/infrastructure/storage/secure_key_value_store.dart';
 import 'package:qualitrack_mobile/subscription/domain/subscription.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 

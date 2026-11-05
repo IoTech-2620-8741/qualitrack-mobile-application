@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/value_objects.dart';
 
 /// Periods offered for indicators, as in QualiTrack Web (24 hours, 7 or 31 days).
 enum ReportPeriod {

@@ -10,8 +10,8 @@ import 'package:qualitrack_mobile/iam/domain/password_policy.dart';
 import 'package:qualitrack_mobile/iam/domain/user_role.dart';
 import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
 import 'package:qualitrack_mobile/profile/domain/profile.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 
 import '../helpers/fixtures.dart';

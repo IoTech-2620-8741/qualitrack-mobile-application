@@ -1,9 +1,9 @@
-import '../../../shared/domain/failure.dart';
+import '../../../common/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/presentation/remote_state.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
 import '../../application/get_command_center_summary.dart';
 
 final class CommandCenterRequested extends Equatable {

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../../shared/domain/failure.dart';
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/failure.dart';
+import '../../common/domain/value_objects.dart';
 import '../domain/subscription.dart';
 
 final class BillingSummary extends Equatable {

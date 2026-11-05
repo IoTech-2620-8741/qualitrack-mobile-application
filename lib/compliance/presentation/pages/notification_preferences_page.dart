@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../shared/presentation/theme/app_colors.dart';
-import '../../../shared/presentation/theme/app_spacing.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/failure_message.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
-import '../../../shared/presentation/widgets/remote_state_view.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/l10n/app_localizations.dart';
+import '../../../common/presentation/widgets/failure_message.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../domain/compliance.dart';
 import '../bloc/notification_preferences_bloc.dart';
 

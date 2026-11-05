@@ -12,8 +12,8 @@ import 'package:qualitrack_mobile/laboratory/application/laboratory_queries.dart
 import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
 import 'package:qualitrack_mobile/profile/application/profile_use_cases.dart';
 import 'package:qualitrack_mobile/profile/domain/profile.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/subscription/application/billing_queries.dart';
 import 'package:qualitrack_mobile/subscription/domain/subscription.dart';
 import 'package:qualitrack_mobile/tracking/application/telemetry_queries.dart';

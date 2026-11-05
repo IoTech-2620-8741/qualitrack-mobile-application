@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/value_objects.dart';
 
 /// `SubscriptionResource`. Stripe identifiers are intentionally not mapped:
 /// payment administration stays in Web.

@@ -1,5 +1,5 @@
-import '../../../shared/infrastructure/http/api_client.dart';
-import '../../../shared/infrastructure/http/json_utils.dart';
+import '../../../common/infrastructure/http/api_client.dart';
+import '../../../common/infrastructure/http/json_utils.dart';
 import '../../domain/entities/production_batch.dart';
 import '../models/batch_traceability_model.dart';
 import '../models/production_batch_model.dart';

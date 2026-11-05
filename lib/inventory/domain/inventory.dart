@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../shared/domain/value_objects.dart';
+import '../../common/domain/value_objects.dart';
 
 /// Raw material of an environment (`RawMaterialResource`). Stock values are
 /// derived by the backend from its lots.

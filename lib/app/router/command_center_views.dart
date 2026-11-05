@@ -10,7 +10,7 @@ import '../../iam/domain/user_session.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
-import '../../shared/presentation/l10n/app_localizations.dart';
+import '../../common/presentation/l10n/app_localizations.dart';
 
 /// Composition root of the panel: connects it with the widgets of the batch,
 /// compliance, identity and profile contexts.

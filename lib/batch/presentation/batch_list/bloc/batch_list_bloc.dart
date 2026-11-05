@@ -1,7 +1,7 @@
-import '../../../../shared/domain/failure.dart';
+import '../../../../common/domain/failure.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../shared/domain/value_objects.dart';
+import '../../../../common/domain/value_objects.dart';
 import '../../../application/batch_facade_service.dart';
 import 'batch_list_event.dart';
 import 'batch_list_state.dart';

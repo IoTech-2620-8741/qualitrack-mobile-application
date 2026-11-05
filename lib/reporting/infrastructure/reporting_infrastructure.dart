@@ -1,6 +1,6 @@
-import '../../shared/domain/value_objects.dart';
-import '../../shared/infrastructure/http/api_client.dart';
-import '../../shared/infrastructure/http/json_utils.dart';
+import '../../common/domain/value_objects.dart';
+import '../../common/infrastructure/http/api_client.dart';
+import '../../common/infrastructure/http/json_utils.dart';
 import '../domain/reporting.dart';
 
 /// `KpiDashboardResource {laboratoryId, timestamp, overallHealthScore, from, to,

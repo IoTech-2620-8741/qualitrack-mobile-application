@@ -1,4 +1,4 @@
-import '../../shared/domain/failure.dart';
+import '../../common/domain/failure.dart';
 import '../domain/iam_repositories.dart';
 import '../domain/onboarding_state.dart';
 import '../domain/user_session.dart';

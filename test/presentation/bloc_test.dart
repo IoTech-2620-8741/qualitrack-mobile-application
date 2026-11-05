@@ -20,9 +20,9 @@ import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dar
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
 import 'package:qualitrack_mobile/laboratory/application/laboratory_queries.dart';
 import 'package:qualitrack_mobile/reporting/application/reporting_queries.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
-import 'package:qualitrack_mobile/shared/presentation/view_status.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/tracking/application/telemetry_queries.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 import 'package:qualitrack_mobile/tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
