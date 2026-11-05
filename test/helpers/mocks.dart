@@ -9,7 +9,7 @@ import 'package:qualitrack_mobile/profile/domain/interfaces/profile_interface.da
 import 'package:qualitrack_mobile/reporting/domain/reporting.dart';
 import 'package:qualitrack_mobile/common/infrastructure/http/api_client.dart';
 import 'package:qualitrack_mobile/common/infrastructure/storage/secure_key_value_store.dart';
-import 'package:qualitrack_mobile/subscription/domain/subscription.dart';
+import 'package:qualitrack_mobile/subscription/domain/interfaces/subscription_interface.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -32,7 +32,7 @@ class MockInventoryRepository extends Mock implements InventoryRepository {}
 
 class MockReportingRepository extends Mock implements ReportingRepository {}
 
-class MockSubscriptionRepository extends Mock implements SubscriptionRepository {}
+class MockSubscriptionRepository extends Mock implements SubscriptionInterface {}
 
 class MockProfileRepository extends Mock implements ProfileInterface {}
 

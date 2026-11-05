@@ -25,7 +25,8 @@ import 'package:qualitrack_mobile/common/infrastructure/configuration/api_config
 import 'package:qualitrack_mobile/common/infrastructure/http/api_exception_mapper.dart';
 import 'package:qualitrack_mobile/common/infrastructure/http/auth_interceptor.dart';
 import 'package:qualitrack_mobile/common/infrastructure/http/json_utils.dart';
-import 'package:qualitrack_mobile/subscription/infrastructure/subscription_infrastructure.dart';
+import 'package:qualitrack_mobile/subscription/infrastructure/data_sources/subscription_remote_data_provider.dart';
+import 'package:qualitrack_mobile/subscription/infrastructure/repositories/subscription_repository.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 import 'package:qualitrack_mobile/tracking/infrastructure/telemetry_infrastructure.dart';
 
@@ -366,7 +367,7 @@ void main() {
         (await LaboratoryRepositoryImpl(LaboratoryRemoteDataSource(client)).getEnvironments(lab)).map((e) => e.code),
         ['ALM-01'],
       );
-      final subscriptions = await SubscriptionRepositoryImpl(SubscriptionRemoteDataSource(client)).getSubscriptions(lab);
+      final subscriptions = await SubscriptionRepository(remoteDataProvider: SubscriptionRemoteDataProvider(client)).getSubscriptions(lab);
       expect(subscriptions.single.cancelAtPeriodEnd, isTrue);
     });
 

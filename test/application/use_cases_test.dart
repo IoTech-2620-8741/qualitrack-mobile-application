@@ -16,8 +16,9 @@ import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
 import 'package:qualitrack_mobile/profile/domain/entities/user_profile.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
-import 'package:qualitrack_mobile/subscription/application/billing_queries.dart';
-import 'package:qualitrack_mobile/subscription/domain/subscription.dart';
+import 'package:qualitrack_mobile/subscription/application/subscription_facade_service.dart';
+import 'package:qualitrack_mobile/subscription/domain/entities/subscription.dart';
+import 'package:qualitrack_mobile/subscription/domain/entities/subscription_plan.dart';
 import 'package:qualitrack_mobile/tracking/application/telemetry_queries.dart';
 import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
 
@@ -297,7 +298,7 @@ void main() {
       );
       when(() => repo.getPayments(2)).thenAnswer((_) async => const []);
 
-      final summary = await GetBillingSummary(repo)(lab);
+      final summary = await SubscriptionFacadeService(repository: repo).getBillingSummary(lab);
 
       expect(summary.active, active);
       expect(summary.plan?.name, 'Standard Lab');
