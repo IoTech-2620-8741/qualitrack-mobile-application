@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 import '../domain/failure.dart';
-import '../infrastructure/http/api_exception_mapper.dart';
 
 /// Result of an independent secondary request.
 final class Section<T> extends Equatable {
@@ -18,7 +17,7 @@ final class Section<T> extends Equatable {
     } on UnauthorizedFailure {
       rethrow;
     } catch (error) {
-      return Section<R>.failed(ApiExceptionMapper.map(error));
+      return Section<R>.failed(Failure.from(error));
     }
   }
 
