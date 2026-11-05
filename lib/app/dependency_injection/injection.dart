@@ -42,6 +42,7 @@ import '../../profile/domain/profile.dart';
 import '../../profile/infrastructure/profile_infrastructure.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
+import '../../reporting/api/reporting-api.dart';
 import '../../reporting/application/reporting_facade_service.dart';
 import '../../reporting/application/reporting_queries.dart';
 import '../../reporting/domain/repositories/reporting_repository.dart';
@@ -165,6 +166,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => GetEquipmentAuditLogs(sl()));
   sl.registerLazySingleton(() => GetBatchAuditLogs(sl()));
   sl.registerLazySingleton(() => ReportingFacadeService(getKpiDashboard: sl(), getDeviationTrends: sl(), getReportHistory: sl(), getEnvironments: sl(), getEquipments: sl(),),);
+  sl.registerLazySingleton(() => ReportingApi(getKpiDashboard: sl(), getDeviationTrends: sl(), getReportHistory: sl(), getEquipmentAuditLogs: sl(), getBatchAuditLogs: sl(),),);
 
   // Payments & Subscriptions
   sl.registerLazySingleton(() => SubscriptionRemoteDataSource(sl()));
@@ -318,19 +320,6 @@ void _registerBlocs() {
     ),
   );
 
-  // ANTES:
-  // sl.registerFactory(
-  //   () => ReportsBloc(
-  //     getKpiDashboard: sl(),
-  //     getDeviationTrends: sl(),
-  //     getReportHistory: sl(),
-  //     getEnvironments: sl(),
-  //     getEquipments: sl(),
-  //     laboratoryId: _laboratoryId,
-  //   ),
-  // );
-
-  // AHORA:
   sl.registerFactory(
         () => ReportsBloc(
       reportingFacade: sl(),
