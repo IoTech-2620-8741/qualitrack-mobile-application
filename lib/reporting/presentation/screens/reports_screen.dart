@@ -20,8 +20,8 @@ import '../tabs/measurements_tab.dart';
 import '../tabs/history_tab.dart';
 
 /// Main screen for displaying reports and KPIs.
-class ReportsPage extends StatelessWidget {
-  const ReportsPage({super.key});
+class ReportsScreen extends StatelessWidget {
+  const ReportsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

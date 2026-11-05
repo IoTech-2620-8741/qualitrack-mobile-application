@@ -68,7 +68,7 @@ class ReportsState extends Equatable {
 /// BLoC that manages the state of the Reports screen.
 class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   ReportsBloc({
-    required this.reportingFacade,
+    required this.reportingService,
     required LaboratoryId Function() laboratoryId,
   }) : _laboratoryId = laboratoryId,
         super(const ReportsState()) {
@@ -85,7 +85,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   }
 
   /// Dependencias inyectadas: La fachada que orquesta las peticiones.
-  final ReportingFacadeService reportingFacade;
+  final ReportingFacadeService reportingService;
 
   /// Función para obtener el ID del laboratorio actual (viene de la sesión del usuario).
   final LaboratoryId Function() _laboratoryId;
@@ -103,7 +103,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
 
     try {
 
-      final data = await reportingFacade.loadReportsData(_laboratoryId(), state.period);
+      final data = await reportingService.loadReportsData(_laboratoryId(), state.period);
 
 
       if (data.everythingFailed) {

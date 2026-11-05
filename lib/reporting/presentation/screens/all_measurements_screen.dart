@@ -13,17 +13,17 @@ import '../widgets/environment_header.dart';
 import '../widgets/modern_filter_chip.dart';
 
 /// Screen that displays all measurement summaries.
-class AllMeasurementsPage extends StatefulWidget {
-  const AllMeasurementsPage({super.key, required this.data});
+class AllMeasurementsScreen extends StatefulWidget {
+  const AllMeasurementsScreen({super.key, required this.data});
 
   /// The consolidated data from the Facade, containing the measurements.
   final ReportsData data;
 
   @override
-  State<AllMeasurementsPage> createState() => _AllMeasurementsPageState();
+  State<AllMeasurementsScreen> createState() => _AllMeasurementsScreenState();
 }
 
-class _AllMeasurementsPageState extends State<AllMeasurementsPage> {
+class _AllMeasurementsScreenState extends State<AllMeasurementsScreen> {
   /// Local state to hold the currently selected environment ID.
   /// Null means "All environments".
   int? _environmentId;

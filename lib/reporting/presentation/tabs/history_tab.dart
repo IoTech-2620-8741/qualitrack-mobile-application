@@ -15,7 +15,7 @@ import '../widgets/empty_states.dart';
 import '../widgets/see_more_button.dart';
 import '../widgets/swipe_hint.dart';
 import '../widgets/info_banner.dart';
-import '../screens/all_reports_page.dart';
+import '../screens/all_reports_screen.dart';
 
 /// Tab that displays the history of generated reports.
 class HistoryTab extends StatelessWidget {
@@ -68,7 +68,7 @@ class HistoryTab extends StatelessWidget {
                 icon: Icons.history,
                 label: i18n.seeAll,
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => AllReportsPage(reports: data.reports.items)),
+                  MaterialPageRoute(builder: (_) => AllReportsScreen(reports: data.reports.items)),
                 ),
               ),
 

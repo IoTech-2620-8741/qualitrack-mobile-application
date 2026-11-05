@@ -11,7 +11,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
-import '../screens/all_measurements_page.dart';
+import '../screens/all_measurements_screen.dart';
 import '../widgets/measurement_row.dart';
 import '../widgets/empty_states.dart';
 import '../widgets/see_more_button.dart';
@@ -94,7 +94,7 @@ class MeasurementsTab extends StatelessWidget {
               icon: Icons.list_alt,
               label: i18n.seeAll,
               onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => AllMeasurementsPage(data: data)),
+                MaterialPageRoute(builder: (_) => AllMeasurementsScreen(data: data)),
               ),
             ),
             const SizedBox(height: AppSpacing.md),

@@ -13,7 +13,7 @@ import '../widgets/trend_row.dart';
 import '../widgets/empty_states.dart';
 import '../widgets/see_more_button.dart';
 import '../widgets/swipe_hint.dart';
-import '../screens/all_deviations_page.dart';
+import '../screens/all_deviations_screen.dart';
 
 /// Tab that displays the deviation trends.
 class DeviationsTab extends StatelessWidget {
@@ -69,7 +69,7 @@ class DeviationsTab extends StatelessWidget {
                 icon: Icons.expand_more,
                 label: i18n.seeMoreCount(trends.length - _maxVisible),
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => AllDeviationsPage(data: data)),
+                  MaterialPageRoute(builder: (_) => AllDeviationsScreen(data: data)),
                 ),
               ),
             const SizedBox(height: AppSpacing.md),

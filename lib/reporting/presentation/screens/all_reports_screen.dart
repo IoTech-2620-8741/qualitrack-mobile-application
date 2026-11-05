@@ -13,17 +13,17 @@ import '../widgets/modern_filter_chip.dart';
 import '../widgets/report_labels.dart';
 
 /// Screen that displays all audit reports with filtering capabilities.
-class AllReportsPage extends StatefulWidget {
-  const AllReportsPage({super.key, required this.reports});
+class AllReportsScreen extends StatefulWidget {
+  const AllReportsScreen({super.key, required this.reports});
 
   /// The full list of reports passed from the previous screen.
   final List<AuditReport> reports;
 
   @override
-  State<AllReportsPage> createState() => _AllReportsPageState();
+  State<AllReportsScreen> createState() => _AllReportsScreenState();
 }
 
-class _AllReportsPageState extends State<AllReportsPage> {
+class _AllReportsScreenState extends State<AllReportsScreen> {
   /// Local state to hold the currently selected report type.
   /// Null means "All types".
   String? _type;

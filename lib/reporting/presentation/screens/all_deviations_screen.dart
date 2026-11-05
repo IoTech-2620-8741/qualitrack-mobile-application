@@ -41,17 +41,17 @@ extension on _DeviationFilter {
 }
 
 /// Screen that displays all deviation trends with filtering capabilities.
-class AllDeviationsPage extends StatefulWidget {
-  const AllDeviationsPage({super.key, required this.data});
+class AllDeviationsScreen extends StatefulWidget {
+  const AllDeviationsScreen({super.key, required this.data});
 
   /// The consolidated data from the Facade, containing the trends.
   final ReportsData data;
 
   @override
-  State<AllDeviationsPage> createState() => _AllDeviationsPageState();
+  State<AllDeviationsScreen> createState() => _AllDeviationsScreenState();
 }
 
-class _AllDeviationsPageState extends State<AllDeviationsPage> {
+class _AllDeviationsScreenState extends State<AllDeviationsScreen> {
   // Estado local para guardar qué filtro está seleccionado actualmente.
   _DeviationFilter _filter = _DeviationFilter.all;
 
