@@ -1,23 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-/// `nextStep` values of `GET /users/me/onboarding`.
-enum OnboardingStep {
-  passwordChange,
-  subscription,
-  laboratory,
-  ready,
-  unknown;
+import 'onboarding_step.dart';
 
-  static OnboardingStep fromCode(String? code) => switch (code) {
-    'PASSWORD_CHANGE' => OnboardingStep.passwordChange,
-    'SUBSCRIPTION' => OnboardingStep.subscription,
-    'LABORATORY' => OnboardingStep.laboratory,
-    'READY' => OnboardingStep.ready,
-    _ => OnboardingStep.unknown,
-  };
-}
-
-final class OnboardingState extends Equatable {
+class OnboardingState extends Equatable {
   const OnboardingState({
     required this.nextStep,
     this.laboratoryId,
