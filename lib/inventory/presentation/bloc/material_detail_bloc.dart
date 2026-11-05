@@ -41,14 +41,14 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
   MaterialDetailBloc({
     required this.materialId,
     required this.environmentId,
-    required GetEnvironments getEnvironments,
+    required LaboratoryApi laboratoryApi,
     required GetInventoryMaterials getMaterials,
     required GetInventoryMaterial getMaterial,
     required GetMaterialReceipts getReceipts,
     required GetInventoryMovements getMovements,
     required GetMaterialUsages getUsages,
     required LaboratoryId Function() laboratoryId,
-  }) : _getEnvironments = getEnvironments,
+  }) : _laboratoryApi = laboratoryApi,
        _getMaterials = getMaterials,
        _getMaterial = getMaterial,
        _getReceipts = getReceipts,
@@ -64,7 +64,7 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
   /// Environment of the material when it is known (from the list); otherwise
   /// the material is looked up in every environment.
   final int? environmentId;
-  final GetEnvironments _getEnvironments;
+  final LaboratoryApi _laboratoryApi;
   final GetInventoryMaterials _getMaterials;
   final GetInventoryMaterial _getMaterial;
   final GetMaterialReceipts _getReceipts;
@@ -76,7 +76,7 @@ class MaterialDetailBloc extends Bloc<MaterialDetailRequested, RemoteState<Mater
     emit(event.refresh && state.hasData ? state.refreshingState() : state.loading());
     try {
       final lab = _laboratoryId();
-      final environments = await _getEnvironments(lab);
+      final environments = await _laboratoryApi.getEnvironments(lab);
       final material = await _find(lab, environments);
       final sections = await Future.wait<Object>([
         Section.load(() => _getReceipts(lab, material)),
