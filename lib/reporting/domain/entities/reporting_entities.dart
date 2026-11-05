@@ -198,3 +198,14 @@ final class AuditLogEntry extends Equatable {
   @override
   List<Object?> get props => [id, action, entityType, entityId, performedBy, timestamp, rawTimestamp, details];
 }
+
+enum DeviationSeverity { critical, warning, onTrack, noData }
+
+extension DeviationTrendSeverity on DeviationTrend {
+  DeviationSeverity get severity {
+    if (evaluatedReadings == 0) return DeviationSeverity.noData;
+    if (criticalDeviationCount > 0) return DeviationSeverity.critical;
+    if (deviationCount > 0) return DeviationSeverity.warning;
+    return DeviationSeverity.onTrack;
+  }
+}
