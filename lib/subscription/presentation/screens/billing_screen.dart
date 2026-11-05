@@ -12,8 +12,9 @@ import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/section_card.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../../common/presentation/section.dart';
-import '../../application/billing_queries.dart';
-import '../../domain/subscription.dart';
+import '../../domain/entities/billing_summary.dart';
+import '../../domain/entities/subscription.dart';
+import '../../domain/entities/subscription_payment.dart';
 import '../bloc/billing_bloc.dart';
 
 BadgeTone subscriptionTone(String status) => switch (status) {
@@ -33,8 +34,8 @@ BadgeTone paymentTone(String status) => switch (status) {
 
 /// "Resumen de Facturación" mockup, read-only. Plan changes, checkout and
 /// cancellation are managed in QualiTrack Web.
-class BillingPage extends StatelessWidget {
-  const BillingPage({super.key});
+class BillingScreen extends StatelessWidget {
+  const BillingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
