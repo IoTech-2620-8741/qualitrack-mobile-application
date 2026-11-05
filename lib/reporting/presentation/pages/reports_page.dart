@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../shared/presentation/labels.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../compliance/api/index.dart';
 import '../../../shared/presentation/formatting/context_locale.dart';
 import '../../../shared/presentation/formatting/formatters.dart';
 import '../../../shared/presentation/l10n/app_localizations.dart';
@@ -37,12 +37,6 @@ extension TrendDirectionPresentation on TrendDirection {
     TrendDirection.stable => Icons.trending_flat,
     TrendDirection.unknown => Icons.remove,
   };
-}
-
-/// As in Web, any time out of range is highlighted as a warning.
-BadgeTone timeInRangeTone(double? percent) {
-  if (percent == null) return BadgeTone.neutral;
-  return percent < 100 ? BadgeTone.warning : BadgeTone.success;
 }
 
 class ReportsPage extends StatelessWidget {
