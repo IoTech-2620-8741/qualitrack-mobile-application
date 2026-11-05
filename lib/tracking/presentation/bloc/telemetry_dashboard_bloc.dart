@@ -9,8 +9,18 @@ import '../../../common/domain/failure.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/view_status.dart';
-import '../../application/telemetry_queries.dart';
-import '../../domain/telemetry.dart';
+import '../../application/telemetry_facade_service.dart';
+import '../../application/telemetry_targets.dart';
+import '../../domain/entities/actuation_event.dart';
+import '../../domain/entities/device_connection.dart';
+import '../../domain/entities/environmental_profile.dart';
+import '../../domain/entities/measurement.dart';
+import '../../domain/entities/metric_reading.dart';
+import '../../domain/entities/metric_threshold.dart';
+import '../../domain/entities/monitored_metric.dart';
+import '../../domain/entities/telemetry_target.dart';
+import '../../domain/entities/telemetry_window.dart';
+import '../../domain/logic/telemetry_analysis.dart';
 
 /// IoT devices of the laboratory with the environments where they are located.
 final class DeviceCatalog extends Equatable {
@@ -227,10 +237,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
   TelemetryDashboardBloc({
     required EquipmentApi equipmentApi,
     required LaboratoryApi laboratoryApi,
-    required GetDeviceConnection getConnection,
-    required GetMeasurements getMeasurements,
-    required GetEnvironmentalProfile getProfile,
-    required GetActuationEvents getActuations,
+    required TelemetryFacadeService telemetryService,
     required LaboratoryId Function() laboratoryId,
     DateTime Function()? clock,
     this.pollInterval = const Duration(seconds: 15),
@@ -239,10 +246,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
     this.lookback = const Duration(hours: 24),
   }) : _equipmentApi = equipmentApi,
        _laboratoryApi = laboratoryApi,
-       _getConnection = getConnection,
-       _getMeasurements = getMeasurements,
-       _getProfile = getProfile,
-       _getActuations = getActuations,
+       _telemetryService = telemetryService,
        _laboratoryId = laboratoryId,
        _clock = clock ?? DateTime.now,
        super(const TelemetryState()) {
@@ -270,10 +274,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
 
   final EquipmentApi _equipmentApi;
   final LaboratoryApi _laboratoryApi;
-  final GetDeviceConnection _getConnection;
-  final GetMeasurements _getMeasurements;
-  final GetEnvironmentalProfile _getProfile;
-  final GetActuationEvents _getActuations;
+  final TelemetryFacadeService _telemetryService;
   final LaboratoryId Function() _laboratoryId;
   final DateTime Function() _clock;
   final Duration pollInterval;
@@ -333,14 +334,14 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       final now = _clock();
       final from = now.subtract(lookback);
       final results = await Future.wait<Object?>([
-        _getConnection(laboratoryId, target),
-        _getMeasurements(laboratoryId, target, from: from, to: now),
-        _getProfile(laboratoryId, target),
+        _telemetryService.getConnection(laboratoryId, target),
+        _telemetryService.getMeasurements(laboratoryId, target, from: from, to: now),
+        _telemetryService.getProfile(laboratoryId, target),
       ]);
       Failure? actuationsFailure;
       var actuations = const <ActuationEvent>[];
       try {
-        actuations = await _getActuations(laboratoryId, target, from: from, to: now);
+        actuations = await _telemetryService.getActuationEvents(laboratoryId, target, from: from, to: now);
       } on UnauthorizedFailure {
         rethrow;
       } on Failure catch (failure) {
@@ -377,8 +378,8 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       final laboratoryId = _laboratoryId();
       final now = _clock();
       final target = current.target;
-      final connection = await _getConnection(laboratoryId, target);
-      final recent = await _getMeasurements(laboratoryId, target, from: now.subtract(pollOverlap), to: now);
+      final connection = await _telemetryService.getConnection(laboratoryId, target);
+      final recent = await _telemetryService.getMeasurements(laboratoryId, target, from: now.subtract(pollOverlap), to: now);
       var next = current.copyWith(
         connection: connection,
         history: TelemetryAnalysis.merge(current.history, recent, now.subtract(lookback)),
@@ -386,7 +387,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       );
       if (target.containerMonitor && _ticks % actuationsEveryTicks == 0) {
         try {
-          final actuations = await _getActuations(laboratoryId, target, from: now.subtract(lookback), to: now);
+          final actuations = await _telemetryService.getActuationEvents(laboratoryId, target, from: now.subtract(lookback), to: now);
           next = next.copyWith(actuations: actuations, clearActuationsFailure: true);
         } on UnauthorizedFailure {
           rethrow;

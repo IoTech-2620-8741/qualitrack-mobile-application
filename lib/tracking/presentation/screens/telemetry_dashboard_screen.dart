@@ -16,21 +16,27 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/telemetry.dart';
+import '../../domain/entities/actuation_event.dart';
+import '../../domain/entities/environmental_state.dart';
+import '../../domain/entities/measurement.dart';
+import '../../domain/entities/metric_reading.dart';
+import '../../domain/entities/metric_threshold.dart';
+import '../../domain/entities/monitored_metric.dart';
+import '../../domain/entities/telemetry_window.dart';
 import '../bloc/telemetry_dashboard_bloc.dart';
 import '../widgets/telemetry_chart.dart';
 import '../widgets/telemetry_labels.dart';
 
 /// Conditions of an environment or a container from the phone (US: consult
 /// conditions from the mobile app).
-class TelemetryDashboardPage extends StatefulWidget {
-  const TelemetryDashboardPage({super.key});
+class TelemetryDashboardScreen extends StatefulWidget {
+  const TelemetryDashboardScreen({super.key});
 
   @override
-  State<TelemetryDashboardPage> createState() => _TelemetryDashboardPageState();
+  State<TelemetryDashboardScreen> createState() => _TelemetryDashboardScreenState();
 }
 
-class _TelemetryDashboardPageState extends State<TelemetryDashboardPage> with WidgetsBindingObserver {
+class _TelemetryDashboardScreenState extends State<TelemetryDashboardScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();

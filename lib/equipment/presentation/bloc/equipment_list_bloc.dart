@@ -94,11 +94,11 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
   EquipmentListBloc({
     required EquipmentFacadeService equipmentService,
     required LaboratoryApi laboratoryApi,
-    required GetDeviceConnections getConnections,
+    required TelemetryApi telemetryApi,
     required LaboratoryId Function() laboratoryId,
   }) : _equipmentService = equipmentService,
        _laboratoryApi = laboratoryApi,
-       _getConnections = getConnections,
+       _telemetryApi = telemetryApi,
        _laboratoryId = laboratoryId,
        super(const EquipmentListState()) {
     on<EquipmentListRequested>(_onRequested);
@@ -108,7 +108,7 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
 
   final EquipmentFacadeService _equipmentService;
   final LaboratoryApi _laboratoryApi;
-  final GetDeviceConnections _getConnections;
+  final TelemetryApi _telemetryApi;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(EquipmentListRequested event, Emitter<EquipmentListState> emit) async {
@@ -120,7 +120,7 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
       final equipments = results[0] as List<Equipment>;
       final environments = {for (final e in results[1] as List<LabEnvironment>) e.id: e.name};
       final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();
-      final connections = await _getConnections(lab, targets);
+      final connections = await _telemetryApi.getConnections(lab, targets);
       final items = [
         for (final e in equipments)
           EquipmentOverview(equipment: e, environmentName: environments[e.environmentId], connection: connections[e.id]),

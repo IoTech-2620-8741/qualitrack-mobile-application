@@ -20,8 +20,11 @@ import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/subscription/application/subscription_facade_service.dart';
 import 'package:qualitrack_mobile/subscription/domain/entities/subscription.dart';
 import 'package:qualitrack_mobile/subscription/domain/entities/subscription_plan.dart';
-import 'package:qualitrack_mobile/tracking/application/telemetry_queries.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/tracking/application/telemetry_facade_service.dart';
+import 'package:qualitrack_mobile/tracking/application/telemetry_targets.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -191,7 +194,7 @@ void main() {
       final repo = MockTelemetryRepository();
       final to = DateTime.utc(2026, 6, 30);
       expect(
-        () => GetMeasurements(repo)(lab, container, from: to.subtract(const Duration(days: 40)), to: to),
+        () => TelemetryFacadeService(repository: repo).getMeasurements(lab, container, from: to.subtract(const Duration(days: 40)), to: to),
         throwsA(isA<BadRequestFailure>()),
       );
       verifyNoMoreInteractions(repo);
@@ -203,7 +206,7 @@ void main() {
         (_) async => [measurementFixture(id: 1), measurementFixture(id: 2, deviceId: 11)],
       );
       final to = DateTime.utc(2026, 6, 30);
-      final points = await GetMeasurements(repo)(lab, container, from: to.subtract(const Duration(hours: 24)), to: to);
+      final points = await TelemetryFacadeService(repository: repo).getMeasurements(lab, container, from: to.subtract(const Duration(hours: 24)), to: to);
       expect(points.map((p) => p.id), [1]);
     });
 
@@ -215,16 +218,16 @@ void main() {
       );
       when(() => repo.getConnection(lab, other)).thenThrow(const ServerFailure(statusCode: 500));
 
-      expect((await GetDeviceConnections(repo)(lab, [container, other])).keys, [10]);
+      expect((await TelemetryFacadeService(repository: repo).getConnections(lab, [container, other])).keys, [10]);
 
       when(() => repo.getConnection(lab, other)).thenThrow(const UnauthorizedFailure());
-      expect(() => GetDeviceConnections(repo)(lab, [other]), throwsA(isA<UnauthorizedFailure>()));
+      expect(() => TelemetryFacadeService(repository: repo).getConnections(lab, [other]), throwsA(isA<UnauthorizedFailure>()));
     });
 
     test('environmental devices have no automatic actions', () async {
       final repo = MockTelemetryRepository();
       const environmental = TelemetryTarget(deviceId: 1, environmentId: 3, containerMonitor: false);
-      expect(await GetActuationEvents(repo)(lab, environmental, from: DateTime(2026), to: DateTime(2026, 2)), isEmpty);
+      expect(await TelemetryFacadeService(repository: repo).getActuationEvents(lab, environmental, from: DateTime(2026), to: DateTime(2026, 2)), isEmpty);
       verifyNoMoreInteractions(repo);
     });
 

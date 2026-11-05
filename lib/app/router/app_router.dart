@@ -47,8 +47,8 @@ import '../../subscription/presentation/bloc/billing_bloc.dart';
 import '../../subscription/presentation/screens/billing_screen.dart';
 import '../../tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 import '../../tracking/presentation/bloc/telemetry_history_bloc.dart';
-import '../../tracking/presentation/pages/telemetry_dashboard_page.dart';
-import '../../tracking/presentation/pages/telemetry_history_page.dart';
+import '../../tracking/presentation/screens/telemetry_dashboard_screen.dart';
+import '../../tracking/presentation/screens/telemetry_history_screen.dart';
 import '../dependency_injection/injection.dart';
 import 'app_routes.dart';
 import 'main_shell.dart';
@@ -126,7 +126,7 @@ GoRouter createRouter(
           final id = _intParam(state.uri.queryParameters['deviceId']);
           return BlocProvider(
             create: (_) => sl<TelemetryHistoryBloc>()..add(TelemetryHistoryStarted(deviceId: id)),
-            child: const TelemetryHistoryPage(),
+            child: const TelemetryHistoryScreen(),
           );
         },
       ),
@@ -304,7 +304,7 @@ GoRouter createRouter(
                   return BlocProvider(
                     key: ValueKey('telemetry-$id'),
                     create: (_) => sl<TelemetryDashboardBloc>()..add(TelemetryStarted(deviceId: id)),
-                    child: const TelemetryDashboardPage(),
+                    child: const TelemetryDashboardScreen(),
                   );
                 },
               ),

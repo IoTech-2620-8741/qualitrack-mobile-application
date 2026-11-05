@@ -13,7 +13,9 @@ import 'package:qualitrack_mobile/inventory/domain/entities/inventory_material.d
 import 'package:qualitrack_mobile/laboratory/domain/entities/environment_usage.dart';
 import 'package:qualitrack_mobile/laboratory/domain/entities/lab_environment.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_state.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/measurement.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
 
 /// Test-only fixtures. Production code never uses hardcoded data.
 String fakeJwt({required DateTime expiresAt}) {
