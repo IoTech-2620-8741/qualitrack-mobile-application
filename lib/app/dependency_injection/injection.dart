@@ -67,9 +67,11 @@ import '../../subscription/domain/interfaces/subscription_interface.dart';
 import '../../subscription/infrastructure/data_sources/subscription_remote_data_provider.dart';
 import '../../subscription/infrastructure/repositories/subscription_repository.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
-import '../../tracking/application/telemetry_queries.dart';
-import '../../tracking/domain/telemetry.dart';
-import '../../tracking/infrastructure/telemetry_infrastructure.dart';
+import '../../tracking/api/index.dart';
+import '../../tracking/application/telemetry_facade_service.dart';
+import '../../tracking/domain/interfaces/telemetry_interface.dart';
+import '../../tracking/infrastructure/data_sources/telemetry_remote_data_provider.dart';
+import '../../tracking/infrastructure/repositories/telemetry_repository.dart';
 import '../../tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 import '../../tracking/presentation/bloc/telemetry_history_bloc.dart';
 
@@ -118,13 +120,10 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => EquipmentApi(sl()));
 
   // Tracking & Telemetry
-  sl.registerLazySingleton(() => TelemetryRemoteDataSource(sl()));
-  sl.registerLazySingleton<TelemetryRepository>(() => TelemetryRepositoryImpl(sl()));
-  sl.registerLazySingleton(() => GetDeviceConnection(sl()));
-  sl.registerLazySingleton(() => GetDeviceConnections(sl()));
-  sl.registerLazySingleton(() => GetMeasurements(sl()));
-  sl.registerLazySingleton(() => GetEnvironmentalProfile(sl()));
-  sl.registerLazySingleton(() => GetActuationEvents(sl()));
+  sl.registerLazySingleton(() => TelemetryRemoteDataProvider(sl()));
+  sl.registerLazySingleton<TelemetryInterface>(() => TelemetryRepository(remoteDataProvider: sl()));
+  sl.registerLazySingleton(() => TelemetryFacadeService(repository: sl()));
+  sl.registerLazySingleton(() => TelemetryApi(sl()));
 
   // Compliance & Alerting (alerts and in-app notifications)
   sl.registerLazySingleton(() => ComplianceRemoteDataSource(sl()));
@@ -182,7 +181,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
     () => GetCommandCenterSummary(
       laboratoryApi: sl(),
       equipmentApi: sl(),
-      getConnections: sl(),
+      telemetryApi: sl(),
       batchApi: sl(),
       getAlerts: sl(),
       inventoryApi: sl(),
@@ -221,14 +220,14 @@ void _registerBlocs() {
   );
   sl.registerFactory(() => ProductsBloc(laboratoryService: sl(), laboratoryId: _laboratoryId));
   sl.registerFactory(
-    () => EquipmentListBloc(equipmentService: sl(), laboratoryApi: sl(), getConnections: sl(), laboratoryId: _laboratoryId),
+    () => EquipmentListBloc(equipmentService: sl(), laboratoryApi: sl(), telemetryApi: sl(), laboratoryId: _laboratoryId),
   );
   sl.registerFactoryParam<EquipmentDetailBloc, int, void>(
     (id, _) => EquipmentDetailBloc(
       equipmentId: id,
       equipmentService: sl(),
       laboratoryApi: sl(),
-      getConnection: sl(),
+      telemetryApi: sl(),
       getTrends: sl(),
       getEvents: sl(),
       getAuditLogs: sl(),
@@ -239,10 +238,7 @@ void _registerBlocs() {
     () => TelemetryDashboardBloc(
       equipmentApi: sl(),
       laboratoryApi: sl(),
-      getConnection: sl(),
-      getMeasurements: sl(),
-      getProfile: sl(),
-      getActuations: sl(),
+      telemetryService: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
@@ -250,7 +246,7 @@ void _registerBlocs() {
     () => TelemetryHistoryBloc(
       equipmentApi: sl(),
       laboratoryApi: sl(),
-      getMeasurements: sl(),
+      telemetryService: sl(),
       laboratoryId: _laboratoryId,
     ),
   );
