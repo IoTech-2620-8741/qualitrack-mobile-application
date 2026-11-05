@@ -6,8 +6,10 @@ import '../../../equipment/api/index.dart';
 import '../../../laboratory/api/index.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../application/compliance_queries.dart';
-import '../../domain/compliance.dart';
+import '../../application/compliance_facade_service.dart';
+import '../../domain/entities/alert_status.dart';
+import '../../domain/entities/alert_summary.dart';
+import '../../domain/entities/deviation_alert.dart';
 
 enum AlertFilter { open, all, unresolved, acknowledged, resolved, critical }
 
@@ -85,11 +87,11 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
   AlertsBloc({
     required LaboratoryApi laboratoryApi,
     required EquipmentApi equipmentApi,
-    required GetLaboratoryAlerts getAlerts,
+    required ComplianceFacadeService complianceService,
     required LaboratoryId Function() laboratoryId,
   }) : _laboratoryApi = laboratoryApi,
        _equipmentApi = equipmentApi,
-       _getAlerts = getAlerts,
+       _complianceService = complianceService,
        _laboratoryId = laboratoryId,
        super(const AlertsState()) {
     on<AlertsRequested>(_onRequested);
@@ -98,7 +100,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
 
   final LaboratoryApi _laboratoryApi;
   final EquipmentApi _equipmentApi;
-  final GetLaboratoryAlerts _getAlerts;
+  final ComplianceFacadeService _complianceService;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(AlertsRequested event, Emitter<AlertsState> emit) async {
@@ -109,7 +111,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
       final results = await Future.wait<Object>([_laboratoryApi.getEnvironments(laboratoryId), _equipmentApi.getEquipments(laboratoryId)]);
       final environments = results[0] as List<LabEnvironment>;
       final equipments = results[1] as List<Equipment>;
-      final alerts = await _getAlerts(laboratoryId, environments.map((e) => e.id));
+      final alerts = await _complianceService.getLaboratoryAlerts(laboratoryId, environments.map((e) => e.id));
       final data = AlertsData(
         alerts: alerts,
         deviceNames: {for (final e in equipments) e.id: e.name},

@@ -7,13 +7,14 @@ import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
-import '../../domain/compliance.dart';
+import '../../domain/entities/alert_severity.dart';
+import '../../domain/entities/notification_preferences.dart';
 import '../bloc/notification_preferences_bloc.dart';
 
 /// US: configure my notification preferences (in the app, by e-mail and the
 /// minimum severity of alerts).
-class NotificationPreferencesPage extends StatelessWidget {
-  const NotificationPreferencesPage({super.key});
+class NotificationPreferencesScreen extends StatelessWidget {
+  const NotificationPreferencesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

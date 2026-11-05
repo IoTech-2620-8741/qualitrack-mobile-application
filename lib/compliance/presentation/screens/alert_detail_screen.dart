@@ -13,15 +13,17 @@ import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/compliance.dart';
+import '../../domain/entities/alert_origin.dart';
+import '../../domain/entities/alert_status.dart';
+import '../../domain/entities/deviation_alert.dart';
 import '../bloc/alert_detail_bloc.dart';
 import '../widgets/alert_widgets.dart';
 
 /// "Deviation Details" mockup. Operators and quality managers attend and
 /// resolve alerts ([canAttend]); auditors only read. The backend validates
 /// every transition.
-class AlertDetailPage extends StatelessWidget {
-  const AlertDetailPage({super.key, required this.canAttend, required this.currentUserId});
+class AlertDetailScreen extends StatelessWidget {
+  const AlertDetailScreen({super.key, required this.canAttend, required this.currentUserId});
 
   final bool canAttend;
   final int? currentUserId;

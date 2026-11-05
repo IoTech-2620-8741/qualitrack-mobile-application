@@ -8,7 +8,10 @@ import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/compliance.dart';
+import '../../domain/entities/alert_origin.dart';
+import '../../domain/entities/alert_severity.dart';
+import '../../domain/entities/alert_status.dart';
+import '../../domain/entities/deviation_alert.dart';
 
 extension AlertStatusPresentation on AlertStatus {
   BadgeTone get tone => switch (this) {

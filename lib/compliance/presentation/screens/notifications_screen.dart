@@ -11,13 +11,15 @@ import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
-import '../../domain/compliance.dart';
+import '../../domain/entities/alert_severity.dart';
+import '../../domain/entities/app_notification.dart';
+import '../../domain/entities/notification_type.dart';
 import '../bloc/notifications_bloc.dart';
 
 /// In-app notices (US: receive notices in the app). Opening one marks it as
 /// read and leads to the alert or the batch.
-class NotificationsPage extends StatelessWidget {
-  const NotificationsPage({super.key});
+class NotificationsScreen extends StatelessWidget {
+  const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

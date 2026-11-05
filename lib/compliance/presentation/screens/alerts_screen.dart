@@ -13,8 +13,8 @@ import '../bloc/unread_notifications_controller.dart';
 import '../widgets/notification_bell.dart';
 import '../widgets/alert_widgets.dart';
 
-class AlertsPage extends StatelessWidget {
-  const AlertsPage({super.key, required this.notifications});
+class AlertsScreen extends StatelessWidget {
+  const AlertsScreen({super.key, required this.notifications});
 
   final UnreadNotificationsController notifications;
 

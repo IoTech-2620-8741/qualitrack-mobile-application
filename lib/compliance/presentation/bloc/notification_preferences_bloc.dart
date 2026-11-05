@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/domain/failure.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../application/compliance_queries.dart';
-import '../../domain/compliance.dart';
+import '../../application/compliance_facade_service.dart';
+import '../../domain/entities/notification_preferences.dart';
 
 sealed class NotificationPreferencesEvent extends Equatable {
   const NotificationPreferencesEvent();
@@ -55,22 +55,19 @@ final class NotificationPreferencesState extends Equatable {
 
 class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, NotificationPreferencesState> {
   NotificationPreferencesBloc({
-    required GetNotificationPreferences getPreferences,
-    required UpdateNotificationPreferences updatePreferences,
-  }) : _getPreferences = getPreferences,
-       _updatePreferences = updatePreferences,
+    required ComplianceFacadeService complianceService,
+  }) : _complianceService = complianceService,
        super(const NotificationPreferencesState()) {
     on<NotificationPreferencesRequested>(_onRequested);
     on<NotificationPreferencesSaved>(_onSaved);
   }
 
-  final GetNotificationPreferences _getPreferences;
-  final UpdateNotificationPreferences _updatePreferences;
+  final ComplianceFacadeService _complianceService;
 
   Future<void> _onRequested(NotificationPreferencesRequested event, Emitter<NotificationPreferencesState> emit) async {
     emit(state.copyWith(remote: state.remote.loading()));
     try {
-      emit(state.copyWith(remote: state.remote.success(await _getPreferences())));
+      emit(state.copyWith(remote: state.remote.success(await _complianceService.getPreferences())));
     } catch (error) {
       emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
@@ -80,7 +77,7 @@ class NotificationPreferencesBloc extends Bloc<NotificationPreferencesEvent, Not
     if (state.saveStatus == PreferencesSaveStatus.saving) return;
     emit(state.copyWith(saveStatus: PreferencesSaveStatus.saving));
     try {
-      final saved = await _updatePreferences(event.preferences);
+      final saved = await _complianceService.updatePreferences(event.preferences);
       emit(state.copyWith(remote: state.remote.success(saved), saveStatus: PreferencesSaveStatus.saved));
     } catch (error) {
       emit(state.copyWith(saveStatus: PreferencesSaveStatus.failure, saveFailure: Failure.from(error)));
