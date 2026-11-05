@@ -12,7 +12,7 @@ import '../../../shared/presentation/widgets/failure_message.dart';
 import '../../../shared/presentation/widgets/layout_widgets.dart';
 import '../../../shared/presentation/widgets/remote_state_view.dart';
 import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/presentation/widgets/telemetry_labels.dart';
+import '../../../tracking/api/index.dart';
 import '../../domain/compliance.dart';
 import '../bloc/alert_detail_bloc.dart';
 import '../widgets/alert_widgets.dart';
