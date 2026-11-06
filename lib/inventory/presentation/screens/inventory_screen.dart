@@ -1,30 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_radius.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/theme/app_typography.dart';
-import '../../../common/presentation/formatting/context_locale.dart';
-import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
-import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/entities/inventory_material.dart';
 import '../bloc/inventory_bloc.dart';
-import '../widgets/inventory_labels.dart';
+import '../widgets/inventory_material_card.dart';
+import '../widgets/inventory_filter_bar.dart';
 
 class InventoryScreen extends StatelessWidget {
   const InventoryScreen({super.key});
-
-  String _filterLabel(BuildContext context, InventoryFilter f) => switch (f) {
-    InventoryFilter.all => context.i18n.filterAll,
-    InventoryFilter.belowMinimum => context.i18n.belowMinimum,
-    InventoryFilter.blockedStock => context.i18n.blockedStock,
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -78,23 +68,21 @@ class InventoryScreen extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: AppSpacing.md),
-                  SearchField(
-                    hint: i18n.searchMaterials,
-                    onChanged: (q) => bloc.add(InventoryQueryChanged(q)),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  FilterChipBar<InventoryFilter>(
-                    options: InventoryFilter.values,
-                    selected: state.filter,
-                    labelOf: (f) => _filterLabel(context, f),
-                    onSelected: (f) => bloc.add(InventoryFilterChanged(f)),
+                  InventoryFilterBar(
+                    selectedFilter: state.filter,
+                    onQueryChanged: (query) {
+                      bloc.add(InventoryQueryChanged(query));
+                    },
+                    onFilterChanged: (filter) {
+                      bloc.add(InventoryFilterChanged(filter));
+                    },
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (items.isEmpty)
                     SizedBox(height: 200, child: EmptyView(title: i18n.noResults))
                   else
-                    for (final m in items) ...[
-                      _MaterialCard(material: m, environmentName: state.environmentNames[m.environmentId]),
+                    for (final material in items) ...[
+                      InventoryMaterialCard(material: material, environmentName:state.environmentNames[material.environmentId]),
                       const SizedBox(height: AppSpacing.sm),
                     ],
                 ],
@@ -107,64 +95,3 @@ class InventoryScreen extends StatelessWidget {
   }
 }
 
-class _MaterialCard extends StatelessWidget {
-  const _MaterialCard({required this.material, this.environmentName});
-
-  final InventoryMaterial material;
-  final String? environmentName;
-
-  @override
-  Widget build(BuildContext context) {
-    final i18n = context.i18n;
-    final locale = context.localeName;
-    final theme = Theme.of(context);
-    String qty(double v) => '${Formatters.number(v, locale)} ${material.unit}'.trim();
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.push('/inventory/${material.id}?environmentId=${material.environmentId}'),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(material.name, style: theme.textTheme.titleSmall),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: material.code,
-                                style: const TextStyle(fontFamily: AppTypography.monospace),
-                              ),
-                              if (environmentName != null) TextSpan(text: ' · $environmentName'),
-                            ],
-                          ),
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  StatusBadge(label: material.stockLabel(i18n), tone: material.stockTone),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  Expanded(child: KeyValue(label: i18n.usableStock, value: qty(material.usableStock))),
-                  Expanded(child: KeyValue(label: i18n.physicalStock, value: qty(material.physicalStock))),
-                  Expanded(child: KeyValue(label: i18n.minimumStock, value: qty(material.minimumStock))),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
