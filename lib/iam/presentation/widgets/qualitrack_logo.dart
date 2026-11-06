@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_colors.dart';
 
 class QualiTrackLogo extends StatelessWidget {
   const QualiTrackLogo({super.key, this.size = 96});

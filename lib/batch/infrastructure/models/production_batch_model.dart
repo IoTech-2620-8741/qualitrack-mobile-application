@@ -1,4 +1,4 @@
-import '../../../shared/infrastructure/http/json_utils.dart';
+import '../../../common/infrastructure/http/json_utils.dart';
 import '../../domain/entities/batch_status.dart';
 import '../../domain/entities/production_batch.dart';
 

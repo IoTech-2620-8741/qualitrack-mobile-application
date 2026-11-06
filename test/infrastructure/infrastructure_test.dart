@@ -7,26 +7,45 @@ import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
 import 'package:qualitrack_mobile/batch/infrastructure/data_sources/batch_remote_data_provider.dart';
 import 'package:qualitrack_mobile/batch/infrastructure/models/batch_traceability_model.dart';
 import 'package:qualitrack_mobile/batch/infrastructure/repositories/batch_repository.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
-import 'package:qualitrack_mobile/compliance/infrastructure/compliance_infrastructure.dart';
-import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
-import 'package:qualitrack_mobile/equipment/infrastructure/equipment_infrastructure.dart';
-import 'package:qualitrack_mobile/iam/domain/user_role.dart';
-import 'package:qualitrack_mobile/iam/infrastructure/iam_dtos.dart';
-import 'package:qualitrack_mobile/iam/infrastructure/iam_repositories_impl.dart';
-import 'package:qualitrack_mobile/inventory/infrastructure/inventory_infrastructure.dart';
-import 'package:qualitrack_mobile/laboratory/infrastructure/laboratory_infrastructure.dart';
-import 'package:qualitrack_mobile/profile/domain/profile.dart';
-import 'package:qualitrack_mobile/profile/infrastructure/profile_infrastructure.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/configuration/api_config.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/http/api_exception_mapper.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/http/auth_interceptor.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/http/json_utils.dart';
-import 'package:qualitrack_mobile/subscription/infrastructure/subscription_infrastructure.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
-import 'package:qualitrack_mobile/tracking/infrastructure/telemetry_infrastructure.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_origin.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/data_sources/compliance_remote_data_provider.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/models/app_notification_model.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/models/deviation_alert_model.dart';
+import 'package:qualitrack_mobile/compliance/infrastructure/repositories/compliance_repository.dart';
+import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
+import 'package:qualitrack_mobile/equipment/infrastructure/data_sources/equipment_remote_data_provider.dart';
+import 'package:qualitrack_mobile/equipment/infrastructure/models/equipment_model.dart';
+import 'package:qualitrack_mobile/equipment/infrastructure/repositories/equipment_repository.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_role.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/data_sources/iam_local_data_provider.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/data_sources/iam_remote_data_provider.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/models/authenticated_user_model.dart';
+import 'package:qualitrack_mobile/iam/infrastructure/repositories/iam_repository.dart';
+import 'package:qualitrack_mobile/inventory/infrastructure/data_sources/inventory_remote_data_provider.dart';
+import 'package:qualitrack_mobile/inventory/infrastructure/repositories/inventory_repository.dart';
+import 'package:qualitrack_mobile/laboratory/infrastructure/data_sources/laboratory_remote_data_provider.dart';
+import 'package:qualitrack_mobile/laboratory/infrastructure/repositories/laboratory_repository.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
+import 'package:qualitrack_mobile/profile/infrastructure/data_sources/profile_remote_data_provider.dart';
+import 'package:qualitrack_mobile/profile/infrastructure/repositories/profile_repository.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/common/infrastructure/configuration/api_config.dart';
+import 'package:qualitrack_mobile/common/infrastructure/http/api_exception_mapper.dart';
+import 'package:qualitrack_mobile/common/infrastructure/http/auth_interceptor.dart';
+import 'package:qualitrack_mobile/common/infrastructure/http/json_utils.dart';
+import 'package:qualitrack_mobile/subscription/infrastructure/data_sources/subscription_remote_data_provider.dart';
+import 'package:qualitrack_mobile/subscription/infrastructure/repositories/subscription_repository.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_state.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/data_sources/telemetry_remote_data_provider.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/models/device_connection_model.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/models/environmental_profile_model.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/models/measurement_model.dart';
+import 'package:qualitrack_mobile/tracking/infrastructure/repositories/telemetry_repository.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -117,14 +136,14 @@ void main() {
 
   group('DTO mapping', () {
     test('authenticated user → session with the temporary password flag', () {
-      final session = AuthenticatedUserDto.fromJson({
+      final session = AuthenticatedUserModel.fromJson({
         'id': 42,
         'username': 'lucia@senkalab.test',
         'token': fakeJwt(expiresAt: DateTime.utc(2030)),
         'roles': ['ROLE_LAB_OPERATOR'],
         'laboratoryId': 7,
         'passwordChangeRequired': true,
-      }).toDomain();
+      });
       expect(session.userId, 42);
       expect(session.roles, [UserRole.labOperator]);
       expect(session.laboratoryId, lab);
@@ -133,7 +152,7 @@ void main() {
     });
 
     test('deviation alert with its related automatic actions', () {
-      final alert = const DeviationAlertDto(alertJson).toDomain();
+      final alert = DeviationAlertModel.fromJson(alertJson);
       expect(alert.status, AlertStatus.unresolved);
       expect(alert.severity, AlertSeverity.critical);
       expect(alert.origin, AlertOrigin.container);
@@ -144,7 +163,7 @@ void main() {
     });
 
     test('measurement, profile and connection of Tracking', () {
-      final measurement = const MeasurementDto({
+      final measurement = MeasurementModel.fromJson(const {
         'id': 1,
         'deviceId': 10,
         'environmentId': 3,
@@ -156,12 +175,12 @@ void main() {
         'state': 'WARNING',
         'thresholdValue': 70,
         'profileVersion': 2,
-      }).toDomain();
+      });
       expect(measurement.metric, MonitoredMetric.humidity);
       expect(measurement.state, EnvironmentalState.warning);
       expect(measurement.isNumeric, isTrue);
 
-      final profile = const EnvironmentalProfileDto({
+      final profile = EnvironmentalProfileModel.fromJson(const {
         'version': 4,
         'thresholds': [
           {'metric': 'TEMPERATURE', 'unit': '°C', 'normalMin': 2, 'normalMax': 8, 'criticalMin': 0, 'criticalMax': 10},
@@ -170,28 +189,28 @@ void main() {
           {'metric': 'TEMPERATURE', 'state': 'CRITICAL', 'action': 'COOLING_ON'},
         ],
         'updatedAt': null,
-      }).toDomain();
+      });
       expect(profile.thresholdFor(MonitoredMetric.temperature)?.criticalMax, 10);
       expect(profile.actuationRules.single.state, EnvironmentalState.critical);
 
-      final connection = const DeviceConnectionDto({
+      final connection = DeviceConnectionModel.fromJson(const {
         'deviceId': 10,
         'connectionStatus': 'REQUIRES_REVIEW',
         'lastCommunicationAt': null,
         'expectedPeriodSeconds': 300,
-      }).toDomain();
+      });
       expect(connection.isConnected, isFalse);
     });
 
     test('equipment, batch traceability and notifications', () {
-      final equipment = const EquipmentDto({
+      final equipment = EquipmentModel.fromJson(const {
         'id': 5,
         'laboratoryId': 7,
         'environmentId': null,
         'name': 'Balance',
         'status': 'CALIBRATING',
         'deviceType': null,
-      }).toDomain();
+      });
       expect(equipment.rawStatus, 'CALIBRATING');
       expect(equipment.isIotDevice, isFalse);
 
@@ -224,14 +243,14 @@ void main() {
       expect(traceability.release?.signatureHash, 'ab12');
       expect(traceability.rejection, isNull);
 
-      final notification = const NotificationDto({
+      final notification = AppNotificationModel.fromJson(const {
         'id': 1,
         'type': 'ALERT_ESCALATED',
         'severity': 'CRITICAL',
         'subjectType': 'ALERT',
         'subjectId': 9,
         'readAt': null,
-      }).toDomain();
+      });
       expect(notification.isAboutAlert, isTrue);
       expect(notification.isRead, isFalse);
     });
@@ -244,18 +263,19 @@ void main() {
 
     test('secure session repository round-trips the session', () async {
       final store = InMemorySecureStore();
-      final repo = SecureSessionRepository(store);
+      final repo = IamRepository(remoteDataProvider: IamRemoteDataProvider(MockApiClient()), localDataProvider: IamLocalDataProvider(store));
       final session = sessionFixture(passwordChangeRequired: true);
-      await repo.save(session);
-      expect(store.values.keys, [SecureSessionRepository.storageKey]);
-      expect(await repo.load(), session);
-      await repo.clear();
-      expect(await repo.load(), isNull);
+      await repo.saveSession(session);
+      expect(store.values.keys, [IamLocalDataProvider.storageKey]);
+      // The stored session comes back as the model, so compare the data.
+      expect((await repo.loadSession())?.props, session.props);
+      await repo.clearSession();
+      expect(await repo.loadSession(), isNull);
     });
 
     test('corrupted stored session is discarded', () async {
-      final store = InMemorySecureStore()..values[SecureSessionRepository.storageKey] = '{broken';
-      expect(await SecureSessionRepository(store).load(), isNull);
+      final store = InMemorySecureStore()..values[IamLocalDataProvider.storageKey] = '{broken';
+      expect(await IamRepository(remoteDataProvider: IamRemoteDataProvider(MockApiClient()), localDataProvider: IamLocalDataProvider(store)).loadSession(), isNull);
       expect(store.values, isEmpty);
     });
 
@@ -266,7 +286,7 @@ void main() {
       when(() => client.post('/deviation-alerts/2/resolutions', body: {'resolutionNotes': 'Door closed'})).thenAnswer(
         (_) async => {...alertJson, 'status': 'RESOLVED'},
       );
-      final repo = ComplianceRepositoryImpl(ComplianceRemoteDataSource(client));
+      final repo = ComplianceRepository(remoteDataProvider: ComplianceRemoteDataProvider(client));
 
       expect((await repo.acknowledge(2)).status, AlertStatus.acknowledged);
       expect((await repo.resolve(2, 'Door closed')).status, AlertStatus.resolved);
@@ -282,9 +302,9 @@ void main() {
       );
       when(() => client.get('/laboratories/7/batches')).thenAnswer((_) async => <Object>[]);
 
-      expect(await ComplianceRepositoryImpl(ComplianceRemoteDataSource(client)).getEnvironmentAlerts(lab, 3), hasLength(1));
+      expect(await ComplianceRepository(remoteDataProvider: ComplianceRemoteDataProvider(client)).getEnvironmentAlerts(lab, 3), hasLength(1));
       expect(
-        (await EquipmentRepositoryImpl(EquipmentRemoteDataSource(client)).getByLaboratory(lab)).map((e) => e.id),
+        (await EquipmentRepository(remoteDataProvider: EquipmentRemoteDataProvider(client)).getByLaboratory(lab)).map((e) => e.id),
         [1],
       );
       expect(await BatchRepository(remoteDataProvider: BatchRemoteDataProvider(client)).getByLaboratory(lab), isEmpty);
@@ -293,7 +313,7 @@ void main() {
     test('maintenance is read in the environment of the equipment', () async {
       when(() => client.get('/laboratories/7/environments/3/equipments/10/maintenance-records'))
           .thenAnswer((_) async => <Object>[]);
-      final repo = EquipmentRepositoryImpl(EquipmentRemoteDataSource(client));
+      final repo = EquipmentRepository(remoteDataProvider: EquipmentRemoteDataProvider(client));
       expect(await repo.getMaintenance(lab, 3, 10), isEmpty);
       expect(EquipmentStatus.fromCode('MAINTENANCE'), EquipmentStatus.maintenance);
     });
@@ -322,7 +342,7 @@ void main() {
             '/laboratories/7/environments/3/container-monitors/10/telemetry-measurements',
             query: {'from': from, 'to': to},
           )).thenAnswer((_) async => <Object>[]);
-      final repo = TelemetryRepositoryImpl(TelemetryRemoteDataSource(client));
+      final repo = TelemetryRepository(remoteDataProvider: TelemetryRemoteDataProvider(client));
       final start = DateTime.utc(2026, 10, 5);
       final end = DateTime.utc(2026, 10, 5, 12);
 
@@ -339,7 +359,7 @@ void main() {
     test('a device without profile (404) has a null profile', () async {
       when(() => client.get('/laboratories/7/environments/3/devices/10/environmental-profile'))
           .thenThrow(const NotFoundFailure());
-      final repo = TelemetryRepositoryImpl(TelemetryRemoteDataSource(client));
+      final repo = TelemetryRepository(remoteDataProvider: TelemetryRemoteDataProvider(client));
       expect(
         await repo.getProfile(lab, const TelemetryTarget(deviceId: 10, environmentId: 3, containerMonitor: true)),
         isNull,
@@ -360,12 +380,12 @@ void main() {
         ],
       );
 
-      expect(await InventoryRepositoryImpl(InventoryRemoteDataSource(client)).getMovements(lab, materialFixture()), isEmpty);
+      expect(await InventoryRepository(remoteDataProvider: InventoryRemoteDataProvider(client)).getMovements(lab, materialFixture()), isEmpty);
       expect(
-        (await LaboratoryRepositoryImpl(LaboratoryRemoteDataSource(client)).getEnvironments(lab)).map((e) => e.code),
+        (await LaboratoryRepository(remoteDataProvider: LaboratoryRemoteDataProvider(client)).getEnvironments(lab)).map((e) => e.code),
         ['ALM-01'],
       );
-      final subscriptions = await SubscriptionRepositoryImpl(SubscriptionRemoteDataSource(client)).getSubscriptions(lab);
+      final subscriptions = await SubscriptionRepository(remoteDataProvider: SubscriptionRemoteDataProvider(client)).getSubscriptions(lab);
       expect(subscriptions.single.cancelAtPeriodEnd, isTrue);
     });
 
@@ -374,7 +394,7 @@ void main() {
       when(() => client.putBytes('/users/me/profile/photo', any(), contentType: 'image/jpeg'))
           .thenAnswer((_) async => <String, Object>{});
       when(() => client.getBytes('/users/me/profile/photo')).thenThrow(const NotFoundFailure());
-      final repo = ProfileRepositoryImpl(ProfileRemoteDataSource(client));
+      final repo = ProfileRepository(remoteDataProvider: ProfileRemoteDataProvider(client));
 
       await repo.uploadMyPhoto(ProfilePhoto(bytes: bytes, contentType: 'image/jpeg'));
 

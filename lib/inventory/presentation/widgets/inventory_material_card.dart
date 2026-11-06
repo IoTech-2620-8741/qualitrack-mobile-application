@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_typography.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
 
-import '../../domain/inventory.dart';
+import '../../domain/entities/inventory_material.dart';
 import 'inventory_labels.dart';
 
 class InventoryMaterialCard extends StatelessWidget {
@@ -24,7 +24,7 @@ class InventoryMaterialCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
 
@@ -78,7 +78,7 @@ class InventoryMaterialCard extends StatelessWidget {
                     ),
                   ),
                   StatusBadge(
-                    label: material.stockLabel(l10n),
+                    label: material.stockLabel(i18n),
                     tone: material.stockTone,
                   ),
                 ],
@@ -90,19 +90,19 @@ class InventoryMaterialCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: KeyValue(
-                      label: l10n.usableStock,
+                      label: i18n.usableStock,
                       value: quantity(material.usableStock),
                     ),
                   ),
                   Expanded(
                     child: KeyValue(
-                      label: l10n.physicalStock,
+                      label: i18n.physicalStock,
                       value: quantity(material.physicalStock),
                     ),
                   ),
                   Expanded(
                     child: KeyValue(
-                      label: l10n.minimumStock,
+                      label: i18n.minimumStock,
                       value: quantity(material.minimumStock),
                     ),
                   ),

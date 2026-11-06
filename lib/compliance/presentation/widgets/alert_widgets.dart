@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/domain/telemetry.dart';
-import '../../../tracking/presentation/widgets/telemetry_labels.dart';
-import '../../domain/compliance.dart';
+import '../../../common/presentation/labels.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_typography.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
+import '../../domain/entities/alert_origin.dart';
+import '../../domain/entities/alert_severity.dart';
+import '../../domain/entities/alert_status.dart';
+import '../../domain/entities/deviation_alert.dart';
 
 extension AlertStatusPresentation on AlertStatus {
   BadgeTone get tone => switch (this) {
@@ -26,11 +28,11 @@ extension AlertStatusPresentation on AlertStatus {
     AlertStatus.unknown => Icons.help_outline,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    AlertStatus.unresolved => l10n.alertUnresolved,
-    AlertStatus.acknowledged => l10n.alertAcknowledged,
-    AlertStatus.resolved => l10n.alertResolved,
-    AlertStatus.unknown => l10n.unknown,
+  String label(AppLocalizations i18n) => switch (this) {
+    AlertStatus.unresolved => i18n.alertUnresolved,
+    AlertStatus.acknowledged => i18n.alertAcknowledged,
+    AlertStatus.resolved => i18n.alertResolved,
+    AlertStatus.unknown => i18n.unknown,
   };
 }
 
@@ -42,17 +44,13 @@ extension AlertSeverityPresentation on AlertSeverity {
     AlertSeverity.unknown => BadgeTone.neutral,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    AlertSeverity.low => l10n.severityLow,
-    AlertSeverity.warning => l10n.severityWarning,
-    AlertSeverity.critical => l10n.severityCritical,
-    AlertSeverity.unknown => l10n.unknown,
+  String label(AppLocalizations i18n) => switch (this) {
+    AlertSeverity.low => i18n.severityLow,
+    AlertSeverity.warning => i18n.severityWarning,
+    AlertSeverity.critical => i18n.severityCritical,
+    AlertSeverity.unknown => i18n.unknown,
   };
 }
-
-/// Localized name of the monitored variable of an alert (e.g. `TEMPERATURE`).
-String alertVariable(AppLocalizations l10n, String parameterName) =>
-    MonitoredMetric.fromCode(parameterName).label(l10n, raw: Formatters.humanize(parameterName));
 
 String formatAlertValue(double? value, String? unit, String locale) {
   if (value == null) return '—';
@@ -69,7 +67,7 @@ class AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
     final theme = Theme.of(context);
     final highlight = alert.isOpen && alert.isCritical;
@@ -93,12 +91,12 @@ class AlertCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.parameter.toUpperCase(), style: AppTypography.overline),
-                        Text(alertVariable(l10n, alert.parameterName), style: theme.textTheme.titleSmall),
+                        Text(i18n.parameter.toUpperCase(), style: AppTypography.overline),
+                        Text(alertVariable(i18n, alert.parameterName), style: theme.textTheme.titleSmall),
                       ],
                     ),
                   ),
-                  StatusBadge(label: alert.severity.label(l10n), tone: alert.severity.tone),
+                  StatusBadge(label: alert.severity.label(i18n), tone: alert.severity.tone),
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -107,20 +105,20 @@ class AlertCard extends StatelessWidget {
                 runSpacing: AppSpacing.xs,
                 children: [
                   StatusBadge(
-                    label: alert.status.label(l10n),
+                    label: alert.status.label(i18n),
                     tone: alert.status.tone,
                     icon: alert.status.icon,
                   ),
                   if (environmentName != null)
                     StatusBadge(label: environmentName!, tone: BadgeTone.neutral, icon: Icons.meeting_room_outlined),
                   StatusBadge(
-                    label: deviceName ?? l10n.equipmentNumber(alert.equipmentId),
+                    label: deviceName ?? i18n.equipmentNumber(alert.equipmentId),
                     tone: BadgeTone.neutral,
                     icon: alert.origin == AlertOrigin.container ? Icons.kitchen_outlined : Icons.sensors_outlined,
                   ),
                   if (alert.deviationCount > 1)
                     StatusBadge(
-                      label: l10n.deviationsCount(alert.deviationCount),
+                      label: i18n.deviationsCount(alert.deviationCount),
                       tone: BadgeTone.neutral,
                       icon: Icons.repeat,
                     ),
@@ -139,7 +137,7 @@ class AlertCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(l10n.recordedValue, style: theme.textTheme.bodySmall),
+                      Text(i18n.recordedValue, style: theme.textTheme.bodySmall),
                       Text(
                         formatAlertValue(alert.recordedValue, alert.unit, locale),
                         style: TextStyle(

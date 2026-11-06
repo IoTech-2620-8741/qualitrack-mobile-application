@@ -2,16 +2,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qualitrack_mobile/batch/domain/logic/iso_date.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_summary.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
-import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
-import 'package:qualitrack_mobile/iam/domain/access_token.dart';
-import 'package:qualitrack_mobile/iam/domain/onboarding_state.dart';
-import 'package:qualitrack_mobile/iam/domain/password_policy.dart';
-import 'package:qualitrack_mobile/iam/domain/user_role.dart';
-import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
-import 'package:qualitrack_mobile/profile/domain/profile.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_origin.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_summary.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/deviation_alert.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
+import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
+import 'package:qualitrack_mobile/equipment/domain/entities/iot_device_type.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/access_token.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/onboarding_state.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/onboarding_step.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_role.dart';
+import 'package:qualitrack_mobile/iam/domain/logic/password_policy.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/environment_usage.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/product_catalog.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/user_profile.dart';
+import 'package:qualitrack_mobile/profile/domain/logic/personal_data_rules.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_profile.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_state.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_window.dart';
+import 'package:qualitrack_mobile/tracking/domain/logic/telemetry_analysis.dart';
 
 import '../helpers/fixtures.dart';
 
@@ -133,6 +151,24 @@ void main() {
       expect(AlertSeverity.fromCode(null), AlertSeverity.unknown);
       expect(AlertOrigin.fromCode('ENVIRONMENT'), AlertOrigin.environment);
       expect(NotificationType.fromCode('BATCH_RELEASED'), NotificationType.batchReleased);
+    });
+  });
+
+  group('DeviceConnection', () {
+    test('reachable is null when the status is unknown', () {
+      DeviceConnection of(ConnectionStatus status) => DeviceConnection(deviceId: 1, status: status);
+      expect(of(ConnectionStatus.unknown).reachable, isNull);
+      expect(of(ConnectionStatus.connected).reachable, isTrue);
+      expect(of(ConnectionStatus.requiresReview).reachable, isFalse);
+    });
+  });
+
+  group('Failure.from', () {
+    test('keeps failures and types unexpected errors', () {
+      const failure = NotFoundFailure(code: 'X');
+      expect(Failure.from(failure), same(failure));
+      expect(Failure.from(const FormatException('bad')), isA<ParsingFailure>());
+      expect(Failure.from(StateError('boom')), isA<UnexpectedFailure>());
     });
   });
 

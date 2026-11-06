@@ -1,15 +1,14 @@
+import '../../../common/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../laboratory/application/laboratory_queries.dart';
-import '../../../laboratory/domain/laboratory.dart';
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../shared/presentation/remote_state.dart';
-import '../../../tracking/application/telemetry_queries.dart';
-import '../../../tracking/domain/telemetry.dart';
-import '../../application/equipment_queries.dart';
-import '../../domain/equipment.dart';
+import '../../../laboratory/api/index.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
+import '../../../tracking/api/index.dart';
+import '../../application/equipment_facade_service.dart';
+import '../../domain/entities/equipment.dart';
+import '../../domain/entities/equipment_status.dart';
 
 /// Equipment with its environment and, for IoT devices, the connection
 /// status of Tracking (UI composition only).
@@ -93,13 +92,13 @@ final class EquipmentListState extends Equatable {
 
 class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
   EquipmentListBloc({
-    required GetEquipments getEquipments,
-    required GetEnvironments getEnvironments,
-    required GetDeviceConnections getConnections,
+    required EquipmentFacadeService equipmentService,
+    required LaboratoryApi laboratoryApi,
+    required TelemetryApi telemetryApi,
     required LaboratoryId Function() laboratoryId,
-  }) : _getEquipments = getEquipments,
-       _getEnvironments = getEnvironments,
-       _getConnections = getConnections,
+  }) : _equipmentService = equipmentService,
+       _laboratoryApi = laboratoryApi,
+       _telemetryApi = telemetryApi,
        _laboratoryId = laboratoryId,
        super(const EquipmentListState()) {
     on<EquipmentListRequested>(_onRequested);
@@ -107,9 +106,9 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
     on<EquipmentFilterChanged>((e, emit) => emit(state.copyWith(filter: e.filter)));
   }
 
-  final GetEquipments _getEquipments;
-  final GetEnvironments _getEnvironments;
-  final GetDeviceConnections _getConnections;
+  final EquipmentFacadeService _equipmentService;
+  final LaboratoryApi _laboratoryApi;
+  final TelemetryApi _telemetryApi;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(EquipmentListRequested event, Emitter<EquipmentListState> emit) async {
@@ -117,18 +116,18 @@ class EquipmentListBloc extends Bloc<EquipmentListEvent, EquipmentListState> {
     emit(state.copyWith(remote: event.refresh && current.hasData ? current.refreshingState() : current.loading()));
     try {
       final lab = _laboratoryId();
-      final results = await Future.wait<Object>([_getEquipments(lab), _getEnvironments(lab)]);
+      final results = await Future.wait<Object>([_equipmentService.getEquipments(lab), _laboratoryApi.getEnvironments(lab)]);
       final equipments = results[0] as List<Equipment>;
       final environments = {for (final e in results[1] as List<LabEnvironment>) e.id: e.name};
       final targets = equipments.map(targetOf).whereType<TelemetryTarget>().toList();
-      final connections = await _getConnections(lab, targets);
+      final connections = await _telemetryApi.getConnections(lab, targets);
       final items = [
         for (final e in equipments)
           EquipmentOverview(equipment: e, environmentName: environments[e.environmentId], connection: connections[e.id]),
       ];
       emit(state.copyWith(remote: state.remote.success(items, empty: items.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }

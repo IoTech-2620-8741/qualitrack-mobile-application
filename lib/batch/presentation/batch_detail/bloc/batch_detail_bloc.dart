@@ -1,14 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../compliance/application/compliance_queries.dart';
-import '../../../../compliance/domain/compliance.dart';
-import '../../../../laboratory/application/laboratory_queries.dart';
-import '../../../../reporting/application/reporting_queries.dart';
-import '../../../../reporting/domain/reporting.dart';
-import '../../../../shared/domain/failure.dart';
-import '../../../../shared/domain/value_objects.dart';
-import '../../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../../shared/presentation/section.dart';
+import '../../../../compliance/api/index.dart';
+import '../../../../laboratory/api/index.dart';
+import '../../../../reporting/api/index.dart';
+import '../../../../common/domain/failure.dart';
+import '../../../../common/domain/value_objects.dart';
+import '../../../../common/application/section.dart';
 import '../../../application/batch_facade_service.dart';
 import '../../../domain/entities/production_batch.dart';
 import 'batch_detail_event.dart';
@@ -18,14 +15,14 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
   BatchDetailBloc({
     required this.batchId,
     required BatchFacadeService batchService,
-    required GetBatchComplianceEvents getEvents,
-    required GetBatchAuditLogs getAuditLogs,
-    required GetUserDirectory getUserDirectory,
+    required ComplianceApi complianceApi,
+    required ReportingApi reportingApi,
+    required LaboratoryApi laboratoryApi,
     required LaboratoryId Function() laboratoryId,
   }) : _batchService = batchService,
-       _getEvents = getEvents,
-       _getAuditLogs = getAuditLogs,
-       _getUserDirectory = getUserDirectory,
+       _complianceApi = complianceApi,
+       _reportingApi = reportingApi,
+       _laboratoryApi = laboratoryApi,
        _laboratoryId = laboratoryId,
        super(const BatchDetailState()) {
     on<BatchDetailRequested>(_onRequested);
@@ -47,9 +44,9 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
 
   final int batchId;
   final BatchFacadeService _batchService;
-  final GetBatchComplianceEvents _getEvents;
-  final GetBatchAuditLogs _getAuditLogs;
-  final GetUserDirectory _getUserDirectory;
+  final ComplianceApi _complianceApi;
+  final ReportingApi _reportingApi;
+  final LaboratoryApi _laboratoryApi;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(BatchDetailRequested event, Emitter<BatchDetailState> emit) async {
@@ -58,7 +55,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
     try {
       emit(state.copyWith(detail: state.detail.success(await _load())));
     } catch (error) {
-      emit(state.copyWith(detail: state.detail.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(detail: state.detail.failed(Failure.from(error))));
     }
   }
 
@@ -66,8 +63,8 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
     final laboratoryId = _laboratoryId();
     final traceability = await _batchService.getTraceability(laboratoryId, batchId);
     final sections = await Future.wait<Object>([
-      Section.load(() => _getEvents(batchId)),
-      Section.load(() => _getAuditLogs(batchId)),
+      Section.load(() => _complianceApi.getBatchEvents(batchId)),
+      Section.load(() => _reportingApi.getBatchAuditLogs(batchId)),
       _people(laboratoryId),
     ]);
     return BatchDetail(
@@ -81,7 +78,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
   /// Names are a convenience: ids are shown when the staff cannot be read.
   Future<Map<int, String>> _people(LaboratoryId laboratoryId) async {
     try {
-      return await _getUserDirectory(laboratoryId);
+      return await _laboratoryApi.getUserDirectory(laboratoryId);
     } on UnauthorizedFailure {
       rethrow;
     } on Failure {
@@ -102,7 +99,7 @@ class BatchDetailBloc extends Bloc<BatchDetailEvent, BatchDetailState> {
       // The decision changes the traceability, the audit log and the events.
       emit(state.copyWith(detail: state.detail.success(await _load()), actionStatus: BatchActionStatus.success));
     } catch (error) {
-      emit(state.copyWith(actionStatus: BatchActionStatus.failure, actionFailure: ApiExceptionMapper.map(error)));
+      emit(state.copyWith(actionStatus: BatchActionStatus.failure, actionFailure: Failure.from(error)));
     }
   }
 }

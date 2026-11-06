@@ -2,11 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/section_card.dart';
-import '../../domain/inventory.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/section_card.dart';
+import '../../domain/entities/inventory_movement.dart';
 import 'inventory_labels.dart';
 
 /// Displays an inventory movement with its stock changes,
@@ -23,7 +23,7 @@ class InventoryMovementItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
 
     String quantity(double? value, [String? unit]) {
@@ -37,7 +37,7 @@ class InventoryMovementItem extends StatelessWidget {
 
       if (movement.stockBefore != null ||
           movement.stockAfter != null)
-        l10n.stockBeforeAfter(
+        i18n.stockBeforeAfter(
           Formatters.number(movement.stockBefore, locale),
           Formatters.number(movement.stockAfter, locale),
         ),
@@ -53,7 +53,7 @@ class InventoryMovementItem extends StatelessWidget {
     ];
 
     return SectionRow(
-      title: movementTypeLabel(l10n, movement.type),
+      title: movementTypeLabel(i18n, movement.type),
       subtitle: details.join(' · '),
       trailing: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -68,7 +68,7 @@ class InventoryMovementItem extends StatelessWidget {
                 '/batches/${movement.productBatchId}',
               ),
               child: Text(
-                l10n.batchNumberShort(
+                i18n.batchNumberShort(
                   movement.productBatchId!,
                 ),
               ),

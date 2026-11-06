@@ -6,22 +6,21 @@ Domain-Driven Design with one folder per Bounded Context.
 
 ```
 ┌──────────────────────────── Presentation ────────────────────────────┐
-│ Pages · Widgets · BLoC (events/states) · go_router routes             │
+│ Screens · Widgets · BLoC (events/states) · go_router routes           │
 └───────────────┬──────────────────────────────────────────────────────┘
-                │ calls use cases (never HTTP)
+                │ calls the facade of its context (never HTTP)
 ┌───────────────▼──────────── Application ─────────────────────────────┐
-│ Queries (GetAlerts, GetTelemetryHistory…) · Commands (AcknowledgeAlert,│
-│ ResolveAlert, ReleaseExistingBatch, RejectExistingBatch, SignIn…)     │
-│ SessionController (app-wide session state)                            │
+│ <Context>FacadeService (use cases) · <Context>Api (entry point for    │
+│ other contexts) · SessionController (app-wide session state)          │
 └───────────────┬──────────────────────────────────────────────────────┘
-                │ depends on repository interfaces
+                │ depends on the repository interface
 ┌───────────────▼──────────── Domain ──────────────────────────────────┐
-│ Entities · Value objects · Enums · Repository interfaces · pure rules │
+│ Entities · Value objects · Enums · <Context>Interface · logic mixins  │
 │ (no Flutter, no Dio, no storage)                                      │
 └───────────────▲──────────────────────────────────────────────────────┘
                 │ implements
 ┌───────────────┴──────────── Infrastructure ──────────────────────────┐
-│ DTOs (JSON → DTO → Entity) · Remote data sources · Repository impls   │
+│ Models (JSON → entity) · Remote/local data providers · Repository     │
 │ ApiClient (single Dio) · AuthInterceptor · ApiExceptionMapper         │
 │ SecureKeyValueStore (flutter_secure_storage) · ApiConfig              │
 └──────────────────────────────────────────────────────────────────────┘
@@ -31,17 +30,99 @@ Domain-Driven Design with one folder per Bounded Context.
 
 | Layer | Contains | Must not |
 |---|---|---|
-| **Domain** | `Equipment`, `DeviationAlert`, `ProductionBatch`, `InventoryMaterial`, `TelemetryAnalysis`, `LaboratoryId`, `Failure`, repository interfaces | import Flutter widgets, Dio, storage |
-| **Application** | Use cases (callable classes), `SessionController`, read models such as `BillingSummary` | know URLs or JSON |
-| **Infrastructure** | `*Dto.toDomain()`, `*RemoteDataSource`, `*RepositoryImpl`, `ApiClient`, `AuthInterceptor`, `SecureSessionRepository` | leak `DioException` or `Map` to presentation |
-| **Presentation** | BLoCs, pages, widgets, labels (enum → text/tone/icon) | call HTTP or hold business rules |
+| **Domain** | Entities (`Equipment`, `DeviationAlert`, `ProductionBatch`…), `LaboratoryId`, `Failure`, `<Context>Interface`, logic mixins and pure functions (`TelemetryAnalysis`, `PasswordPolicy`) | import Flutter widgets, Dio, storage |
+| **Application** | `<Context>FacadeService` (orchestrates the interface and applies the logic mixin), `<Context>Api`, `SessionController` | know URLs or JSON |
+| **Infrastructure** | `*Model` (extends the entity, adds `fromJson`), `*RemoteDataProvider` / `*LocalDataProvider`, `<Context>Repository`, `ApiClient`, `AuthInterceptor` | leak `DioException` or `Map` to presentation |
+| **Presentation** | BLoCs, screens, widgets, labels (enum → text/tone/icon) | call HTTP or hold business rules |
 
-`shared/` holds cross-cutting pieces (failures, HTTP client, secure storage,
-formatting, localization, reusable widgets). `app/` is the composition root:
-theme, dependency injection (`get_it`), router (`go_router`) and the
+`common/` holds cross-cutting pieces (failures, HTTP client, secure storage,
+formatting, localization, theme, reusable widgets). `app/` is the composition
+root: dependency injection (`get_it`), router (`go_router`) and the
 `MaterialApp`. `command_center/` is a **UI composition module** (application +
 presentation only) that aggregates read models from several contexts; it is not
 a Bounded Context.
+
+## Dependency rules
+
+Checked by `test/architecture/architecture_test.dart`, which fails the build
+when a file breaks one of them.
+
+| Layer | May import |
+|---|---|
+| `domain` | its own domain and `common/domain`; only `equatable` as a package |
+| `application` | domain, application, `common/domain`, `common/application`, and other contexts' `api/index.dart`; no Flutter |
+| `infrastructure` | domain, infrastructure, `common/domain`, `common/infrastructure`; no Flutter, BLoC or router |
+| `presentation` | application, domain entities, `common/*` except infrastructure, and other contexts' `api/index.dart` |
+| `api` | its own application and domain (the context's public entry point; no widgets) |
+
+- A context reaches another one only through `<context>/api/index.dart`.
+- `common/` imports no bounded context.
+- Only `app/` and `main.dart` may import anything, including `app/` itself.
+- When `app/` wires a widget of one context into another (e.g. the panel), it
+  passes it in as a parameter instead of letting the context import it.
+
+## Structure of a bounded context
+
+Every context follows the layout of the Flutter DDD guide; `batch` is the
+reference. Only the layers a context needs exist (`command_center` has no
+domain).
+
+```
+<context>/
+├── api/index.dart              # public entry point (<Context>Api + exported entities)
+├── application/
+│   └── <context>_facade_service.dart
+├── domain/
+│   ├── entities/               # one file per entity or enum
+│   ├── interfaces/             # <context>_interface.dart
+│   └── logic/                  # <context>_logic.dart mixin, pure rules
+├── infrastructure/
+│   ├── data_sources/           # <context>_remote_data_provider.dart (+ local)
+│   ├── models/                 # extend the entities, add fromJson
+│   └── repositories/           # <context>_repository.dart
+└── presentation/
+    ├── bloc/
+    ├── screens/                # *_screen.dart
+    └── widgets/
+```
+
+One interface, one repository and one facade per context. The facade only
+orchestrates: the rules live in the `*Logic` mixin and the data access behind
+the interface.
+
+## Public entry points (`api/`)
+
+A context is used by another one only through `api/index.dart`, which exposes a
+`*Api` class wrapping the facade and re-exports the entities consumers need. It
+never exports widgets: when a context must show something of another one, `app/`
+passes it in (see `app/router/command_center_views.dart`).
+
+| Context | Entry point | Used by |
+|---|---|---|
+| `batch` | `BatchApi` | `command_center` |
+| `laboratory` | `LaboratoryApi` | `batch`, `command_center`, `compliance`, `equipment`, `inventory`, `profile`, `reporting`, `tracking` |
+| `equipment` | `EquipmentApi` | `command_center`, `compliance`, `reporting`, `tracking` |
+| `tracking` | `TelemetryApi` | `command_center`, `equipment` |
+| `compliance` | `ComplianceApi` | `batch`, `command_center`, `equipment` |
+| `inventory` | `InventoryApi` | `command_center` |
+| `subscription` | `SubscriptionApi` | `command_center` |
+| `iam` | entities only (`UserRole`, `UserSession`) | `command_center`, `profile` |
+| `reporting` | `ReportingApi` | `batch`, `equipment` |
+
+## Adding a feature
+
+For a new read or command in a context (the order of the guide):
+
+1. **Domain:** add the method to `<context>_interface.dart` and, if there is a
+   business rule, to the `*Logic` mixin.
+2. **Infrastructure:** implement it in the repository and the data provider; add
+   or extend the model if the JSON changes.
+3. **Application:** add a method to the facade that calls the repository and
+   applies the logic. If another context needs it, expose it in the `*Api`.
+4. **Presentation:** add the event and state to the BLoC and the widget that
+   dispatches it.
+5. **Wiring:** nothing new to register unless a class was added to
+   `app/dependency_injection/injection.dart`.
 
 ## Bounded Contexts
 
@@ -60,7 +141,7 @@ a Bounded Context.
 
 ## Key flows
 
-**Session.** `SplashPage` → `SessionController.restore()` reads the JWT from the
+**Session.** `SplashScreen` → `SessionController.restore()` reads the JWT from the
 keystore, discards it if `exp` has passed, and calls `GET /users/me/onboarding`.
 Status `authenticated | passwordChangeRequired | setupRequired | unauthenticated` drives the
 `go_router` redirect (`refreshListenable`). On any authenticated 401 the
@@ -83,6 +164,8 @@ active subscription are sent to "Complete your setup in QualiTrack Web".
 `ConflictFailure`, `ServerFailure`, `ParsingFailure`…). Presentation maps them to
 localized text via `failureMessage()`; backend validation details are appended
 so rejected transitions (e.g. "Rejected batches cannot be released") are visible.
+Anything else that reaches a BLoC goes through `Failure.from`, so presentation never
+imports infrastructure.
 
 **Screen states.** Read-only BLoCs use `RemoteState<T>`
 (`initial → loading → success | empty | failure`, plus `refreshing`). Detail
@@ -101,7 +184,7 @@ never POSTs telemetry.
 
 **Environments.** Several resources are exposed per environment (alerts,
 materials, products, deviation indicators). Laboratory-wide screens add them up
-with `loadAll` (`shared/application/bounded_concurrency.dart`, 4 requests in
+with `loadAll` (`common/application/bounded_concurrency.dart`, 4 requests in
 flight), the same way QualiTrack Web does.
 
 **Notifications.** `UnreadNotificationsController` keeps the count of the bell
@@ -115,14 +198,23 @@ read. Every action asks for confirmation and the backend remains the authority.
 
 ## Localization
 
-English (default) and Spanish. Strings live in `l10n/strings.tsv` and
-`dart run tool/generate_l10n.dart` generates `lib/shared/presentation/l10n/app_localizations.dart`
+English (default) and Spanish. Strings live in `i18n/strings.tsv` and
+`dart run tool/generate_i18n.dart` generates `lib/common/presentation/i18n/app_localizations.dart`
 (a `LocalizationsDelegate` registered with `flutter_localizations`). A test
 verifies both languages define the same keys.
 
 ## Dependency injection
 
 `app/dependency_injection/injection.dart` registers configuration, the single
-`ApiClient`, data sources, repositories, use cases (lazy singletons) and BLoCs
-(factories; detail BLoCs use `registerFactoryParam` with the entity id). Only
-the router resolves BLoCs; widgets receive them through `BlocProvider`.
+`ApiClient`, data providers, repositories (as their `*Interface`), facades and
+`*Api` classes (lazy singletons) and BLoCs (factories; detail BLoCs use
+`registerFactoryParam` with the entity id). Only the router resolves BLoCs;
+widgets receive them through `BlocProvider`.
+
+## Tests
+
+`test/` mirrors the layers: `domain`, `application`, `infrastructure`,
+`presentation` and `widget`. `test/architecture/architecture_test.dart` checks the
+dependency rules above on every run, and CI (`.github/workflows/ci.yml`) runs
+`flutter analyze` and `flutter test` on every pull request from a `feature/*`
+branch into `develop`.

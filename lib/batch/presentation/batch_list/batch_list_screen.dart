@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
-import '../../../shared/presentation/widgets/remote_state_view.dart';
-import '../../../shared/presentation/widgets/state_views.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_typography.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/remote_state_view.dart';
+import '../../../common/presentation/widgets/state_views.dart';
 import '../../domain/entities/production_batch.dart';
 import '../widgets/batch_card.dart';
 import 'bloc/bloc.dart';
@@ -17,26 +17,26 @@ class BatchListScreen extends StatelessWidget {
   const BatchListScreen({super.key});
 
   String _filterLabel(BuildContext context, BatchFilter f) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     return switch (f) {
-      BatchFilter.all => l10n.filterAll,
-      BatchFilter.pending => l10n.batchPending,
-      BatchFilter.inProgress => l10n.batchInProgress,
-      BatchFilter.released => l10n.batchReleased,
-      BatchFilter.rejected => l10n.batchRejected,
+      BatchFilter.all => i18n.filterAll,
+      BatchFilter.pending => i18n.batchPending,
+      BatchFilter.inProgress => i18n.batchInProgress,
+      BatchFilter.released => i18n.batchReleased,
+      BatchFilter.rejected => i18n.batchRejected,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final bloc = context.read<BatchListBloc>();
     void reload() => bloc.add(const BatchListRequested(refresh: true));
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.batchesTitle),
+        title: Text(i18n.batchesTitle),
         actions: [
-          IconButton(tooltip: l10n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
+          IconButton(tooltip: i18n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
         ],
       ),
       body: BlocBuilder<BatchListBloc, BatchListState>(
@@ -44,7 +44,7 @@ class BatchListScreen extends StatelessWidget {
           state: state.remote,
           onRetry: reload,
           emptyIcon: Icons.inventory_2_outlined,
-          emptyMessage: l10n.batchesEmpty,
+          emptyMessage: i18n.batchesEmpty,
           builder: (context, _) {
             final summary = state.summary;
             final items = state.visible;
@@ -53,21 +53,21 @@ class BatchListScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
-                  PageHeader(title: l10n.batchesTitle, subtitle: l10n.batchesSubtitle),
+                  PageHeader(title: i18n.batchesTitle, subtitle: i18n.batchesSubtitle),
                   const SizedBox(height: AppSpacing.md),
                   ResponsiveGrid(
                     minItemWidth: 100,
                     children: [
-                      _Counter(label: l10n.total, value: summary.total, color: AppColors.navy),
-                      _Counter(label: l10n.batchPending, value: summary.pending, color: AppColors.warning),
-                      _Counter(label: l10n.batchInProgress, value: summary.inProgress, color: AppColors.info),
-                      _Counter(label: l10n.batchReleased, value: summary.released, color: AppColors.success),
-                      _Counter(label: l10n.batchRejected, value: summary.rejected, color: AppColors.critical),
+                      _Counter(label: i18n.total, value: summary.total, color: AppColors.navy),
+                      _Counter(label: i18n.batchPending, value: summary.pending, color: AppColors.warning),
+                      _Counter(label: i18n.batchInProgress, value: summary.inProgress, color: AppColors.info),
+                      _Counter(label: i18n.batchReleased, value: summary.released, color: AppColors.success),
+                      _Counter(label: i18n.batchRejected, value: summary.rejected, color: AppColors.critical),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
                   SearchField(
-                    hint: l10n.searchBatches,
+                    hint: i18n.searchBatches,
                     onChanged: (q) => bloc.add(BatchListQueryChanged(q)),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -79,7 +79,7 @@ class BatchListScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (items.isEmpty)
-                    SizedBox(height: 200, child: EmptyView(title: l10n.noResults))
+                    SizedBox(height: 200, child: EmptyView(title: i18n.noResults))
                   else
                     for (final batch in items) ...[
                       BatchCard(

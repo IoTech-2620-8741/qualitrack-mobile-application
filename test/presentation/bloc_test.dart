@@ -6,25 +6,31 @@ import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
 import 'package:qualitrack_mobile/batch/presentation/batch_detail/bloc/bloc.dart';
 import 'package:qualitrack_mobile/batch/presentation/batch_list/bloc/bloc.dart';
-import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/api/index.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/notifications_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
-import 'package:qualitrack_mobile/equipment/application/equipment_queries.dart';
-import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
+import 'package:qualitrack_mobile/equipment/api/index.dart';
+import 'package:qualitrack_mobile/equipment/application/equipment_facade_service.dart';
+import 'package:qualitrack_mobile/iam/application/iam_facade_service.dart';
 import 'package:qualitrack_mobile/iam/application/session_controller.dart';
-import 'package:qualitrack_mobile/iam/domain/onboarding_state.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/onboarding_state.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/onboarding_step.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
-import 'package:qualitrack_mobile/laboratory/application/laboratory_queries.dart';
-import 'package:qualitrack_mobile/reporting/application/reporting_queries.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
-import 'package:qualitrack_mobile/shared/presentation/view_status.dart';
-import 'package:qualitrack_mobile/tracking/application/telemetry_queries.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/laboratory/api/index.dart';
+import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
+import 'package:qualitrack_mobile/reporting/api/index.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/common/presentation/view_status.dart';
+import 'package:qualitrack_mobile/tracking/application/telemetry_facade_service.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
 import 'package:qualitrack_mobile/tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 
 import '../helpers/fixtures.dart';
@@ -41,35 +47,29 @@ void main() {
     registerFallbackValue(batchFixture());
   });
 
-  SessionController controllerOf(MockAuthRepository auth, MockSessionRepository sessions) => SessionController(
-    restoreSession: RestoreSession(sessions),
-    rememberSession: RememberSession(sessions),
-    signOut: SignOut(sessions),
-    checkOnboarding: CheckOnboarding(auth),
-  );
+  SessionController controllerOf(MockIamRepository iam) =>
+      SessionController(iamService: IamFacadeService(repository: iam));
 
   group('SessionController', () {
-    late MockAuthRepository auth;
-    late MockSessionRepository sessions;
+    late MockIamRepository iam;
     late SessionController controller;
 
     setUp(() {
-      auth = MockAuthRepository();
-      sessions = MockSessionRepository();
-      when(() => sessions.clear()).thenAnswer((_) async {});
-      when(() => sessions.save(any())).thenAnswer((_) async {});
-      controller = controllerOf(auth, sessions);
+      iam = MockIamRepository();
+      when(() => iam.clearSession()).thenAnswer((_) async {});
+      when(() => iam.saveSession(any())).thenAnswer((_) async {});
+      controller = controllerOf(iam);
     });
 
     test('no stored session → unauthenticated', () async {
-      when(() => sessions.load()).thenAnswer((_) async => null);
+      when(() => iam.loadSession()).thenAnswer((_) async => null);
       await controller.restore();
       expect(controller.status, SessionStatus.unauthenticated);
     });
 
     test('ready onboarding → authenticated', () async {
-      when(() => sessions.load()).thenAnswer((_) async => sessionFixture());
-      when(() => auth.getOnboarding()).thenAnswer(
+      when(() => iam.loadSession()).thenAnswer((_) async => sessionFixture());
+      when(() => iam.getOnboarding()).thenAnswer(
         (_) async => const OnboardingState(nextStep: OnboardingStep.ready, laboratoryId: 7),
       );
       await controller.restore();
@@ -78,24 +78,24 @@ void main() {
     });
 
     test('temporary password → password change, then authenticated once changed', () async {
-      when(() => sessions.load()).thenAnswer((_) async => sessionFixture(passwordChangeRequired: true));
-      when(() => auth.getOnboarding()).thenAnswer(
+      when(() => iam.loadSession()).thenAnswer((_) async => sessionFixture(passwordChangeRequired: true));
+      when(() => iam.getOnboarding()).thenAnswer(
         (_) async => const OnboardingState(nextStep: OnboardingStep.passwordChange),
       );
       await controller.restore();
       expect(controller.status, SessionStatus.passwordChangeRequired);
 
-      when(() => auth.getOnboarding()).thenAnswer((_) async => const OnboardingState(nextStep: OnboardingStep.ready));
+      when(() => iam.getOnboarding()).thenAnswer((_) async => const OnboardingState(nextStep: OnboardingStep.ready));
       await controller.passwordChanged();
 
       expect(controller.status, SessionStatus.authenticated);
       expect(controller.session?.passwordChangeRequired, isFalse);
-      verify(() => sessions.save(any())).called(1);
+      verify(() => iam.saveSession(any())).called(1);
     });
 
     test('inactive subscription → setup required', () async {
-      when(() => sessions.load()).thenAnswer((_) async => sessionFixture());
-      when(() => auth.getOnboarding()).thenAnswer(
+      when(() => iam.loadSession()).thenAnswer((_) async => sessionFixture());
+      when(() => iam.getOnboarding()).thenAnswer(
         (_) async => const OnboardingState(nextStep: OnboardingStep.subscription),
       );
       await controller.restore();
@@ -104,43 +104,41 @@ void main() {
     });
 
     test('offline without laboratory → setup required without fallback ids', () async {
-      when(() => sessions.load()).thenAnswer((_) async => sessionFixture(laboratoryId: null));
-      when(() => auth.getOnboarding()).thenThrow(const NetworkFailure());
+      when(() => iam.loadSession()).thenAnswer((_) async => sessionFixture(laboratoryId: null));
+      when(() => iam.getOnboarding()).thenThrow(const NetworkFailure());
       await controller.restore();
       expect(controller.status, SessionStatus.setupRequired);
       expect(controller.requireLaboratoryId, throwsA(isA<MissingLaboratoryFailure>()));
     });
 
     test('expire clears the session once and flags it', () async {
-      when(() => sessions.load()).thenAnswer((_) async => sessionFixture());
-      when(() => auth.getOnboarding()).thenAnswer((_) async => const OnboardingState(nextStep: OnboardingStep.ready));
+      when(() => iam.loadSession()).thenAnswer((_) async => sessionFixture());
+      when(() => iam.getOnboarding()).thenAnswer((_) async => const OnboardingState(nextStep: OnboardingStep.ready));
       await controller.restore();
       await controller.expire();
       await controller.expire();
       expect(controller.status, SessionStatus.unauthenticated);
       expect(controller.sessionExpired, isTrue);
-      verify(() => sessions.clear()).called(1);
+      verify(() => iam.clearSession()).called(1);
     });
   });
 
   group('SignInBloc', () {
-    late MockAuthRepository auth;
-    late MockSessionRepository sessions;
+    late MockIamRepository iam;
     late SessionController controller;
 
     setUp(() {
-      auth = MockAuthRepository();
-      sessions = MockSessionRepository();
-      when(() => sessions.save(any())).thenAnswer((_) async {});
-      when(() => auth.getOnboarding()).thenAnswer((_) async => const OnboardingState(nextStep: OnboardingStep.ready));
-      controller = controllerOf(auth, sessions);
+      iam = MockIamRepository();
+      when(() => iam.saveSession(any())).thenAnswer((_) async {});
+      when(() => iam.getOnboarding()).thenAnswer((_) async => const OnboardingState(nextStep: OnboardingStep.ready));
+      controller = controllerOf(iam);
     });
 
     blocTest<SignInBloc, SignInState>(
       'emits submitting → success and authenticates the session',
       build: () {
-        when(() => auth.signIn(username: 'qa@lab.test', password: 'secret')).thenAnswer((_) async => sessionFixture());
-        return SignInBloc(signIn: SignIn(auth, sessions), session: controller);
+        when(() => iam.signIn(username: 'qa@lab.test', password: 'secret')).thenAnswer((_) async => sessionFixture());
+        return SignInBloc(iamService: IamFacadeService(repository: iam), session: controller);
       },
       act: (bloc) => bloc.add(const SignInSubmitted(username: 'qa@lab.test', password: 'secret')),
       expect: () => const [SignInState(status: SignInStatus.submitting), SignInState(status: SignInStatus.success)],
@@ -150,8 +148,8 @@ void main() {
     blocTest<SignInBloc, SignInState>(
       'wrong credentials and deactivated accounts are shown as invalid credentials',
       build: () {
-        when(() => auth.signIn(username: 'qa@lab.test', password: 'bad')).thenThrow(const ConflictFailure());
-        return SignInBloc(signIn: SignIn(auth, sessions), session: controller);
+        when(() => iam.signIn(username: 'qa@lab.test', password: 'bad')).thenThrow(const ConflictFailure());
+        return SignInBloc(iamService: IamFacadeService(repository: iam), session: controller);
       },
       act: (bloc) => bloc.add(const SignInSubmitted(username: 'qa@lab.test', password: 'bad')),
       expect: () => const [
@@ -165,9 +163,9 @@ void main() {
     blocTest<ChangePasswordBloc, ChangePasswordState>(
       'sends the passwords and reports success',
       build: () {
-        final auth = MockAuthRepository();
-        when(() => auth.changePassword(currentPassword: 'temp1234', newPassword: 'mine5678')).thenAnswer((_) async {});
-        return ChangePasswordBloc(changePassword: ChangePassword(auth));
+        final iam = MockIamRepository();
+        when(() => iam.changePassword(currentPassword: 'temp1234', newPassword: 'mine5678')).thenAnswer((_) async {});
+        return ChangePasswordBloc(iamService: IamFacadeService(repository: iam));
       },
       act: (bloc) => bloc.add(const PasswordChangeSubmitted(currentPassword: 'temp1234', newPassword: 'mine5678')),
       expect: () => const [
@@ -179,10 +177,10 @@ void main() {
     blocTest<ChangePasswordBloc, ChangePasswordState>(
       'a wrong current password is shown as a failure',
       build: () {
-        final auth = MockAuthRepository();
-        when(() => auth.changePassword(currentPassword: 'wrong123', newPassword: 'mine5678'))
+        final iam = MockIamRepository();
+        when(() => iam.changePassword(currentPassword: 'wrong123', newPassword: 'mine5678'))
             .thenThrow(const BadRequestFailure(message: 'The current password is incorrect'));
-        return ChangePasswordBloc(changePassword: ChangePassword(auth));
+        return ChangePasswordBloc(iamService: IamFacadeService(repository: iam));
       },
       act: (bloc) => bloc.add(const PasswordChangeSubmitted(currentPassword: 'wrong123', newPassword: 'mine5678')),
       skip: 1,
@@ -208,9 +206,9 @@ void main() {
     });
 
     AlertsBloc build() => AlertsBloc(
-      getEnvironments: GetEnvironments(labRepo),
-      getEquipments: GetEquipments(equipmentRepo),
-      getAlerts: GetLaboratoryAlerts(complianceRepo),
+      laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
+      equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
+      complianceService: complianceFacade(complianceRepo),
       laboratoryId: () => lab,
     );
 
@@ -267,12 +265,9 @@ void main() {
 
     AlertDetailBloc build() => AlertDetailBloc(
       alertId: 1,
-      getAlert: GetAlertDetail(repo),
-      getEquipment: GetEquipment(equipmentRepo),
-      getEnvironments: GetEnvironments(labRepo),
-      getUserDirectory: GetUserDirectory(labRepo),
-      acknowledge: AcknowledgeAlert(repo),
-      resolve: ResolveAlert(repo),
+      complianceService: complianceFacade(repo),
+      equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
+      laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       laboratoryId: () => lab,
     );
 
@@ -363,9 +358,9 @@ void main() {
         return BatchDetailBloc(
           batchId: 3,
           batchService: BatchFacadeService(repository: repo),
-          getEvents: GetBatchComplianceEvents(compliance),
-          getAuditLogs: GetBatchAuditLogs(reporting),
-          getUserDirectory: GetUserDirectory(labRepo),
+          complianceApi: ComplianceApi(complianceFacade(compliance)),
+          reportingApi: ReportingApi(reportingFacade(reporting)),
+          laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
           laboratoryId: () => lab,
         );
       },
@@ -415,12 +410,9 @@ void main() {
     });
 
     TelemetryDashboardBloc build() => TelemetryDashboardBloc(
-      getEquipments: GetEquipments(equipmentRepo),
-      getEnvironments: GetEnvironments(labRepo),
-      getConnection: GetDeviceConnection(telemetryRepo),
-      getMeasurements: GetMeasurements(telemetryRepo),
-      getProfile: GetEnvironmentalProfile(telemetryRepo),
-      getActuations: GetActuationEvents(telemetryRepo),
+      equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
+      laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
+      telemetryService: TelemetryFacadeService(repository: telemetryRepo),
       laboratoryId: () => lab,
       pollInterval: const Duration(milliseconds: 20),
     );
@@ -469,7 +461,7 @@ void main() {
 
   group('Notifications', () {
     test('opening an unread notice marks it as read and refreshes the bell', () async {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       var read = false;
       const unread = AppNotification(id: 1, type: NotificationType.alertOpened, subjectType: 'ALERT', subjectId: 9);
       final readNotice = AppNotification(
@@ -482,14 +474,12 @@ void main() {
       when(() => repo.getNotifications(limit: 50)).thenAnswer((_) async => [if (read) readNotice else unread]);
       when(() => repo.markRead(1)).thenAnswer((_) async => read = true);
       when(() => repo.getUnreadCount()).thenAnswer((_) async => read ? 0 : 1);
-      final bell = UnreadNotificationsController(getUnreadCount: GetUnreadNotificationCount(repo));
+      final bell = UnreadNotificationsController(complianceService: complianceFacade(repo));
       await bell.refresh();
       expect(bell.count, 1);
 
       final bloc = NotificationsBloc(
-        getNotifications: GetNotifications(repo),
-        markRead: MarkNotificationRead(repo),
-        markAllRead: MarkAllNotificationsRead(repo),
+        complianceService: complianceFacade(repo),
         onReadChanged: bell.refresh,
       )..add(const NotificationsRequested());
       await Future<void>.delayed(const Duration(milliseconds: 10));

@@ -29,7 +29,7 @@ production batches, inventory, equipment, indicators and the subscription.
 ## Architecture
 
 Domain-Driven Design, one module per Bounded Context, each with
-`domain / application / infrastructure / presentation` layers. State management
+`api / application / domain / infrastructure / presentation` layers. State management
 with BLoC, DI with get_it, navigation with go_router, HTTP with a single Dio
 client. See [`docs/architecture.md`](docs/architecture.md) and the endpoint
 mapping in [`docs/mobile-api-mapping.md`](docs/mobile-api-mapping.md). The
@@ -38,8 +38,8 @@ initial analysis is in [`docs/analysis.md`](docs/analysis.md).
 ```
 lib/
 ├── main.dart
-├── app/            # composition root: theme, router, DI, MaterialApp
-├── shared/         # failures, ApiClient, secure storage, l10n, widgets
+├── app/            # composition root: router, DI, MaterialApp
+├── common/         # failures, ApiClient, secure storage, i18n, theme, widgets
 ├── iam/            # Identity & Access Management
 ├── laboratory/     # Laboratory Management (lab, products)
 ├── equipment/      # Equipment Management
@@ -96,8 +96,20 @@ On Windows you can run everything at once and keep a log in `tool/logs/verify.lo
 powershell -ExecutionPolicy Bypass -File tool\verify.ps1
 ```
 
-Localized strings are edited in `l10n/strings.tsv`, then regenerated with
-`dart run tool/generate_l10n.dart`.
+Localized strings are edited in `i18n/strings.tsv`, then regenerated with
+`dart run tool/generate_i18n.dart`.
+
+## Contributing
+
+- Gitflow: branch `feature/<name>` from `develop` and open a pull request back
+  into `develop`; releases go through `release/<version>` into `main`.
+- Conventional Commits (`feat`, `fix`, `refactor`, `test`, `docs`, `ci`…) and
+  SemVer for versions.
+- CI runs `flutter analyze` and `flutter test` on every pull request from a
+  `feature/*` branch into `develop`.
+- The layer and bounded-context rules in
+  [`docs/architecture.md`](docs/architecture.md) are checked by
+  `test/architecture/architecture_test.dart`.
 
 ## Build APK
 
@@ -105,6 +117,7 @@ Localized strings are edited in `l10n/strings.tsv`, then regenerated with
 flutter build apk --release --dart-define=API_BASE_URL=https://<host>
 ```
 
-The APK is generated in `build/app/outputs/flutter-apk/app-release.apk` and can
-be distributed with Firebase App Distribution. Notifications are shown inside
+The APK is generated in `build/app/outputs/flutter-apk/app-release.apk`. There
+is no automatic deployment workflow; distribute it manually (for example with
+Firebase App Distribution). Notifications are shown inside
 the app (bell); push notifications with Firebase are pending.

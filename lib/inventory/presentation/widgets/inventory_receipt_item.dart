@@ -1,15 +1,15 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
-import '../../../shared/presentation/widgets/section_card.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/section_card.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
 
-import '../../domain/inventory.dart';
+import '../../domain/entities/inventory_receipt.dart';
 import 'inventory_labels.dart';
 
 class InventoryReceiptItem extends StatelessWidget {
@@ -24,7 +24,7 @@ class InventoryReceiptItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
 
     String quantity(double? value, String? unit) {
@@ -38,11 +38,11 @@ class InventoryReceiptItem extends StatelessWidget {
         // Información principal del lote
         SectionRow(
           title: receipt.batchNumber ??
-              l10n.receiptNumber(receipt.id),
+              i18n.receiptNumber(receipt.id),
           subtitle:
-              '${l10n.supplier}: ${receipt.supplier ?? '—'}',
+              '${i18n.supplier}: ${receipt.supplier ?? '—'}',
           trailing: StatusBadge(
-            label: receipt.status.label(l10n),
+            label: receipt.status.label(i18n),
             tone: receipt.status.tone,
           ),
         ),
@@ -55,7 +55,7 @@ class InventoryReceiptItem extends StatelessWidget {
           runSpacing: AppSpacing.sm,
           children: [
             KeyValue(
-              label: l10n.initialAmount,
+              label: i18n.initialAmount,
               value: quantity(
                 receipt.initialAmount,
                 receipt.unit,
@@ -63,7 +63,7 @@ class InventoryReceiptItem extends StatelessWidget {
             ),
 
             KeyValue(
-              label: l10n.availableAmount,
+              label: i18n.availableAmount,
               value: quantity(
                 receipt.availableAmount,
                 receipt.unit,
@@ -71,7 +71,7 @@ class InventoryReceiptItem extends StatelessWidget {
             ),
 
             KeyValue(
-              label: l10n.receivedOn,
+              label: i18n.receivedOn,
               value: Formatters.date(
                 receipt.receivedOn,
                 locale,
@@ -79,7 +79,7 @@ class InventoryReceiptItem extends StatelessWidget {
             ),
 
             KeyValue(
-              label: l10n.expiresOn,
+              label: i18n.expiresOn,
               value: Formatters.date(
                 receipt.expiresOn,
                 locale,
@@ -88,15 +88,15 @@ class InventoryReceiptItem extends StatelessWidget {
 
             // Disponibilidad del lote
             KeyValue(
-              label: l10n.usable,
+              label: i18n.usable,
               value: receipt.usable
-                  ? l10n.yes
-                  : l10n.no,
+                  ? i18n.yes
+                  : i18n.no,
               valueWidget: StatusBadge(
                 label: receipt.usable
-                    ? l10n.yes
+                    ? i18n.yes
                     : lotAvailabilityLabel(
-                        l10n,
+                        i18n,
                         receipt.availability,
                       ),
                 tone: receipt.usable
@@ -109,8 +109,8 @@ class InventoryReceiptItem extends StatelessWidget {
             if (receipt.isNearExpiry || receipt.isExpired)
               StatusBadge(
                 label: receipt.isExpired
-                    ? l10n.lotExpired
-                    : l10n.lotNearExpiry,
+                    ? i18n.lotExpired
+                    : i18n.lotNearExpiry,
                 tone: receipt.isExpired
                     ? BadgeTone.critical
                     : BadgeTone.warning,

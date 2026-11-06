@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../compliance/domain/compliance.dart';
-import '../../../../reporting/domain/reporting.dart';
-import '../../../../shared/domain/failure.dart';
-import '../../../../shared/presentation/remote_state.dart';
-import '../../../../shared/presentation/section.dart';
+import '../../../../compliance/api/index.dart';
+import '../../../../reporting/api/index.dart';
+import '../../../../common/domain/failure.dart';
+import '../../../../common/presentation/remote_state.dart';
+import '../../../../common/application/section.dart';
 import '../../../domain/entities/batch_traceability.dart';
 import '../../../domain/entities/production_batch.dart';
 

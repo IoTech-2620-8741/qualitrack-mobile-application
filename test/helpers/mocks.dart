@@ -1,40 +1,53 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/batch/domain/interfaces/batch_interface.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
-import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
-import 'package:qualitrack_mobile/iam/domain/iam_repositories.dart';
-import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
-import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
-import 'package:qualitrack_mobile/profile/domain/profile.dart';
-import 'package:qualitrack_mobile/reporting/domain/reporting.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/http/api_client.dart';
-import 'package:qualitrack_mobile/shared/infrastructure/storage/secure_key_value_store.dart';
-import 'package:qualitrack_mobile/subscription/domain/subscription.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/compliance/application/compliance_facade_service.dart';
+import 'package:qualitrack_mobile/compliance/domain/interfaces/compliance_interface.dart';
+import 'package:qualitrack_mobile/equipment/domain/interfaces/equipment_interface.dart';
+import 'package:qualitrack_mobile/iam/domain/interfaces/iam_interface.dart';
+import 'package:qualitrack_mobile/inventory/domain/interfaces/inventory_interface.dart';
+import 'package:qualitrack_mobile/laboratory/domain/interfaces/laboratory_interface.dart';
+import 'package:qualitrack_mobile/profile/domain/interfaces/profile_interface.dart';
+import 'package:qualitrack_mobile/equipment/api/index.dart';
+import 'package:qualitrack_mobile/equipment/application/equipment_facade_service.dart';
+import 'package:qualitrack_mobile/laboratory/api/index.dart';
+import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
+import 'package:qualitrack_mobile/reporting/application/reporting_facade_service.dart';
+import 'package:qualitrack_mobile/reporting/domain/interfaces/reporting_interface.dart';
+import 'package:qualitrack_mobile/common/infrastructure/http/api_client.dart';
+import 'package:qualitrack_mobile/common/infrastructure/storage/secure_key_value_store.dart';
+import 'package:qualitrack_mobile/subscription/domain/interfaces/subscription_interface.dart';
+import 'package:qualitrack_mobile/tracking/domain/interfaces/telemetry_interface.dart';
 
-class MockAuthRepository extends Mock implements AuthRepository {}
+class MockIamRepository extends Mock implements IamInterface {}
 
-class MockSessionRepository extends Mock implements SessionRepository {}
+class MockLaboratoryRepository extends Mock implements LaboratoryInterface {}
 
-class MockLaboratoryRepository extends Mock implements LaboratoryRepository {}
-
-class MockComplianceRepository extends Mock implements ComplianceRepository {}
-
-class MockNotificationRepository extends Mock implements NotificationRepository {}
+class MockComplianceRepository extends Mock implements ComplianceInterface {}
 
 class MockBatchRepository extends Mock implements BatchInterface {}
 
-class MockEquipmentRepository extends Mock implements EquipmentRepository {}
+class MockEquipmentRepository extends Mock implements EquipmentInterface {}
 
-class MockTelemetryRepository extends Mock implements TelemetryRepository {}
+class MockTelemetryRepository extends Mock implements TelemetryInterface {}
 
-class MockInventoryRepository extends Mock implements InventoryRepository {}
+class MockInventoryRepository extends Mock implements InventoryInterface {}
 
-class MockReportingRepository extends Mock implements ReportingRepository {}
+class MockReportingRepository extends Mock implements ReportingInterface {}
 
-class MockSubscriptionRepository extends Mock implements SubscriptionRepository {}
+class MockSubscriptionRepository extends Mock implements SubscriptionInterface {}
 
-class MockProfileRepository extends Mock implements ProfileRepository {}
+class MockProfileRepository extends Mock implements ProfileInterface {}
+
+/// Facade over the given repository; an empty mock when none is given.
+ComplianceFacadeService complianceFacade([ComplianceInterface? repository]) =>
+    ComplianceFacadeService(repository: repository ?? MockComplianceRepository());
+
+/// Reporting facade over the given repository; the contexts it reads are empty mocks.
+ReportingFacadeService reportingFacade([ReportingInterface? repository]) => ReportingFacadeService(
+  repository: repository ?? MockReportingRepository(),
+  laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: MockLaboratoryRepository())),
+  equipmentApi: EquipmentApi(EquipmentFacadeService(repository: MockEquipmentRepository())),
+);
 
 class MockApiClient extends Mock implements ApiClient {}
 

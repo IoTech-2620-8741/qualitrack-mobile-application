@@ -4,20 +4,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/batch/application/batch_facade_service.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
-import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
-import 'package:qualitrack_mobile/iam/application/iam_use_cases.dart';
-import 'package:qualitrack_mobile/inventory/application/inventory_queries.dart';
-import 'package:qualitrack_mobile/laboratory/application/laboratory_queries.dart';
-import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
-import 'package:qualitrack_mobile/profile/application/profile_use_cases.dart';
-import 'package:qualitrack_mobile/profile/domain/profile.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
-import 'package:qualitrack_mobile/subscription/application/billing_queries.dart';
-import 'package:qualitrack_mobile/subscription/domain/subscription.dart';
-import 'package:qualitrack_mobile/tracking/application/telemetry_queries.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_preferences.dart';
+import 'package:qualitrack_mobile/iam/application/iam_facade_service.dart';
+import 'package:qualitrack_mobile/inventory/application/inventory_facade_service.dart';
+import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_service.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/pharmaceutical_product.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/staff_member.dart';
+import 'package:qualitrack_mobile/profile/application/profile_facade_service.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/personal_data.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/profile_photo.dart';
+import 'package:qualitrack_mobile/profile/domain/entities/user_profile.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/reporting/domain/entities/reporting_entities.dart';
+import 'package:qualitrack_mobile/subscription/application/subscription_facade_service.dart';
+import 'package:qualitrack_mobile/subscription/domain/entities/subscription.dart';
+import 'package:qualitrack_mobile/subscription/domain/entities/subscription_plan.dart';
+import 'package:qualitrack_mobile/tracking/application/telemetry_facade_service.dart';
+import 'package:qualitrack_mobile/tracking/application/telemetry_targets.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -37,46 +45,44 @@ void main() {
   });
 
   group('IAM', () {
-    late MockAuthRepository auth;
-    late MockSessionRepository sessions;
+    late MockIamRepository iam;
 
     setUp(() {
-      auth = MockAuthRepository();
-      sessions = MockSessionRepository();
+      iam = MockIamRepository();
     });
 
     test('sign in trims the username and stores the session', () async {
       final session = sessionFixture();
-      when(() => auth.signIn(username: 'qa@lab.test', password: 'secret')).thenAnswer((_) async => session);
-      when(() => sessions.save(any())).thenAnswer((_) async {});
+      when(() => iam.signIn(username: 'qa@lab.test', password: 'secret')).thenAnswer((_) async => session);
+      when(() => iam.saveSession(any())).thenAnswer((_) async {});
 
-      final result = await SignIn(auth, sessions)(username: '  qa@lab.test ', password: 'secret');
+      final result = await IamFacadeService(repository: iam).signIn(username: '  qa@lab.test ', password: 'secret');
 
       expect(result, session);
-      verify(() => sessions.save(session)).called(1);
+      verify(() => iam.saveSession(session)).called(1);
     });
 
     test('sign in rejects empty credentials without calling the backend', () {
-      expect(() => SignIn(auth, sessions)(username: ' ', password: ''), throwsA(isA<BadRequestFailure>()));
-      verifyNever(() => auth.signIn(username: any(named: 'username'), password: any(named: 'password')));
+      expect(() => IamFacadeService(repository: iam).signIn(username: ' ', password: ''), throwsA(isA<BadRequestFailure>()));
+      verifyNever(() => iam.signIn(username: any(named: 'username'), password: any(named: 'password')));
     });
 
     test('restore clears an expired session', () async {
-      when(() => sessions.load()).thenAnswer((_) async => sessionFixture(expiresAt: DateTime.utc(2020)));
-      when(() => sessions.clear()).thenAnswer((_) async {});
+      when(() => iam.loadSession()).thenAnswer((_) async => sessionFixture(expiresAt: DateTime.utc(2020)));
+      when(() => iam.clearSession()).thenAnswer((_) async {});
 
-      expect(await RestoreSession(sessions)(), isNull);
-      verify(() => sessions.clear()).called(1);
+      expect(await IamFacadeService(repository: iam).restoreSession(), isNull);
+      verify(() => iam.clearSession()).called(1);
     });
 
     test('change password requires both passwords', () async {
       expect(
-        () => ChangePassword(auth)(currentPassword: '', newPassword: 'abcd1234'),
+        () => IamFacadeService(repository: iam).changePassword(currentPassword: '', newPassword: 'abcd1234'),
         throwsA(isA<BadRequestFailure>()),
       );
-      when(() => auth.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).thenAnswer((_) async {});
-      await ChangePassword(auth)(currentPassword: 'old12345', newPassword: 'new12345');
-      verify(() => auth.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).called(1);
+      when(() => iam.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).thenAnswer((_) async {});
+      await IamFacadeService(repository: iam).changePassword(currentPassword: 'old12345', newPassword: 'new12345');
+      verify(() => iam.changePassword(currentPassword: 'old12345', newPassword: 'new12345')).called(1);
     });
   });
 
@@ -91,7 +97,7 @@ void main() {
         (_) async => [const PharmaceuticalProduct(id: 2, environmentId: 4, code: 'P2', name: 'Amoxicillin', active: true)],
       );
 
-      final catalog = await GetProductCatalog(repo)(lab);
+      final catalog = await LaboratoryFacadeService(repository: repo).getProductCatalog(lab);
 
       expect(catalog.environments.map((e) => e.code), ['ALM-01', 'PRD-01']);
       expect(catalog.products.map((p) => p.name), ['Amoxicillin', 'Zinc']);
@@ -105,7 +111,7 @@ void main() {
           StaffMember(id: 2, fullName: 'No account', active: true),
         ],
       );
-      expect(await GetUserDirectory(repo)(lab), {5: 'Lucía Ramos'});
+      expect(await LaboratoryFacadeService(repository: repo).getUserDirectory(lab), {5: 'Lucía Ramos'});
     });
   });
 
@@ -122,21 +128,21 @@ void main() {
         ],
       );
 
-      final alerts = await GetLaboratoryAlerts(repo)(lab, [3, 4]);
+      final alerts = await complianceFacade(repo).getLaboratoryAlerts(lab, [3, 4]);
 
       expect(alerts.map((a) => a.id), [2, 1]);
     });
 
     test('resolve requires notes before calling the backend', () {
       final repo = MockComplianceRepository();
-      expect(() => ResolveAlert(repo)(1, '  '), throwsA(isA<BadRequestFailure>()));
+      expect(() => complianceFacade(repo).resolveAlert(1, '  '), throwsA(isA<BadRequestFailure>()));
       verifyNoMoreInteractions(repo);
     });
 
     test('preferences only accept warning or critical as minimum severity', () {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       expect(
-        () => UpdateNotificationPreferences(repo)(
+        () => complianceFacade(repo).updatePreferences(
           const NotificationPreferences(inAppEnabled: true, emailEnabled: false, minimumSeverity: AlertSeverity.low),
         ),
         throwsA(isA<BadRequestFailure>()),
@@ -187,7 +193,7 @@ void main() {
       final repo = MockTelemetryRepository();
       final to = DateTime.utc(2026, 6, 30);
       expect(
-        () => GetMeasurements(repo)(lab, container, from: to.subtract(const Duration(days: 40)), to: to),
+        () => TelemetryFacadeService(repository: repo).getMeasurements(lab, container, from: to.subtract(const Duration(days: 40)), to: to),
         throwsA(isA<BadRequestFailure>()),
       );
       verifyNoMoreInteractions(repo);
@@ -199,7 +205,7 @@ void main() {
         (_) async => [measurementFixture(id: 1), measurementFixture(id: 2, deviceId: 11)],
       );
       final to = DateTime.utc(2026, 6, 30);
-      final points = await GetMeasurements(repo)(lab, container, from: to.subtract(const Duration(hours: 24)), to: to);
+      final points = await TelemetryFacadeService(repository: repo).getMeasurements(lab, container, from: to.subtract(const Duration(hours: 24)), to: to);
       expect(points.map((p) => p.id), [1]);
     });
 
@@ -211,16 +217,16 @@ void main() {
       );
       when(() => repo.getConnection(lab, other)).thenThrow(const ServerFailure(statusCode: 500));
 
-      expect((await GetDeviceConnections(repo)(lab, [container, other])).keys, [10]);
+      expect((await TelemetryFacadeService(repository: repo).getConnections(lab, [container, other])).keys, [10]);
 
       when(() => repo.getConnection(lab, other)).thenThrow(const UnauthorizedFailure());
-      expect(() => GetDeviceConnections(repo)(lab, [other]), throwsA(isA<UnauthorizedFailure>()));
+      expect(() => TelemetryFacadeService(repository: repo).getConnections(lab, [other]), throwsA(isA<UnauthorizedFailure>()));
     });
 
     test('environmental devices have no automatic actions', () async {
       final repo = MockTelemetryRepository();
       const environmental = TelemetryTarget(deviceId: 1, environmentId: 3, containerMonitor: false);
-      expect(await GetActuationEvents(repo)(lab, environmental, from: DateTime(2026), to: DateTime(2026, 2)), isEmpty);
+      expect(await TelemetryFacadeService(repository: repo).getActuationEvents(lab, environmental, from: DateTime(2026), to: DateTime(2026, 2)), isEmpty);
       verifyNoMoreInteractions(repo);
     });
 
@@ -241,7 +247,7 @@ void main() {
       when(() => repo.getMaterials(lab, 4)).thenAnswer(
         (_) async => [materialFixture(id: 2, environmentId: 4, name: 'Zinc', stockStatus: 'LOW')],
       );
-      final materials = await GetInventoryMaterials(repo)(lab, [3, 4]);
+      final materials = await InventoryFacadeService(repository: repo).getMaterials(lab, [3, 4]);
       expect(materials.map((m) => m.id), [2, 1]);
     });
   });
@@ -250,7 +256,7 @@ void main() {
     test('invalid personal data is not sent', () {
       final repo = MockProfileRepository();
       expect(
-        () => UpdateMyProfile(repo)(const PersonalData(fullName: 'Lucía', dni: '123')),
+        () => ProfileFacadeService(repository: repo).updateMyProfile(const PersonalData(fullName: 'Lucía', dni: '123')),
         throwsA(isA<BadRequestFailure>()),
       );
       verifyNoMoreInteractions(repo);
@@ -259,21 +265,58 @@ void main() {
     test('empty optional fields are sent as null', () async {
       final repo = MockProfileRepository();
       when(() => repo.updateMine(any())).thenAnswer((_) async => const UserProfile(userId: 1, username: 'u'));
-      await UpdateMyProfile(repo)(const PersonalData(fullName: ' Lucía Ramos ', dni: ' ', phoneNumber: '987654321'));
+      await ProfileFacadeService(repository: repo).updateMyProfile(const PersonalData(fullName: ' Lucía Ramos ', dni: ' ', phoneNumber: '987654321'));
       verify(() => repo.updateMine(const PersonalData(fullName: 'Lucía Ramos', phoneNumber: '987654321'))).called(1);
     });
 
     test('photos over 2 MB or of other types are rejected', () {
       final repo = MockProfileRepository();
       expect(
-        () => UploadMyPhoto(repo)(ProfilePhoto(bytes: Uint8List(ProfilePhoto.maxBytes + 1), contentType: 'image/png')),
+        () => ProfileFacadeService(repository: repo).uploadMyPhoto(ProfilePhoto(bytes: Uint8List(ProfilePhoto.maxBytes + 1), contentType: 'image/png')),
         throwsA(isA<BadRequestFailure>()),
       );
       expect(
-        () => UploadMyPhoto(repo)(ProfilePhoto(bytes: Uint8List(10), contentType: 'image/gif')),
+        () => ProfileFacadeService(repository: repo).uploadMyPhoto(ProfilePhoto(bytes: Uint8List(10), contentType: 'image/gif')),
         throwsA(isA<BadRequestFailure>()),
       );
       verifyNoMoreInteractions(repo);
+    });
+  });
+
+  group('Reporting', () {
+    test('audit trails come newest first, undated entries last', () async {
+      final repo = MockReportingRepository();
+      when(() => repo.getBatchAuditLogs(3)).thenAnswer(
+        (_) async => [
+          const AuditLogEntry(id: 1, action: 'RELEASE'),
+          AuditLogEntry(id: 2, action: 'CREATE', timestamp: DateTime.utc(2026, 9, 1)),
+          AuditLogEntry(id: 3, action: 'UPDATE', timestamp: DateTime.utc(2026, 9, 5)),
+        ],
+      );
+
+      final logs = await reportingFacade(repo).getBatchAuditLogs(3);
+
+      expect(logs.map((e) => e.id), [3, 2, 1]);
+    });
+
+    test('trends of every environment come most severe first', () async {
+      final repo = MockReportingRepository();
+      DeviationTrend trend(String name, {int deviations = 0, int critical = 0}) => DeviationTrend(
+        parameterName: name,
+        equipmentId: 1,
+        direction: TrendDirection.stable,
+        evaluatedReadings: 10,
+        deviationCount: deviations,
+        criticalDeviationCount: critical,
+      );
+      when(() => repo.getDeviationTrends(lab, 3, from: any(named: 'from'), to: any(named: 'to')))
+          .thenAnswer((_) async => [trend('HUMIDITY'), trend('TEMPERATURE', deviations: 2, critical: 1)]);
+      when(() => repo.getDeviationTrends(lab, 4, from: any(named: 'from'), to: any(named: 'to')))
+          .thenAnswer((_) async => [trend('MOTION', deviations: 1)]);
+
+      final trends = await reportingFacade(repo).getDeviationTrends(lab, [3, 4], ReportPeriod.last7Days);
+
+      expect(trends.map((t) => t.parameterName), ['TEMPERATURE', 'MOTION', 'HUMIDITY']);
     });
   });
 
@@ -295,7 +338,7 @@ void main() {
       );
       when(() => repo.getPayments(2)).thenAnswer((_) async => const []);
 
-      final summary = await GetBillingSummary(repo)(lab);
+      final summary = await SubscriptionFacadeService(repository: repo).getBillingSummary(lab);
 
       expect(summary.active, active);
       expect(summary.plan?.name, 'Standard Lab');

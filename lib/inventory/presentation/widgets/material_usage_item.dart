@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/section_card.dart';
-import '../../domain/inventory.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/section_card.dart';
+import '../../domain/entities/material_usage.dart';
 
 /// Displays a raw material consumption associated
 /// with a production batch.
@@ -23,7 +23,7 @@ class MaterialUsageItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
 
     String quantity(double? value, String? unit) {
@@ -36,7 +36,7 @@ class MaterialUsageItem extends StatelessWidget {
         Icons.inventory_2_outlined,
         color: AppColors.primary,
       ),
-      title: l10n.batchNumberShort(usage.batchId),
+      title: i18n.batchNumberShort(usage.batchId),
       subtitle: Formatters.dateTime(
         usage.usageDate,
         locale,

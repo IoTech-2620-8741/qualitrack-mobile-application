@@ -1,9 +1,9 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_spacing.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../bloc/inventory_bloc.dart';
 
 /// Displays the search field and stock filters
@@ -32,24 +32,24 @@ class InventoryFilterBar extends StatelessWidget {
     BuildContext context,
     InventoryFilter filter,
   ) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
 
     return switch (filter) {
-      InventoryFilter.all => l10n.filterAll,
-      InventoryFilter.belowMinimum => l10n.belowMinimum,
-      InventoryFilter.blockedStock => l10n.blockedStock,
+      InventoryFilter.all => i18n.filterAll,
+      InventoryFilter.belowMinimum => i18n.belowMinimum,
+      InventoryFilter.blockedStock => i18n.blockedStock,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SearchField(
-          hint: l10n.searchMaterials,
+          hint: i18n.searchMaterials,
           onChanged: onQueryChanged,
         ),
 

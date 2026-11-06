@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../iam/domain/user_session.dart';
+import '../../iam/domain/entities/user_session.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
-import '../../shared/presentation/l10n/app_localizations.dart';
-import '../../shared/presentation/widgets/confirm_dialog.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
+import '../../common/presentation/i18n/app_localizations.dart';
+import '../../common/presentation/widgets/confirm_dialog.dart';
+import '../../common/presentation/theme/app_colors.dart';
+import '../../common/presentation/theme/app_spacing.dart';
 import 'app_routes.dart';
 
 /// "Navigation Menu" mockup: secondary destinations of the app.
@@ -21,20 +21,20 @@ class MorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final entries = <(IconData, String, String)>[
-      (Icons.science_outlined, l10n.inventoryTitle, AppRoutes.inventory),
-      (Icons.precision_manufacturing_outlined, l10n.equipmentTitle, AppRoutes.equipment),
-      (Icons.medication_outlined, l10n.productsTitle, AppRoutes.products),
-      (Icons.insights_outlined, l10n.reportsTitle, AppRoutes.reports),
+      (Icons.science_outlined, i18n.inventoryTitle, AppRoutes.inventory),
+      (Icons.precision_manufacturing_outlined, i18n.equipmentTitle, AppRoutes.equipment),
+      (Icons.medication_outlined, i18n.productsTitle, AppRoutes.products),
+      (Icons.insights_outlined, i18n.reportsTitle, AppRoutes.reports),
       // The subscription belongs to the quality manager, as in Web.
-      if (session.canManageQuality) (Icons.receipt_long_outlined, l10n.billingTitle, AppRoutes.billing),
-      (Icons.notifications_outlined, l10n.notificationsTitle, AppRoutes.notifications),
-      (Icons.person_outline, l10n.profile, AppRoutes.profile),
-      (Icons.info_outline, l10n.about, AppRoutes.about),
+      if (session.canManageQuality) (Icons.receipt_long_outlined, i18n.billingTitle, AppRoutes.billing),
+      (Icons.notifications_outlined, i18n.notificationsTitle, AppRoutes.notifications),
+      (Icons.person_outline, i18n.profile, AppRoutes.profile),
+      (Icons.info_outline, i18n.about, AppRoutes.about),
     ];
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.more)),
+      appBar: AppBar(title: Text(i18n.more)),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         children: [
@@ -48,7 +48,7 @@ class MorePage extends StatelessWidget {
                   initials: profile?.initials ?? (session.username.isEmpty ? '?' : session.username[0].toUpperCase()),
                 ),
                 title: Text(profile?.displayName ?? session.username, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: Text(session.primaryRole?.label(l10n) ?? '—'),
+                subtitle: Text(session.primaryRole?.label(i18n) ?? '—'),
                 onTap: () => context.push(AppRoutes.profile),
               );
             },
@@ -64,13 +64,13 @@ class MorePage extends StatelessWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: AppColors.critical),
-            title: Text(l10n.signOut, style: const TextStyle(color: AppColors.critical)),
+            title: Text(i18n.signOut, style: const TextStyle(color: AppColors.critical)),
             onTap: () async {
               final ok = await showConfirmDialog(
                 context,
-                title: l10n.signOut,
-                message: l10n.signOutConfirm,
-                confirmLabel: l10n.signOut,
+                title: i18n.signOut,
+                message: i18n.signOutConfirm,
+                confirmLabel: i18n.signOut,
                 destructive: true,
               );
               if (ok) await onSignOut();
@@ -89,21 +89,21 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.about)),
+      appBar: AppBar(title: Text(i18n.about)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         children: [
           const Icon(Icons.verified_user_rounded, size: 64, color: AppColors.primary),
           const SizedBox(height: AppSpacing.md),
           Text('QualiTrack Mobile', textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
-          Text(l10n.versionLabel(version), textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+          Text(i18n.versionLabel(version), textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
           const SizedBox(height: AppSpacing.lg),
-          Text(l10n.aboutDescription, style: theme.textTheme.bodyMedium),
+          Text(i18n.aboutDescription, style: theme.textTheme.bodyMedium),
           const SizedBox(height: AppSpacing.md),
-          Text(l10n.aboutWebScope, style: theme.textTheme.bodyMedium),
+          Text(i18n.aboutWebScope, style: theme.textTheme.bodyMedium),
           const SizedBox(height: AppSpacing.lg),
           Text('© IoTech · ClosedSource', textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
         ],

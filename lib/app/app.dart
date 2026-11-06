@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../compliance/presentation/bloc/unread_notifications_controller.dart';
 import '../iam/application/session_controller.dart';
 import '../profile/presentation/bloc/current_profile_controller.dart';
-import '../shared/presentation/l10n/app_localizations.dart';
+import '../common/presentation/i18n/app_localizations.dart';
 import 'router/app_router.dart';
-import 'theme/app_scroll_behavior.dart';
-import 'theme/app_theme.dart';
+import '../common/presentation/theme/app_scroll_behavior.dart';
+import '../common/presentation/theme/app_theme.dart';
 
 class QualiTrackApp extends StatefulWidget {
   const QualiTrackApp({
@@ -80,7 +80,7 @@ class _QualiTrackAppState extends State<QualiTrackApp> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      onGenerateTitle: (context) => context.l10n.appTitle,
+      onGenerateTitle: (context) => context.i18n.appTitle,
       theme: AppTheme.light(),
       scrollBehavior: const AppScrollBehavior(),
       routerConfig: _router,

@@ -4,10 +4,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/state_views.dart';
-import '../../domain/telemetry.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/state_views.dart';
+import '../../domain/entities/environmental_state.dart';
+import '../../domain/entities/measurement.dart';
+import '../../domain/entities/metric_threshold.dart';
 
 /// Line chart of real readings. Warnings and critical readings are drawn as
 /// amber and red dots; the normal range of the profile (configured in Web)
@@ -21,11 +23,11 @@ class TelemetryChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     if (points.isEmpty) {
       return SizedBox(
         height: 200,
-        child: EmptyView(title: l10n.noHistoryInRange, icon: Icons.show_chart),
+        child: EmptyView(title: i18n.noHistoryInRange, icon: Icons.show_chart),
       );
     }
     final locale = Localizations.localeOf(context).languageCode;
@@ -47,7 +49,7 @@ class TelemetryChart extends StatelessWidget {
     final states = {for (final p in points) p.measuredAt!.millisecondsSinceEpoch.toDouble(): p.state};
 
     return Semantics(
-      label: l10n.chartSemantics(points.length, unit ?? ''),
+      label: i18n.chartSemantics(points.length, unit ?? ''),
       child: SizedBox(
         height: 220,
         child: LineChart(

@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qualitrack_mobile/app/router/app_router.dart';
 import 'package:qualitrack_mobile/app/router/app_routes.dart';
 import 'package:qualitrack_mobile/iam/application/session_controller.dart';
-import 'package:qualitrack_mobile/shared/presentation/l10n/app_localizations.dart';
+import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
+import 'package:qualitrack_mobile/common/presentation/labels.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 
 void main() {
   group('route guard', () {
@@ -43,6 +45,15 @@ void main() {
     test('unsupported languages fall back to English', () {
       expect(AppLocalizations.resolve(const Locale('fr'), AppLocalizations.supportedLocales), const Locale('en'));
       expect(AppLocalizations.resolve(const Locale('es', 'PE'), AppLocalizations.supportedLocales), const Locale('es'));
+    });
+
+    test('metrics are named by code and unknown ones keep the raw text', () {
+      final en = AppLocalizations(const Locale('en'));
+      expect(metricLabel(en, 'TEMPERATURE'), en.metricTemperature);
+      expect(alertVariable(en, 'DOOR_OPEN'), 'Door open');
+      expect(timeInRangeTone(100), BadgeTone.success);
+      expect(timeInRangeTone(99.5), BadgeTone.warning);
+      expect(timeInRangeTone(null), BadgeTone.neutral);
     });
 
     test('placeholders are replaced', () {
