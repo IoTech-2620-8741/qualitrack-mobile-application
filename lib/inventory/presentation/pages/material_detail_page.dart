@@ -17,6 +17,7 @@ import '../../domain/inventory.dart';
 import '../bloc/material_detail_bloc.dart';
 import '../widgets/inventory_labels.dart';
 import '../widgets/inventory_receipt_item.dart';
+import '../widgets/inventory_movement_item.dart';
 
 class MaterialDetailPage extends StatelessWidget {
   const MaterialDetailPage({super.key});
@@ -93,34 +94,10 @@ class _Body extends StatelessWidget {
           title: l10n.movements,
           section: detail.movements,
           emptyMessage: l10n.movementsEmpty,
-          itemBuilder: (context, mv) {
-            final details = <String>[
-              if (mv.amount != null) qty(mv.amount, mv.unit),
-              if (mv.stockBefore != null || mv.stockAfter != null)
-                l10n.stockBeforeAfter(
-                  Formatters.number(mv.stockBefore, locale),
-                  Formatters.number(mv.stockAfter, locale),
-                ),
-              if (mv.statusBefore != null || mv.statusAfter != null)
-                '${Formatters.humanize(mv.statusBefore)} → ${Formatters.humanize(mv.statusAfter)}',
-              if (mv.reason != null && mv.reason!.isNotEmpty) mv.reason!,
-            ];
-            return SectionRow(
-              title: movementTypeLabel(l10n, mv.type),
-              subtitle: details.join(' · '),
-              trailing: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(Formatters.dateTime(mv.occurredAt, locale), style: Theme.of(context).textTheme.bodySmall),
-                  if (mv.productBatchId != null)
-                    TextButton(
-                      onPressed: () => context.push('/batches/${mv.productBatchId}'),
-                      child: Text(l10n.batchNumberShort(mv.productBatchId!)),
-                    ),
-                ],
-              ),
-            );
-          },
+          itemBuilder: (context, movement) => InventoryMovementItem(
+            movement: movement,
+            defaultUnit: m.unit,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         SectionCard<MaterialUsage>(
