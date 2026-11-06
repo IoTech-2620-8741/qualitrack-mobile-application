@@ -11,15 +11,10 @@ import '../../../shared/presentation/widgets/state_views.dart';
 import '../../domain/inventory.dart';
 import '../bloc/inventory_bloc.dart';
 import '../widgets/inventory_material_card.dart';
+import '../widgets/inventory_filter_bar.dart';
 
 class InventoryPage extends StatelessWidget {
   const InventoryPage({super.key});
-
-  String _filterLabel(BuildContext context, InventoryFilter f) => switch (f) {
-    InventoryFilter.all => context.l10n.filterAll,
-    InventoryFilter.belowMinimum => context.l10n.belowMinimum,
-    InventoryFilter.blockedStock => context.l10n.blockedStock,
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -73,16 +68,14 @@ class InventoryPage extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: AppSpacing.md),
-                  SearchField(
-                    hint: l10n.searchMaterials,
-                    onChanged: (q) => bloc.add(InventoryQueryChanged(q)),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  FilterChipBar<InventoryFilter>(
-                    options: InventoryFilter.values,
-                    selected: state.filter,
-                    labelOf: (f) => _filterLabel(context, f),
-                    onSelected: (f) => bloc.add(InventoryFilterChanged(f)),
+                  InventoryFilterBar(
+                    selectedFilter: state.filter,
+                    onQueryChanged: (query) {
+                      bloc.add(InventoryQueryChanged(query));
+                    },
+                    onFilterChanged: (filter) {
+                      bloc.add(InventoryFilterChanged(filter));
+                    },
                   ),
                   const SizedBox(height: AppSpacing.md),
                   if (items.isEmpty)
