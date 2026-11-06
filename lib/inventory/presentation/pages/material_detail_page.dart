@@ -18,6 +18,7 @@ import '../bloc/material_detail_bloc.dart';
 import '../widgets/inventory_labels.dart';
 import '../widgets/inventory_receipt_item.dart';
 import '../widgets/inventory_movement_item.dart';
+import '../widgets/material_usage_item.dart';
 
 class MaterialDetailPage extends StatelessWidget {
   const MaterialDetailPage({super.key});
@@ -104,14 +105,9 @@ class _Body extends StatelessWidget {
           title: l10n.batchesThatUsedIt,
           section: detail.usages,
           emptyMessage: l10n.noBatchesUsedIt,
-          itemBuilder: (context, u) => SectionRow(
-            leading: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
-            title: l10n.batchNumberShort(u.batchId),
-            subtitle: Formatters.dateTime(u.usageDate, locale),
-            trailing: TextButton(
-              onPressed: () => context.push('/batches/${u.batchId}'),
-              child: Text(qty(u.quantityUsed, u.unit)),
-            ),
+          itemBuilder: (context, usage) => MaterialUsageItem(
+            usage: usage,
+            defaultUnit: m.unit,
           ),
         ),
       ],
