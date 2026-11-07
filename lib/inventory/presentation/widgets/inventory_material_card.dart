@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_typography.dart';
-import '../../../common/presentation/formatting/context_locale.dart';
-import '../../../common/presentation/formatting/formatters.dart';
+
 import '../../../common/presentation/i18n/app_localizations.dart';
-import '../../../common/presentation/widgets/layout_widgets.dart';
+
 import '../../../common/presentation/widgets/status_badge.dart';
+import 'inventory_stock_quantities.dart';
 
 import '../../domain/entities/inventory_material.dart';
 import 'inventory_labels.dart';
@@ -25,13 +25,8 @@ class InventoryMaterialCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final locale = context.localeName;
     final theme = Theme.of(context);
 
-    String quantity(double value) {
-      return '${Formatters.number(value, locale)} ${material.unit}'
-          .trim();
-    }
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -86,28 +81,7 @@ class InventoryMaterialCard extends StatelessWidget {
 
               const SizedBox(height: AppSpacing.sm),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: KeyValue(
-                      label: i18n.usableStock,
-                      value: quantity(material.usableStock),
-                    ),
-                  ),
-                  Expanded(
-                    child: KeyValue(
-                      label: i18n.physicalStock,
-                      value: quantity(material.physicalStock),
-                    ),
-                  ),
-                  Expanded(
-                    child: KeyValue(
-                      label: i18n.minimumStock,
-                      value: quantity(material.minimumStock),
-                    ),
-                  ),
-                ],
-              ),
+              InventoryStockQuantities(material: material),
             ],
           ),
         ),

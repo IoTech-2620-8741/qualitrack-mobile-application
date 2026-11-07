@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/formatting/context_locale.dart';
-import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../domain/entities/inventory_material.dart';
+import 'inventory_stock_quantities.dart';
 
 /// Displays stock quantities and catalog information
 /// for a raw material.
@@ -23,38 +22,32 @@ class MaterialStockSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final locale = context.localeName;
-
-    String quantity(double value) {
-      return '${Formatters.number(value, locale)} ${material.unit}'.trim();
-    }
 
     return InfoCard(
-      child: Wrap(
-        spacing: AppSpacing.xl,
-        runSpacing: AppSpacing.lg,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (environmentName != null)
-            KeyValue(
-              label: i18n.environment,
-              value: environmentName!,
-            ),
-          KeyValue(
-            label: i18n.unit,
-            value: material.unit.isEmpty ? '—' : material.unit,
+          Wrap(
+            spacing: AppSpacing.xl,
+            runSpacing: AppSpacing.lg,
+            children: [
+              if (environmentName != null)
+                KeyValue(
+                  label: i18n.environment,
+                  value: environmentName!,
+                ),
+              KeyValue(
+                label: i18n.unit,
+                value: material.unit.isEmpty
+                    ? '—'
+                    : material.unit,
+              ),
+            ],
           ),
-          KeyValue(
-            label: i18n.usableStock,
-            value: quantity(material.usableStock),
-          ),
-          KeyValue(
-            label: i18n.physicalStock,
-            value: quantity(material.physicalStock),
-          ),
-          KeyValue(
-            label: i18n.minimumStock,
-            value: quantity(material.minimumStock),
-          ),
+
+          const SizedBox(height: AppSpacing.lg),
+
+          InventoryStockQuantities(material: material),
         ],
       ),
     );
