@@ -12,6 +12,7 @@ import '../../domain/entities/inventory_material.dart';
 import '../bloc/inventory_bloc.dart';
 import '../widgets/inventory_material_card.dart';
 import '../widgets/inventory_filter_bar.dart';
+import '../widgets/inventory_low_stock_banner.dart';
 
 class InventoryScreen extends StatelessWidget {
   const InventoryScreen({super.key});
@@ -40,32 +41,7 @@ class InventoryScreen extends StatelessWidget {
                   PageHeader(title: i18n.inventoryTitle, subtitle: i18n.materialsCount(all.length)),
                   if (low > 0) ...[
                     const SizedBox(height: AppSpacing.md),
-                    Semantics(
-                      liveRegion: true,
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: AppColors.warningContainer,
-                          borderRadius: AppRadius.mdAll,
-                          border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.warning_amber_rounded, color: AppColors.warning),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Text(
-                                i18n.lowStockAlert(low),
-                                style: const TextStyle(
-                                  color: AppColors.warning,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    InventoryLowStockBanner(count: low),
                   ],
                   const SizedBox(height: AppSpacing.md),
                   InventoryFilterBar(
