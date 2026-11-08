@@ -42,6 +42,16 @@ class ProductionBatch extends Equatable {
   /// quality decision in the UI.
   bool get isAwaitingReview => status == BatchStatus.pending || status == BatchStatus.inProgress;
 
+  /// First day the quality decision can be dated: the start of the batch, or
+  /// [today] when the batch starts later. Without a start date, five years back.
+  DateTime firstDecisionDay(DateTime today) {
+    final todayDay = DateTime(today.year, today.month, today.day);
+    final start = DateTime.tryParse(startDate ?? '');
+    if (start == null) return DateTime(today.year - 5, today.month, today.day);
+    final startDay = DateTime(start.year, start.month, start.day);
+    return startDay.isAfter(todayDay) ? todayDay : startDay;
+  }
+
   bool matches(String query) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return true;

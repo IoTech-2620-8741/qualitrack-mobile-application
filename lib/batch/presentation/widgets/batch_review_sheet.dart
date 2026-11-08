@@ -61,10 +61,11 @@ class _BatchReviewFormState extends State<_BatchReviewForm> {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
+    // The decision cannot be dated before the batch started.
     final picked = await showDatePicker(
       context: context,
       initialDate: _date,
-      firstDate: DateTime(now.year - 5),
+      firstDate: widget.batch.firstDecisionDay(now),
       lastDate: now,
     );
     if (picked != null) setState(() => _date = picked);

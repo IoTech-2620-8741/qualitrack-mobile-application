@@ -12,11 +12,18 @@ final class BatchListState extends Equatable {
     this.remote = const RemoteState(),
     this.filter = BatchFilter.all,
     this.query = '',
+    this.clearCount = 0,
   });
 
   final RemoteState<List<ProductionBatch>> remote;
   final BatchFilter filter;
   final String query;
+
+  /// Times the filters were cleared; the search field starts empty again when it changes.
+  final int clearCount;
+
+  /// Whether the status or the search query hides batches.
+  bool get filtered => filter != BatchFilter.all || query.trim().isNotEmpty;
 
   BatchSummary get summary => BatchSummary.of(remote.data ?? const []);
 
@@ -35,12 +42,14 @@ final class BatchListState extends Equatable {
     RemoteState<List<ProductionBatch>>? remote,
     BatchFilter? filter,
     String? query,
+    int? clearCount,
   }) => BatchListState(
     remote: remote ?? this.remote,
     filter: filter ?? this.filter,
     query: query ?? this.query,
+    clearCount: clearCount ?? this.clearCount,
   );
 
   @override
-  List<Object?> get props => [remote, filter, query];
+  List<Object?> get props => [remote, filter, query, clearCount];
 }

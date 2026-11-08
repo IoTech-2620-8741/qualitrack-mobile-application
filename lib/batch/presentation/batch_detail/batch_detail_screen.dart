@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_typography.dart';
-import '../../../compliance/api/index.dart';
-import '../../../reporting/api/index.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
@@ -17,7 +16,9 @@ import '../../../common/presentation/widgets/section_card.dart';
 import '../../../common/application/section.dart';
 import '../../domain/entities/batch_traceability.dart';
 import '../widgets/batch_labels.dart';
+import '../widgets/batch_history_timeline.dart';
 import '../widgets/batch_review_sheet.dart';
+import 'batch_history.dart';
 import 'bloc/bloc.dart';
 
 /// Batch detail with its traceability. Only quality managers release or
@@ -125,26 +126,19 @@ class _GeneralTab extends StatelessWidget {
                 value: [detail.traceability.productCode, batch.productName].whereType<String>().join(' · '),
               ),
               KeyValue(
-                label: i18n.status,
-                value: batch.status.label(i18n),
-                valueWidget: BatchStatusBadge(status: batch.status),
-              ),
-              KeyValue(
                 label: i18n.quantity,
                 value: '${Formatters.number(batch.quantity, locale)} ${batch.unit ?? ''}'.trim(),
               ),
               KeyValue(label: i18n.startDate, value: Formatters.rawDate(batch.startDate, locale)),
-              KeyValue(label: i18n.endDate, value: Formatters.rawDate(batch.endDate, locale)),
+              if (batch.endDate?.isNotEmpty ?? false)
+                KeyValue(label: i18n.endDate, value: Formatters.rawDate(batch.endDate, locale)),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         InfoCard(
           title: i18n.bpmNotes,
-          child: Text(
-            batch.notes?.isNotEmpty == true ? batch.notes! : '—',
-            style: const TextStyle(fontFamily: AppTypography.monospace),
-          ),
+          child: Text(batch.notes?.isNotEmpty == true ? batch.notes! : '—'),
         ),
         if (release != null) ...[
           const SizedBox(height: AppSpacing.md),
@@ -160,10 +154,7 @@ class _GeneralTab extends StatelessWidget {
                 KeyValue(label: i18n.signedAt, value: Formatters.dateTime(release.signedAt, locale)),
                 const SizedBox(height: AppSpacing.sm),
                 Text(i18n.signatureHash, style: Theme.of(context).textTheme.bodySmall),
-                SelectableText(
-                  release.signatureHash,
-                  style: const TextStyle(fontFamily: AppTypography.monospace, fontSize: 12),
-                ),
+                _SignatureHash(hash: release.signatureHash),
               ],
             ),
           ),
@@ -255,11 +246,13 @@ class _TraceabilityTab extends StatelessWidget {
             leading: const Icon(Icons.science_outlined, color: AppColors.primary),
             title: u.rawMaterialName ?? i18n.materialNumber(u.rawMaterialId),
             subtitle: [
-              Formatters.dateTime(u.usageDate, locale),
+              [
+                Formatters.dateTime(u.usageDate, locale),
+                if (u.inventoryReceiptId != null) i18n.receiptNumber(u.inventoryReceiptId!),
+              ].join(' · '),
               if (u.stockBefore != null || u.stockAfter != null)
                 i18n.stockBeforeAfter(Formatters.number(u.stockBefore, locale), Formatters.number(u.stockAfter, locale)),
-              if (u.inventoryReceiptId != null) i18n.receiptNumber(u.inventoryReceiptId!),
-            ].join(' · '),
+            ].join('\n'),
             trailing: Text(
               '${Formatters.number(u.quantityUsed, locale)} ${u.unit ?? ''}'.trim(),
               style: const TextStyle(fontWeight: FontWeight.w700),
@@ -315,37 +308,46 @@ class _HistoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final i18n = context.i18n;
-    final locale = context.localeName;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        SectionCard<AuditLogEntry>(
-          title: i18n.auditLog,
-          section: detail.auditLogs,
-          maxItems: 20,
-          itemBuilder: (context, log) => SectionRow(
-            title: Formatters.humanize(log.action),
-            subtitle: [log.details, if (log.performedBy != null) person(log.performedBy!)].whereType<String>().join(' · '),
-            trailing: Text(
-              log.timestamp != null ? Formatters.dateTime(log.timestamp, locale) : (log.rawTimestamp ?? '—'),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+        BatchHistoryTimeline(
+          history: BatchHistory.of(auditLogs: detail.auditLogs, events: detail.events),
+          person: person,
+        ),
+      ],
+    );
+  }
+}
+
+/// Release signature hash, shortened, with a button that copies it whole.
+class _SignatureHash extends StatelessWidget {
+  const _SignatureHash({required this.hash});
+
+  final String hash;
+
+  @override
+  Widget build(BuildContext context) {
+    final i18n = context.i18n;
+    final short = hash.length > 24 ? '${hash.substring(0, 12)}…${hash.substring(hash.length - 8)}' : hash;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            short,
+            semanticsLabel: hash,
+            style: const TextStyle(fontFamily: AppTypography.monospace, fontSize: 12),
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        SectionCard<ComplianceEvent>(
-          title: i18n.complianceEvents,
-          section: detail.events,
-          maxItems: 20,
-          itemBuilder: (context, ev) => SectionRow(
-            title: Formatters.humanize(ev.eventType),
-            subtitle: ev.description,
-            trailing: Text(
-              ev.timestamp != null ? Formatters.dateTime(ev.timestamp, locale) : (ev.rawTimestamp ?? '—'),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
+        IconButton(
+          key: const Key('batch.copySignatureHash'),
+          tooltip: i18n.copySignatureHash,
+          icon: const Icon(Icons.copy_outlined, size: 18),
+          onPressed: () async {
+            final messenger = ScaffoldMessenger.of(context);
+            await Clipboard.setData(ClipboardData(text: hash));
+            messenger.showSnackBar(SnackBar(content: Text(i18n.signatureHashCopied)));
+          },
         ),
       ],
     );

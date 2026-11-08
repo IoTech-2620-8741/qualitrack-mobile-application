@@ -14,6 +14,9 @@ class BatchListBloc extends Bloc<BatchListEvent, BatchListState> {
     on<BatchListRequested>(_onRequested);
     on<BatchListFilterChanged>((e, emit) => emit(state.copyWith(filter: e.filter)));
     on<BatchListQueryChanged>((e, emit) => emit(state.copyWith(query: e.query)));
+    on<BatchListFiltersCleared>(
+      (e, emit) => emit(state.copyWith(filter: BatchFilter.all, query: '', clearCount: state.clearCount + 1)),
+    );
   }
 
   final BatchFacadeService _batchService;

@@ -547,6 +547,25 @@ class AppLocalizations {
   String get swipeHint => _t('swipeHint');
   String seeMoreCount(int count) => _t('seeMoreCount')
       .replaceAll('{count}', '$count');
+  String get historyBatchCreated => _t('historyBatchCreated');
+  String get historyBatchStarted => _t('historyBatchStarted');
+  String get historyRawMaterialUsed => _t('historyRawMaterialUsed');
+  String get historyEquipmentRegistered => _t('historyEquipmentRegistered');
+  String get historyStaffRegistered => _t('historyStaffRegistered');
+  String get historyBatchReleased => _t('historyBatchReleased');
+  String get historyBatchRejected => _t('historyBatchRejected');
+  String get historyBatchStored => _t('historyBatchStored');
+  String get historyBatchBlocked => _t('historyBatchBlocked');
+  String historyDecisionDate(String date) => _t('historyDecisionDate')
+      .replaceAll('{date}', date);
+  String get historyCompliance => _t('historyCompliance');
+  String get historyEmpty => _t('historyEmpty');
+  String historyShowing(int shown, int total) => _t('historyShowing')
+      .replaceAll('{shown}', '$shown')
+      .replaceAll('{total}', '$total');
+  String get clearFilters => _t('clearFilters');
+  String get copySignatureHash => _t('copySignatureHash');
+  String get signatureHashCopied => _t('signatureHashCopied');
 }
 
 const Map<String, String> _en = {
@@ -988,6 +1007,22 @@ const Map<String, String> _en = {
   'reportHistoryBanner': 'Reports are generated and downloaded in QualiTrack Web.',
   'swipeHint': 'Swipe sideways to change section',
   'seeMoreCount': 'See {count} more',
+  'historyBatchCreated': 'Batch registered',
+  'historyBatchStarted': 'Manufacturing started',
+  'historyRawMaterialUsed': 'Raw material consumed',
+  'historyEquipmentRegistered': 'Equipment registered',
+  'historyStaffRegistered': 'Staff member registered',
+  'historyBatchReleased': 'Batch released',
+  'historyBatchRejected': 'Batch rejected',
+  'historyBatchStored': 'Stored in a container',
+  'historyBatchBlocked': 'Batch blocked',
+  'historyDecisionDate': 'Decision date: {date}',
+  'historyCompliance': 'Compliance',
+  'historyEmpty': 'No activity has been recorded for this batch yet',
+  'historyShowing': 'Showing {shown} of {total}',
+  'clearFilters': 'Clear filters',
+  'copySignatureHash': 'Copy hash',
+  'signatureHashCopied': 'Hash copied',
 };
 
 const Map<String, String> _es = {
@@ -1429,6 +1464,22 @@ const Map<String, String> _es = {
   'reportHistoryBanner': 'Los reportes se generan y descargan en QualiTrack Web.',
   'swipeHint': 'Desliza a los lados para cambiar de sección',
   'seeMoreCount': 'Ver {count} más',
+  'historyBatchCreated': 'Lote registrado',
+  'historyBatchStarted': 'Fabricación iniciada',
+  'historyRawMaterialUsed': 'Materia prima consumida',
+  'historyEquipmentRegistered': 'Equipo registrado',
+  'historyStaffRegistered': 'Personal registrado',
+  'historyBatchReleased': 'Lote liberado',
+  'historyBatchRejected': 'Lote rechazado',
+  'historyBatchStored': 'Guardado en un contenedor',
+  'historyBatchBlocked': 'Lote bloqueado',
+  'historyDecisionDate': 'Fecha de la decisión: {date}',
+  'historyCompliance': 'Cumplimiento',
+  'historyEmpty': 'Aún no hay actividad registrada para este lote',
+  'historyShowing': 'Mostrando {shown} de {total}',
+  'clearFilters': 'Limpiar filtros',
+  'copySignatureHash': 'Copiar huella',
+  'signatureHashCopied': 'Huella copiada',
 };
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
