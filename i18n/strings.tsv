@@ -437,3 +437,19 @@ historyIndependentOfPeriod	Independent of the selected period	No depende del per
 reportHistoryBanner	Reports are generated and downloaded in QualiTrack Web.	Los reportes se generan y descargan en QualiTrack Web.
 swipeHint	Swipe sideways to change section	Desliza a los lados para cambiar de sección
 seeMoreCount	See {count} more	Ver {count} más	count:int
+historyBatchCreated	Batch registered	Lote registrado
+historyBatchStarted	Manufacturing started	Fabricación iniciada
+historyRawMaterialUsed	Raw material consumed	Materia prima consumida
+historyEquipmentRegistered	Equipment registered	Equipo registrado
+historyStaffRegistered	Staff member registered	Personal registrado
+historyBatchReleased	Batch released	Lote liberado
+historyBatchRejected	Batch rejected	Lote rechazado
+historyBatchStored	Stored in a container	Guardado en un contenedor
+historyBatchBlocked	Batch blocked	Lote bloqueado
+historyDecisionDate	Decision date: {date}	Fecha de la decisión: {date}	date:String
+historyCompliance	Compliance	Cumplimiento
+historyEmpty	No activity has been recorded for this batch yet	Aún no hay actividad registrada para este lote
+historyShowing	Showing {shown} of {total}	Mostrando {shown} de {total}	shown:int,total:int
+clearFilters	Clear filters	Limpiar filtros
+copySignatureHash	Copy hash	Copiar huella
+signatureHashCopied	Hash copied	Huella copiada
