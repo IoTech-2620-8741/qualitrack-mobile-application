@@ -45,7 +45,8 @@ void main() {
       expect(bloc.state.query, isEmpty);
       expect(bloc.state.clearCount, 1);
       expect(bloc.state.filtered, isFalse);
-      expect(bloc.state.visible.map((b) => b.id), [1, 2]);
+      // Same start date: the newest batch first.
+      expect(bloc.state.visible.map((b) => b.id), [2, 1]);
     },
   );
 
