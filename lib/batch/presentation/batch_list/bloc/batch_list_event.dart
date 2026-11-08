@@ -27,6 +27,11 @@ final class BatchListFilterChanged extends BatchListEvent {
   List<Object?> get props => [filter];
 }
 
+/// Shows every batch again: no status and an empty search.
+final class BatchListFiltersCleared extends BatchListEvent {
+  const BatchListFiltersCleared();
+}
+
 final class BatchListQueryChanged extends BatchListEvent {
   const BatchListQueryChanged(this.query);
 

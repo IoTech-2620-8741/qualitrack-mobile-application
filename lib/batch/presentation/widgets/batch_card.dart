@@ -48,10 +48,7 @@ class BatchCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(
-                '${i18n.product}: ${batch.productName ?? '—'}',
-                style: theme.textTheme.bodyMedium,
-              ),
+              Text(batch.productName ?? '—', style: theme.textTheme.bodyMedium),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
