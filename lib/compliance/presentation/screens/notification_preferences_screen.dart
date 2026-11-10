@@ -38,6 +38,7 @@ class NotificationPreferencesScreen extends StatelessWidget {
         builder: (context, state) => RemoteStateView<NotificationPreferences>(
           state: state.remote,
           onRetry: () => bloc.add(const NotificationPreferencesRequested()),
+          onRefresh: () => bloc.add(const NotificationPreferencesRequested()),
           builder: (context, preferences) {
             final saving = state.saveStatus == PreferencesSaveStatus.saving;
             void save(NotificationPreferences value) => bloc.add(NotificationPreferencesSaved(value));
@@ -74,6 +75,7 @@ class NotificationPreferencesScreen extends StatelessWidget {
                       Text(i18n.minimumSeverityHint, style: Theme.of(context).textTheme.bodySmall),
                       const SizedBox(height: AppSpacing.sm),
                       SegmentedButton<AlertSeverity>(
+                        showSelectedIcon: false,
                         segments: [
                           ButtonSegment(value: AlertSeverity.warning, label: Text(i18n.severityWarning)),
                           ButtonSegment(value: AlertSeverity.critical, label: Text(i18n.severityCritical)),
