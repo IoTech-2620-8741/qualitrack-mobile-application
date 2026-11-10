@@ -25,7 +25,17 @@ class ProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.productsTitle)),
+      appBar: AppBar(
+        title: BlocBuilder<ProductsBloc, ProductsState>(
+          builder: (context, state) {
+            final products = state.remote.data?.products;
+            return AppBarTitle(
+              title: i18n.productsTitle,
+              subtitle: products == null ? null : i18n.productsCount(products.length),
+            );
+          },
+        ),
+      ),
       body: BlocBuilder<ProductsBloc, ProductsState>(
         builder: (context, state) => RemoteStateView<ProductCatalog>(
           state: state.remote,
@@ -39,11 +49,6 @@ class ProductsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
-                  PageHeader(
-                    title: i18n.productsTitle,
-                    subtitle: i18n.productsCount(state.remote.data?.products.length ?? 0),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
                   SearchField(
                     hint: i18n.searchProducts,
                     onChanged: (q) => context.read<ProductsBloc>().add(ProductsQueryChanged(q)),
@@ -105,8 +110,8 @@ class _ProductTile extends StatelessWidget {
   }
 }
 
-class ProductDetailPage extends StatelessWidget {
-  const ProductDetailPage({super.key, required this.productId});
+class ProductDetailScreen extends StatelessWidget {
+  const ProductDetailScreen({super.key, required this.productId});
 
   final int productId;
 
@@ -114,7 +119,14 @@ class ProductDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.productDetail)),
+      appBar: AppBar(
+        title: BlocBuilder<ProductsBloc, ProductsState>(
+          builder: (context, state) {
+            final product = state.byId(productId);
+            return AppBarTitle(title: product?.name ?? i18n.productDetail, subtitle: product?.code);
+          },
+        ),
+      ),
       body: BlocBuilder<ProductsBloc, ProductsState>(
         builder: (context, state) => RemoteStateView<ProductCatalog>(
           state: state.remote,
@@ -125,19 +137,15 @@ class ProductDetailPage extends StatelessWidget {
             return ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                PageHeader(title: product.name, subtitle: product.code),
-                const SizedBox(height: AppSpacing.lg),
                 InfoCard(
-                  child: Wrap(
-                    spacing: AppSpacing.xl,
-                    runSpacing: AppSpacing.lg,
+                  child: DetailList(
                     children: [
-                      KeyValue(label: i18n.code, value: product.code),
-                      KeyValue(
+                      DetailRow(label: i18n.code, value: product.code),
+                      DetailRow(
                         label: i18n.environment,
                         value: state.remote.data?.environment(product.environmentId)?.displayName ?? '—',
                       ),
-                      KeyValue(
+                      DetailRow(
                         label: i18n.status,
                         value: product.active ? i18n.active : i18n.inactive,
                         valueWidget: StatusBadge(

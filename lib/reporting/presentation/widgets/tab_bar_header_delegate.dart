@@ -6,7 +6,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A delegate that builds a pinned [TabBar] header inside a CustomScrollView/NestedScrollView.
 class TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
@@ -16,22 +15,20 @@ class TabBarHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
 
   // The minimum height the header will take when collapsed.
-  // We add 16 to the default TabBar height to account for vertical padding.
+  // Exactly the TabBar height: primary tabs span the full width on the surface.
   @override
-  double get minExtent => tabBar.preferredSize.height + 16;
+  double get minExtent => tabBar.preferredSize.height;
 
   // The maximum height the header can take when fully expanded.
   // Since we want a fixed size, it's the same as minExtent.
   @override
-  double get maxExtent => tabBar.preferredSize.height + 16;
+  double get maxExtent => tabBar.preferredSize.height;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      // Use the scaffold background color so the content scrolling behind it is hidden
-      color: Theme.of(context).scaffoldBackgroundColor,
-      // Add some padding around the TabBar to make it look nice
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+      // Opaque surface so the content scrolling behind it is hidden.
+      color: Theme.of(context).colorScheme.surface,
       child: tabBar,
     );
   }

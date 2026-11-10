@@ -84,7 +84,7 @@ class MeasurementsTab extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 i18n.totalReadings(data.totalReadings),
-                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),

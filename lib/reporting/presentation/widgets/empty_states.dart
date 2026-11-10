@@ -60,9 +60,6 @@ class EmptyStateView extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             OutlinedButton(
               onPressed: onAction,
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              ),
               child: Text(actionLabel!),
             ),
           ],

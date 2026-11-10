@@ -12,14 +12,14 @@ import 'layout_widgets.dart';
 class SectionCard<T> extends StatelessWidget {
   const SectionCard({
     super.key,
-    required this.title,
+    this.title,
     required this.section,
     required this.itemBuilder,
     this.emptyMessage,
     this.maxItems,
   });
 
-  final String title;
+  final String? title;
   final Section<T> section;
   final Widget Function(BuildContext context, T item) itemBuilder;
   final String? emptyMessage;

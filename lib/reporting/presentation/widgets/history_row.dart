@@ -48,12 +48,12 @@ class HistoryRow extends StatelessWidget {
         children: [
           // 1. Circular icon container
           Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryContainer,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.description_outlined, color: AppColors.primary, size: 22),
+            child: const Icon(Icons.description_outlined, color: AppColors.primaryDark, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
 
@@ -66,13 +66,13 @@ class HistoryRow extends StatelessWidget {
                   reportTypeLabel(i18n, report.reportType),
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   [
                     if (rangeText != null) rangeText,
                     if (report.generatedByName != null) report.generatedByName!,
                   ].join(' · '),
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                  style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -81,7 +81,7 @@ class HistoryRow extends StatelessWidget {
           // 3. Generation Date (Right aligned)
           Text(
             Formatters.dateTime(report.generatedAt, locale),
-            style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey.shade500),
+            style: theme.textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),

@@ -70,10 +70,14 @@ final class EquipmentListState extends Equatable {
   final EquipmentFilter filter;
 
   List<EquipmentOverview> get visible => (remote.data ?? const <EquipmentOverview>[])
-      .where((item) => item.equipment.matches(query) && _passes(item))
+      .where((item) => item.equipment.matches(query) && _passes(item, filter))
       .toList(growable: false);
 
-  bool _passes(EquipmentOverview item) => switch (filter) {
+  /// Equipment in [option] (ignoring the search), for the filter menu.
+  int countFor(EquipmentFilter option) =>
+      (remote.data ?? const <EquipmentOverview>[]).where((item) => _passes(item, option)).length;
+
+  static bool _passes(EquipmentOverview item, EquipmentFilter filter) => switch (filter) {
     EquipmentFilter.all => true,
     EquipmentFilter.attention => item.needsAttention,
     EquipmentFilter.iotDevices => item.equipment.isIotDevice,

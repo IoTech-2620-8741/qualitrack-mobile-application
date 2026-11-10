@@ -7,6 +7,7 @@ library;
 
 
 import 'package:flutter/material.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
@@ -48,10 +49,10 @@ class MeasurementRow extends StatelessWidget {
                   alertVariable(i18n, summary.metric), // Translates metric codes
                   style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppSpacing.xxs),
                 Text(
                   data.deviceNames[summary.deviceId] ?? '',
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                  style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -79,7 +80,7 @@ class MeasurementRow extends StatelessWidget {
                   ),
                 ),
 
-              const SizedBox(height: 2),
+              const SizedBox(height: AppSpacing.xxs),
 
               // Only show min/max if it's NOT a movement
               if (!isMovement)
@@ -88,7 +89,7 @@ class MeasurementRow extends StatelessWidget {
                     Formatters.number(summary.minimum, locale),
                     Formatters.number(summary.maximum, locale),
                   ),
-                  style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey.shade500),
+                  style: theme.textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
                 ),
             ],
           ),

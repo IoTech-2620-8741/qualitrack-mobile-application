@@ -566,6 +566,58 @@ class AppLocalizations {
   String get clearFilters => _t('clearFilters');
   String get copySignatureHash => _t('copySignatureHash');
   String get signatureHashCopied => _t('signatureHashCopied');
+  String operationalOfTotal(int total) => _t('operationalOfTotal')
+      .replaceAll('{total}', '$total');
+  String iotOnline(int connected, int total) => _t('iotOnline')
+      .replaceAll('{connected}', '$connected')
+      .replaceAll('{total}', '$total');
+  String get clearSearch => _t('clearSearch');
+  String get tabMaintenance => _t('tabMaintenance');
+  String get tabEvents => _t('tabEvents');
+  String get tabAudit => _t('tabAudit');
+  String get tabMovements => _t('tabMovements');
+  String get tabUsedIn => _t('tabUsedIn');
+  String get tabGeneral => _t('tabGeneral');
+  String get mostUrgentAlert => _t('mostUrgentAlert');
+  String get noOpenAlertsShort => _t('noOpenAlertsShort');
+  String get filterAlerts => _t('filterAlerts');
+  String showingFilter(String filter) => _t('showingFilter')
+      .replaceAll('{filter}', filter);
+  String ofTotal(int total) => _t('ofTotal')
+      .replaceAll('{total}', '$total');
+  String get filterBatches => _t('filterBatches');
+  String get searchAlerts => _t('searchAlerts');
+  String get filterEquipment => _t('filterEquipment');
+  String get moreOperations => _t('moreOperations');
+  String get moreAccount => _t('moreAccount');
+  String get moreInventory => _t('moreInventory');
+  String get moreInventoryHint => _t('moreInventoryHint');
+  String get moreProducts => _t('moreProducts');
+  String get moreProductsHint => _t('moreProductsHint');
+  String get moreReports => _t('moreReports');
+  String get moreReportsHint => _t('moreReportsHint');
+  String get moreBilling => _t('moreBilling');
+  String get moreBillingHint => _t('moreBillingHint');
+  String get moreNotificationsHint => _t('moreNotificationsHint');
+  String get moreAboutHint => _t('moreAboutHint');
+  String get moreQuality => _t('moreQuality');
+  String get moreAdministration => _t('moreAdministration');
+  String get navEquipment => _t('navEquipment');
+  String get moreAlerts => _t('moreAlerts');
+  String get moreAlertsHint => _t('moreAlertsHint');
+  String get homeBatches => _t('homeBatches');
+  String attentionCount(int count) => _t('attentionCount')
+      .replaceAll('{count}', '$count');
+  String get allEquipmentOk => _t('allEquipmentOk');
+  String get iotDevicesOnline => _t('iotDevicesOnline');
+  String get noIotDevices => _t('noIotDevices');
+  String get stockAboveMinimum => _t('stockAboveMinimum');
+  String get filterMaterials => _t('filterMaterials');
+  String get batchCycle => _t('batchCycle');
+  String get qaDecision => _t('qaDecision');
+  String get traceMaterials => _t('traceMaterials');
+  String get traceStaff => _t('traceStaff');
+  String get batchesUnit => _t('batchesUnit');
 }
 
 const Map<String, String> _en = {
@@ -1023,6 +1075,52 @@ const Map<String, String> _en = {
   'clearFilters': 'Clear filters',
   'copySignatureHash': 'Copy hash',
   'signatureHashCopied': 'Hash copied',
+  'operationalOfTotal': 'operational of {total}',
+  'iotOnline': '{connected}/{total} IoT online',
+  'clearSearch': 'Clear search',
+  'tabMaintenance': 'Maintenance',
+  'tabEvents': 'Events',
+  'tabAudit': 'Audit',
+  'tabMovements': 'Movements',
+  'tabUsedIn': 'Used in',
+  'tabGeneral': 'General',
+  'mostUrgentAlert': 'Most urgent alert',
+  'noOpenAlertsShort': 'No open alerts',
+  'filterAlerts': 'Filter alerts',
+  'showingFilter': 'Showing: {filter}',
+  'ofTotal': 'of {total}',
+  'filterBatches': 'Filter batches',
+  'searchAlerts': 'Search by variable, device or area',
+  'filterEquipment': 'Filter equipment',
+  'moreOperations': 'Operations',
+  'moreAccount': 'Account',
+  'moreInventory': 'Inventory',
+  'moreInventoryHint': 'Raw materials, lots and stock',
+  'moreProducts': 'Products',
+  'moreProductsHint': 'Pharmaceutical product catalog',
+  'moreReports': 'Reports',
+  'moreReportsHint': 'Deviations, measurements and history',
+  'moreBilling': 'Subscription',
+  'moreBillingHint': 'Plan and billing',
+  'moreNotificationsHint': 'Messages from QualiTrack',
+  'moreAboutHint': 'Version and information',
+  'moreQuality': 'Quality',
+  'moreAdministration': 'Administration',
+  'navEquipment': 'Equipment',
+  'moreAlerts': 'Compliance alerts',
+  'moreAlertsHint': 'Deviations to attend',
+  'homeBatches': 'Production batches',
+  'attentionCount': '{count} need attention',
+  'allEquipmentOk': 'All operational',
+  'iotDevicesOnline': 'devices online',
+  'noIotDevices': 'No IoT devices',
+  'stockAboveMinimum': 'All materials above the minimum stock',
+  'filterMaterials': 'Filter materials',
+  'batchCycle': 'Batch cycle',
+  'qaDecision': 'QA decision',
+  'traceMaterials': 'Raw materials',
+  'traceStaff': 'Staff',
+  'batchesUnit': 'batches',
 };
 
 const Map<String, String> _es = {
@@ -1480,6 +1578,52 @@ const Map<String, String> _es = {
   'clearFilters': 'Limpiar filtros',
   'copySignatureHash': 'Copiar huella',
   'signatureHashCopied': 'Huella copiada',
+  'operationalOfTotal': 'operativos de {total}',
+  'iotOnline': '{connected}/{total} IoT en línea',
+  'clearSearch': 'Borrar búsqueda',
+  'tabMaintenance': 'Mantenimiento',
+  'tabEvents': 'Eventos',
+  'tabAudit': 'Auditoría',
+  'tabMovements': 'Movimientos',
+  'tabUsedIn': 'Usado en',
+  'tabGeneral': 'General',
+  'mostUrgentAlert': 'Alerta más urgente',
+  'noOpenAlertsShort': 'Sin alertas abiertas',
+  'filterAlerts': 'Filtrar alertas',
+  'showingFilter': 'Mostrando: {filter}',
+  'ofTotal': 'de {total}',
+  'filterBatches': 'Filtrar lotes',
+  'searchAlerts': 'Buscar por variable, equipo o área',
+  'filterEquipment': 'Filtrar equipos',
+  'moreOperations': 'Operación',
+  'moreAccount': 'Cuenta',
+  'moreInventory': 'Inventario',
+  'moreInventoryHint': 'Materias primas, lotes y stock',
+  'moreProducts': 'Productos',
+  'moreProductsHint': 'Catálogo de productos farmacéuticos',
+  'moreReports': 'Reportes',
+  'moreReportsHint': 'Desviaciones, mediciones e historial',
+  'moreBilling': 'Suscripción',
+  'moreBillingHint': 'Plan y facturación',
+  'moreNotificationsHint': 'Mensajes de QualiTrack',
+  'moreAboutHint': 'Versión e información',
+  'moreQuality': 'Calidad',
+  'moreAdministration': 'Administración',
+  'navEquipment': 'Equipos',
+  'moreAlerts': 'Alertas de cumplimiento',
+  'moreAlertsHint': 'Desviaciones por atender',
+  'homeBatches': 'Lotes de producción',
+  'attentionCount': '{count} requieren atención',
+  'allEquipmentOk': 'Todos operativos',
+  'iotDevicesOnline': 'dispositivos en línea',
+  'noIotDevices': 'Sin dispositivos IoT',
+  'stockAboveMinimum': 'Todos los materiales sobre el stock mínimo',
+  'filterMaterials': 'Filtrar materiales',
+  'batchCycle': 'Ciclo del lote',
+  'qaDecision': 'Decisión QA',
+  'traceMaterials': 'Materias primas',
+  'traceStaff': 'Personal',
+  'batchesUnit': 'lotes',
 };
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

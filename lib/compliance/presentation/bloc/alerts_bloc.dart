@@ -52,11 +52,25 @@ final class AlertsFilterChanged extends AlertsEvent {
   List<Object?> get props => [filter];
 }
 
+/// Free-text search over the alerts (variable, device, area).
+final class AlertsQueryChanged extends AlertsEvent {
+  const AlertsQueryChanged(this.query);
+
+  final String query;
+
+  @override
+  List<Object?> get props => [query];
+}
+
 final class AlertsState extends Equatable {
-  const AlertsState({this.remote = const RemoteState(), this.filter = AlertFilter.open});
+  const AlertsState({this.remote = const RemoteState(), this.filter = AlertFilter.open, this.query = ''});
 
   final RemoteState<AlertsData> remote;
   final AlertFilter filter;
+
+  /// Search text; the screen matches it against the displayed names, since
+  /// variable labels depend on the language.
+  final String query;
 
   List<DeviationAlert> get visible {
     final alerts = remote.data?.alerts ?? const <DeviationAlert>[];
@@ -74,11 +88,11 @@ final class AlertsState extends Equatable {
         .toList(growable: false);
   }
 
-  AlertsState copyWith({RemoteState<AlertsData>? remote, AlertFilter? filter}) =>
-      AlertsState(remote: remote ?? this.remote, filter: filter ?? this.filter);
+  AlertsState copyWith({RemoteState<AlertsData>? remote, AlertFilter? filter, String? query}) =>
+      AlertsState(remote: remote ?? this.remote, filter: filter ?? this.filter, query: query ?? this.query);
 
   @override
-  List<Object?> get props => [remote, filter];
+  List<Object?> get props => [remote, filter, query];
 }
 
 /// Alerts of the areas and containers of the laboratory (US: consult alerts
@@ -96,6 +110,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
        super(const AlertsState()) {
     on<AlertsRequested>(_onRequested);
     on<AlertsFilterChanged>((e, emit) => emit(state.copyWith(filter: e.filter)));
+    on<AlertsQueryChanged>((e, emit) => emit(state.copyWith(query: e.query)));
   }
 
   final LaboratoryApi _laboratoryApi;

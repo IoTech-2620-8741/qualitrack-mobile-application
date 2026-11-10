@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../widgets/history_row.dart';
@@ -50,7 +51,7 @@ class HistoryTab extends StatelessWidget {
           // 2. Note indicating that the history is independent of the selected period
           Text(
             i18n.historyIndependentOfPeriod,
-            style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey.shade600),
+            style: theme.textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
           ),
           const SizedBox(height: AppSpacing.md),
 

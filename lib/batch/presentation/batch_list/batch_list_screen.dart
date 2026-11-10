@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/theme/app_typography.dart';
-import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/fab_menu.dart';
+import '../../../common/presentation/widgets/filter_summary_card.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
+import '../../domain/entities/batch_summary.dart';
 import '../../domain/entities/production_batch.dart';
 import '../widgets/batch_card.dart';
 import 'bloc/bloc.dart';
 
+/// Production batches of the laboratory.
+///
+/// Same pattern as the alerts: a compact summary card for the status in use,
+/// a search bar and the matching batches. The status is chosen from a FAB
+/// menu at the bottom-right corner, where each option shows its count.
 class BatchListScreen extends StatelessWidget {
   const BatchListScreen({super.key});
 
@@ -21,12 +29,7 @@ class BatchListScreen extends StatelessWidget {
     final bloc = context.read<BatchListBloc>();
     void reload() => bloc.add(const BatchListRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(
-        title: Text(i18n.batchesTitle),
-        actions: [
-          IconButton(tooltip: i18n.refresh, onPressed: reload, icon: const Icon(Icons.refresh)),
-        ],
-      ),
+      appBar: AppBar(title: AppBarTitle(title: i18n.batchesTitle, subtitle: i18n.batchesSubtitle)),
       body: BlocBuilder<BatchListBloc, BatchListState>(
         builder: (context, state) => RemoteStateView<List<ProductionBatch>>(
           state: state.remote,
@@ -36,57 +39,62 @@ class BatchListScreen extends StatelessWidget {
           builder: (context, _) {
             final summary = state.summary;
             final items = state.visible;
-            // The counters filter by status: choosing the active one shows every batch again.
-            void choose(BatchFilter filter) => bloc.add(
-              BatchListFilterChanged(state.filter == filter ? BatchFilter.all : filter),
-            );
-            Widget counter(BatchFilter filter, String label, int value, Color color) => _StatusCounter(
-              key: Key('batch.counter.${filter.name}'),
-              label: label,
-              value: value,
-              color: color,
-              selected: state.filter == filter,
-              onTap: () => choose(filter),
-            );
-            return RefreshIndicator(
-              onRefresh: () async => reload(),
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                children: [
-                  PageHeader(title: i18n.batchesTitle, subtitle: i18n.batchesSubtitle),
-                  const SizedBox(height: AppSpacing.md),
-                  ResponsiveGrid(
-                    minItemWidth: 100,
-                    children: [
-                      counter(BatchFilter.all, i18n.total, summary.total, AppColors.navy),
-                      counter(BatchFilter.pending, i18n.batchPending, summary.pending, AppColors.warning),
-                      counter(BatchFilter.inProgress, i18n.batchInProgress, summary.inProgress, AppColors.info),
-                      counter(BatchFilter.released, i18n.batchReleased, summary.released, AppColors.success),
-                      counter(BatchFilter.rejected, i18n.batchRejected, summary.rejected, AppColors.critical),
-                    ],
+            final style = _FilterStyle.of(state.filter);
+            return FabMenuHost<BatchFilter>(
+              icon: Icons.filter_list,
+              tooltip: i18n.filterBatches,
+              selected: state.filter,
+              onSelected: (f) => bloc.add(BatchListFilterChanged(f)),
+              items: [
+                for (final f in BatchFilter.values)
+                  FabMenuItem(
+                    value: f,
+                    label: _FilterStyle.of(f).label(i18n),
+                    icon: _FilterStyle.of(f).icon,
+                    count: _count(f, summary),
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  SearchField(
-                    // A new field, empty, after the filters are cleared.
-                    key: ValueKey('batch.search.${state.clearCount}'),
-                    hint: i18n.searchBatches,
-                    onChanged: (q) => bloc.add(BatchListQueryChanged(q)),
+              ],
+              child: RefreshIndicator(
+                onRefresh: () async => reload(),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    FabMenuHost.bottomClearance,
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  if (items.isEmpty)
-                    _NoMatches(onClear: () => bloc.add(const BatchListFiltersCleared()))
-                  else
-                    for (final batch in items) ...[
-                      BatchCard(
-                        batch: batch,
-                        onTap: () async {
-                          await context.push('/batches/${batch.id}');
-                          reload();
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                    ],
-                ],
+                  children: [
+                    FilterSummaryCard(
+                      key: const Key('batch.summary'),
+                      filterLabel: style.label(i18n),
+                      icon: style.icon,
+                      tone: style.tone,
+                      count: items.length,
+                      total: summary.total,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    SearchField(
+                      // A new field, empty, after the filters are cleared.
+                      key: ValueKey('batch.search.${state.clearCount}'),
+                      hint: i18n.searchBatches,
+                      onChanged: (q) => bloc.add(BatchListQueryChanged(q)),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    if (items.isEmpty)
+                      _NoMatches(onClear: () => bloc.add(const BatchListFiltersCleared()))
+                    else
+                      for (final batch in items) ...[
+                        BatchCard(
+                          batch: batch,
+                          onTap: () async {
+                            await context.push('/batches/${batch.id}');
+                            reload();
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                      ],
+                  ],
+                ),
               ),
             );
           },
@@ -96,58 +104,29 @@ class BatchListScreen extends StatelessWidget {
   }
 }
 
-/// Count of batches in a status; tapping it shows only those batches.
-class _StatusCounter extends StatelessWidget {
-  const _StatusCounter({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
+int _count(BatchFilter filter, BatchSummary s) => switch (filter) {
+  BatchFilter.all => s.total,
+  BatchFilter.pending => s.pending,
+  BatchFilter.inProgress => s.inProgress,
+  BatchFilter.released => s.released,
+  BatchFilter.rejected => s.rejected,
+};
 
-  final String label;
-  final int value;
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
+/// Label, icon and tone of each status filter, shared by the menu and the card.
+final class _FilterStyle {
+  const _FilterStyle(this.label, this.icon, this.tone);
 
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: '$label: $value',
-      button: true,
-      selected: selected,
-      excludeSemantics: true,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        color: selected ? color.withValues(alpha: 0.08) : null,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: selected ? color : AppColors.border, width: selected ? 1.5 : 1),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.sm),
-            child: Column(
-              children: [
-                Text(
-                  label.toUpperCase(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.overline.copyWith(color: color),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text('$value', style: AppTypography.metric.copyWith(fontSize: 22)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  final String Function(AppLocalizations i18n) label;
+  final IconData icon;
+  final BadgeTone tone;
+
+  static _FilterStyle of(BatchFilter filter) => switch (filter) {
+    BatchFilter.all => _FilterStyle((i) => i.filterAll, Icons.list_alt, BadgeTone.neutral),
+    BatchFilter.pending => _FilterStyle((i) => i.batchPending, Icons.hourglass_empty, BadgeTone.warning),
+    BatchFilter.inProgress => _FilterStyle((i) => i.batchInProgress, Icons.autorenew, BadgeTone.info),
+    BatchFilter.released => _FilterStyle((i) => i.batchReleased, Icons.verified_outlined, BadgeTone.success),
+    BatchFilter.rejected => _FilterStyle((i) => i.batchRejected, Icons.block, BadgeTone.critical),
+  };
 }
 
 /// Shown when the status or the search hide every batch.

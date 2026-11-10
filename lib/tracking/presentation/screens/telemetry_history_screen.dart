@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/theme/app_typography.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
@@ -50,18 +49,17 @@ class TelemetryHistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.rawTelemetryLog)),
+      appBar: AppBar(title: AppBarTitle(title: i18n.rawTelemetryLog, subtitle: i18n.rawTelemetrySubtitle)),
       body: BlocBuilder<TelemetryHistoryBloc, TelemetryHistoryState>(
         builder: (context, state) => RemoteStateView<DeviceCatalog>(
           state: state.catalog,
           onRetry: () => context.read<TelemetryHistoryBloc>().add(const TelemetryHistoryStarted()),
+          onRefresh: () => context.read<TelemetryHistoryBloc>().add(const TelemetryHistorySearchRequested()),
           emptyIcon: Icons.sensors_off_outlined,
           emptyMessage: i18n.telemetryNoDevices,
           builder: (context, catalog) => ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
-              PageHeader(title: i18n.rawTelemetryLog, subtitle: i18n.rawTelemetrySubtitle),
-              const SizedBox(height: AppSpacing.md),
               _Filters(state: state, catalog: catalog, onPickRange: () => _pickRange(context, state.range)),
               const SizedBox(height: AppSpacing.md),
               _Results(state: state),
@@ -230,7 +228,7 @@ class _HistoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(i18n.parameter.toUpperCase(), style: AppTypography.overline),
+                    Text(i18n.parameter, style: Theme.of(context).textTheme.bodySmall),
                     Text(m.metric.label(i18n, raw: m.rawMetric), style: Theme.of(context).textTheme.titleSmall),
                   ],
                 ),

@@ -70,17 +70,12 @@ class _TelemetryDashboardScreenState extends State<TelemetryDashboardScreen> wit
     final i18n = context.i18n;
     return Scaffold(
       appBar: AppBar(
-        title: Text(i18n.telemetryTitle),
+        title: AppBarTitle(title: i18n.telemetryTitle, subtitle: i18n.telemetrySubtitle),
         actions: [
           IconButton(
             tooltip: i18n.rawTelemetryLog,
             icon: const Icon(Icons.table_rows_outlined),
             onPressed: () => _openHistory(context),
-          ),
-          IconButton(
-            tooltip: i18n.refresh,
-            icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<TelemetryDashboardBloc>().add(const TelemetryRefreshRequested()),
           ),
         ],
       ),
@@ -95,14 +90,6 @@ class _TelemetryDashboardScreenState extends State<TelemetryDashboardScreen> wit
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                PageHeader(
-                  title: i18n.telemetryTitle,
-                  subtitle: i18n.telemetrySubtitle,
-                  trailing: state.polling
-                      ? StatusBadge(label: i18n.liveUpdates, tone: BadgeTone.brand, icon: Icons.podcasts)
-                      : null,
-                ),
-                const SizedBox(height: AppSpacing.md),
                 _DeviceSelector(catalog: catalog, selectedId: state.selectedDeviceId),
                 const SizedBox(height: AppSpacing.md),
                 _SnapshotSection(state: state, onOpenHistory: () => _openHistory(context)),
@@ -248,7 +235,7 @@ class _StatusRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(i18n.connectionStatus.toUpperCase(), style: AppTypography.overline),
+              Text(i18n.connectionStatus, style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: AppSpacing.xs),
               ConnectionBadge(connected: connection.reachable),
               const SizedBox(height: AppSpacing.xs),
@@ -262,7 +249,7 @@ class _StatusRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(i18n.deviations24h.toUpperCase(), style: AppTypography.overline),
+              Text(i18n.deviations24h, style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: AppSpacing.xs),
               Row(
                 children: [

@@ -6,7 +6,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/widgets/toggle_button.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 
 /// A single modern, pill-shaped filter chip.
@@ -32,22 +32,7 @@ class ModernFilterChip extends StatelessWidget {
     return Padding(
       // Add margin to separate it from the next chip
       padding: const EdgeInsets.only(right: AppSpacing.sm),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) => onSelected(),
-
-        // Styling
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        selectedColor: AppColors.primary.withValues(alpha: 0.15),
-        labelStyle: TextStyle(
-          color: selected ? AppColors.primary : Colors.grey.shade700,
-          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-        ),
-        side: BorderSide(
-          color: selected ? AppColors.primary : Colors.grey.shade300,
-        ),
-      ),
+      child: ToggleButton(label: label, selected: selected, onPressed: onSelected),
     );
   }
 }

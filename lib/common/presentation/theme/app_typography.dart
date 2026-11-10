@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Typography scale. QualiTrack Web uses Roboto, which is the Android default.
+/// Typography scale. QualiTrack uses Rubik (400/500/600/700); titles use the
+/// brand navy and body text the slate tones.
 abstract final class AppTypography {
+  static const String fontFamily = 'Rubik';
   static const String monospace = 'monospace';
 
   static TextTheme textTheme(TextTheme base) {
@@ -11,33 +13,36 @@ abstract final class AppTypography {
         .copyWith(
           headlineSmall: base.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.navy,
           ),
           titleLarge: base.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: AppColors.navy,
           ),
           titleMedium: base.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: AppColors.navy,
           ),
           titleSmall: base.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
-          bodyMedium: base.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          bodyLarge: base.bodyLarge?.copyWith(color: AppColors.textPrimary),
+          bodyMedium: base.bodyMedium?.copyWith(color: AppColors.textPrimary),
           bodySmall: base.bodySmall?.copyWith(color: AppColors.textMuted),
+          labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w500),
           labelSmall: base.labelSmall?.copyWith(
             fontWeight: FontWeight.w600,
             letterSpacing: 0.6,
             color: AppColors.textMuted,
           ),
         )
-        .apply(fontFamily: 'Roboto');
+        .apply(fontFamily: fontFamily);
   }
 
   /// Large metric value used by KPI and telemetry cards.
   static const TextStyle metric = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 28,
     fontWeight: FontWeight.w700,
     color: AppColors.textPrimary,
@@ -46,6 +51,7 @@ abstract final class AppTypography {
 
   /// Uppercase caption used above key/value pairs.
   static const TextStyle overline = TextStyle(
+    fontFamily: fontFamily,
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.8,

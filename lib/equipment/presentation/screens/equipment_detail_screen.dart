@@ -15,6 +15,7 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/section_card.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
+import '../../../common/presentation/widgets/secondary_tabs.dart';
 import '../../domain/entities/bpm_parameter_config.dart';
 import '../../domain/entities/maintenance_record.dart';
 import '../bloc/equipment_detail_bloc.dart';
@@ -30,7 +31,17 @@ class EquipmentDetailScreen extends StatelessWidget {
     final i18n = context.i18n;
     void reload() => context.read<EquipmentDetailBloc>().add(const EquipmentDetailRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.equipmentDetail)),
+      appBar: AppBar(
+        title: BlocBuilder<EquipmentDetailBloc, RemoteState<EquipmentDetail>>(
+          builder: (context, state) {
+            final e = state.data?.equipment;
+            return AppBarTitle(
+              title: e?.name ?? i18n.equipmentDetail,
+              subtitle: e == null ? null : [e.typeLabel(i18n), e.model].whereType<String>().join(' · '),
+            );
+          },
+        ),
+      ),
       body: BlocBuilder<EquipmentDetailBloc, RemoteState<EquipmentDetail>>(
         builder: (context, state) => RemoteStateView<EquipmentDetail>(
           state: state,
@@ -61,26 +72,22 @@ class _DetailBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        PageHeader(title: e.name, subtitle: [e.typeLabel(i18n), e.model].whereType<String>().join(' · ')),
-        const SizedBox(height: AppSpacing.md),
         InfoCard(
           title: i18n.generalInformation,
-          child: Wrap(
-            spacing: AppSpacing.xl,
-            runSpacing: AppSpacing.lg,
+          child: DetailList(
             children: [
-              KeyValue(
+              DetailRow(
                 label: i18n.status,
                 value: e.statusLabel(i18n),
                 valueWidget: StatusBadge(label: e.statusLabel(i18n), tone: e.status.tone),
               ),
-              KeyValue(label: i18n.environment, value: detail.environmentName ?? i18n.notLocated),
-              KeyValue(label: i18n.type, value: e.typeLabel(i18n) ?? '—'),
-              KeyValue(label: i18n.model, value: e.model ?? '—'),
-              KeyValue(label: i18n.serialNumber, value: e.serialNumber ?? '—'),
-              if (e.deviceType != null) KeyValue(label: i18n.iotRole, value: e.deviceType!.label(i18n)),
-              if (e.sensorExternalId != null) KeyValue(label: i18n.deviceIdentifier, value: e.sensorExternalId!),
-              if (e.firmwareVersion != null) KeyValue(label: i18n.firmware, value: e.firmwareVersion!),
+              DetailRow(label: i18n.environment, value: detail.environmentName ?? i18n.notLocated),
+              DetailRow(label: i18n.type, value: e.typeLabel(i18n) ?? '—'),
+              DetailRow(label: i18n.model, value: e.model ?? '—'),
+              DetailRow(label: i18n.serialNumber, value: e.serialNumber ?? '—'),
+              if (e.deviceType != null) DetailRow(label: i18n.iotRole, value: e.deviceType!.label(i18n)),
+              if (e.sensorExternalId != null) DetailRow(label: i18n.deviceIdentifier, value: e.sensorExternalId!),
+              if (e.firmwareVersion != null) DetailRow(label: i18n.firmware, value: e.firmwareVersion!),
             ],
           ),
         ),
@@ -141,20 +148,31 @@ class _DetailBody extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        SectionCard<MaintenanceRecord>(
-          title: i18n.maintenanceHistory,
+        const SizedBox(height: AppSpacing.lg),
+        // The three history lists are alternative views of the same
+        // equipment, so they share one place behind secondary tabs.
+        SecondaryTabs(
+          tabs: [
+            SecondaryTab(label: i18n.tabMaintenance, builder: (context) => _maintenance(context, locale)),
+            SecondaryTab(label: i18n.tabEvents, builder: (context) => _events(context, locale)),
+            SecondaryTab(label: i18n.tabAudit, builder: (context) => _audit(context, locale, person)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _maintenance(BuildContext context, String locale) => SectionCard<MaintenanceRecord>(
           section: detail.maintenance,
-          emptyMessage: i18n.maintenanceEmpty,
+          emptyMessage: context.i18n.maintenanceEmpty,
           itemBuilder: (context, m) => SectionRow(
             title: Formatters.humanize(m.type),
             subtitle: [m.description, m.technicianName].whereType<String>().join(' · '),
             trailing: Text(m.maintenanceDate != null ? Formatters.date(m.maintenanceDate, locale) : (m.rawDate ?? '—')),
           ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        SectionCard<ComplianceEvent>(
-          title: i18n.complianceEvents,
+        );
+
+  Widget _events(BuildContext context, String locale) => SectionCard<ComplianceEvent>(
           section: detail.events,
           maxItems: 10,
           itemBuilder: (context, ev) => SectionRow(
@@ -165,10 +183,9 @@ class _DetailBody extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        SectionCard<AuditLogEntry>(
-          title: i18n.auditLog,
+        );
+
+  Widget _audit(BuildContext context, String locale, String Function(int) person) => SectionCard<AuditLogEntry>(
           section: detail.auditLogs,
           maxItems: 10,
           itemBuilder: (context, log) => SectionRow(
@@ -179,10 +196,7 @@ class _DetailBody extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-        ),
-      ],
-    );
-  }
+        );
 }
 
 IconData _trendIcon(TrendDirection direction) => switch (direction) {

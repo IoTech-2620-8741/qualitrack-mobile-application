@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../domain/entities/audit_entities.dart';
@@ -42,8 +43,7 @@ class _AllReportsScreenState extends State<AllReportsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(i18n.reportHistory, style: const TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: AppBarTitle(title: i18n.reportHistory),
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),

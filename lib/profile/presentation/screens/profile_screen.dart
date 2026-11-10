@@ -77,6 +77,7 @@ class ProfileScreen extends StatelessWidget {
         builder: (context, state) => RemoteStateView<ProfileData>(
           state: state.remote,
           onRetry: () => bloc.add(const ProfileRequested()),
+          onRefresh: () => bloc.add(const ProfileRequested()),
           builder: (context, data) {
             final profile = data.profile;
             final lab = data.laboratory;
@@ -133,14 +134,12 @@ class ProfileScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Wrap(
-                        spacing: AppSpacing.xl,
-                        runSpacing: AppSpacing.lg,
+                      DetailList(
                         children: [
-                          KeyValue(label: i18n.fullName, value: profile.fullName ?? '—'),
-                          KeyValue(label: i18n.dni, value: profile.dni ?? '—'),
-                          KeyValue(label: i18n.phone, value: profile.phoneNumber ?? '—'),
-                          KeyValue(label: i18n.location, value: profile.location ?? '—'),
+                          DetailRow(label: i18n.fullName, value: profile.fullName ?? '—'),
+                          DetailRow(label: i18n.dni, value: profile.dni ?? '—'),
+                          DetailRow(label: i18n.phone, value: profile.phoneNumber ?? '—'),
+                          DetailRow(label: i18n.location, value: profile.location ?? '—'),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -158,12 +157,10 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 InfoCard(
                   title: i18n.account,
-                  child: Wrap(
-                    spacing: AppSpacing.xl,
-                    runSpacing: AppSpacing.lg,
+                  child: DetailList(
                     children: [
-                      KeyValue(label: i18n.username, value: profile.username),
-                      KeyValue(label: i18n.email, value: profile.email ?? '—'),
+                      DetailRow(label: i18n.username, value: profile.username),
+                      DetailRow(label: i18n.email, value: profile.email ?? '—'),
                     ],
                   ),
                 ),
@@ -171,17 +168,15 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   InfoCard(
                     title: i18n.laboratory,
-                    child: Wrap(
-                      spacing: AppSpacing.xl,
-                      runSpacing: AppSpacing.lg,
+                    child: DetailList(
                       children: [
-                        KeyValue(label: i18n.name, value: lab.name),
-                        KeyValue(label: i18n.ruc, value: lab.ruc ?? '—'),
-                        KeyValue(label: i18n.phone, value: lab.phone ?? '—'),
-                        KeyValue(label: i18n.address, value: lab.address ?? '—'),
-                        KeyValue(label: i18n.status, value: Formatters.humanize(lab.status)),
+                        DetailRow(label: i18n.name, value: lab.name),
+                        DetailRow(label: i18n.ruc, value: lab.ruc ?? '—'),
+                        DetailRow(label: i18n.phone, value: lab.phone ?? '—'),
+                        DetailRow(label: i18n.address, value: lab.address ?? '—'),
+                        DetailRow(label: i18n.status, value: Formatters.humanize(lab.status)),
                         if (lab.applicableRegulations.isNotEmpty)
-                          KeyValue(label: i18n.regulations, value: lab.applicableRegulations.join(', ')),
+                          DetailRow(label: i18n.regulations, value: lab.applicableRegulations.join(', ')),
                       ],
                     ),
                   ),

@@ -8,6 +8,10 @@ import 'package:flutter/material.dart';
 /// instead: the content stops at the edge and nothing is distorted.
 /// `RefreshIndicator` keeps working because it listens to the drag, not to the
 /// overscroll indicator.
+///
+/// Screens refresh by pulling down (there is no refresh button), so every
+/// scrollable is always draggable, even when its content is shorter than the
+/// viewport; otherwise pull-to-refresh would not fire on short lists.
 class AppScrollBehavior extends MaterialScrollBehavior {
   const AppScrollBehavior();
 
@@ -20,5 +24,7 @@ class AppScrollBehavior extends MaterialScrollBehavior {
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) =>
-      const ClampingScrollPhysics(parent: RangeMaintainingScrollPhysics());
+      const AlwaysScrollableScrollPhysics(
+        parent: ClampingScrollPhysics(parent: RangeMaintainingScrollPhysics()),
+      );
 }
