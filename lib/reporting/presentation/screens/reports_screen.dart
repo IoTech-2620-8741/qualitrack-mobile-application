@@ -7,8 +7,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../application/reporting_facade_service.dart';
 import '../../domain/entities/reporting_enums.dart';
@@ -33,8 +33,7 @@ class ReportsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(i18n.reportsTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: AppBarTitle(title: i18n.reportsTitle),
       ),
       // Listen to the BLoC state to rebuild the UI
       body: BlocBuilder<ReportsBloc, ReportsState>(
@@ -58,20 +57,15 @@ class ReportsScreen extends StatelessWidget {
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: TabBarHeaderDelegate(
+                    // Primary tabs: the three main views of the reports.
                     TabBar(
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicator: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      labelColor: AppColors.primary,
-                      unselectedLabelColor: Colors.grey.shade600,
-                      labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                      dividerColor: Colors.transparent,
                       tabs: [
-                        Tab(text: i18n.tabDeviations(data.criticalTrendsCount)),
-                        Tab(text: i18n.tabMeasurements),
-                        Tab(text: i18n.tabHistory),
+                        Tab(
+                          icon: const Icon(Icons.insights_outlined),
+                          text: i18n.tabDeviations(data.criticalTrendsCount),
+                        ),
+                        Tab(icon: const Icon(Icons.analytics_outlined), text: i18n.tabMeasurements),
+                        Tab(icon: const Icon(Icons.history), text: i18n.tabHistory),
                       ],
                     ),
                   ),
