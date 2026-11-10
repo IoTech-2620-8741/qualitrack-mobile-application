@@ -38,6 +38,10 @@ final class EquipmentSnapshot extends Equatable {
   int get connected => connections.values.where((c) => c.isConnected).length;
   int get requiresReview => connections.values.where((c) => c.status == ConnectionStatus.requiresReview).length;
 
+  /// IoT devices that are neither connected nor flagged for review (no recent
+  /// data, or their status could not be read).
+  int get offline => (devices - connected - requiresReview).clamp(0, devices);
+
   @override
   List<Object?> get props => [equipments, connections];
 }
@@ -59,6 +63,12 @@ final class AlertOverview extends Equatable {
 
   final AlertSummary summary;
   final List<DeviationAlert> open;
+
+  /// The open alert to look at first (critical, then most recent).
+  DeviationAlert? get mostUrgent {
+    if (open.isEmpty) return null;
+    return ([...open]..sort(DeviationAlert.compareByPriority)).first;
+  }
 
   @override
   List<Object?> get props => [summary, open];
