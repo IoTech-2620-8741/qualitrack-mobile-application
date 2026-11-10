@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
@@ -45,8 +46,7 @@ class _AllMeasurementsScreenState extends State<AllMeasurementsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(i18n.tabMeasurements, style: const TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: AppBarTitle(title: i18n.tabMeasurements),
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
