@@ -4,7 +4,8 @@
 library;
 
 import 'package:flutter/material.dart';
-import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/toggle_button.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
@@ -70,8 +71,7 @@ class _AllDeviationsScreenState extends State<AllDeviationsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(i18n.deviationsLabel, style: const TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: AppBarTitle(title: i18n.deviationsLabel),
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -84,17 +84,10 @@ class _AllDeviationsScreenState extends State<AllDeviationsScreen> {
                 final isSelected = _filter == f;
                 return Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: ChoiceChip(
-                    label: Text(f.label(i18n, count(f))),
+                  child: ToggleButton(
+                    label: f.label(i18n, count(f)),
                     selected: isSelected,
-                    onSelected: (_) => setState(() => _filter = f),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                    labelStyle: TextStyle(
-                      color: isSelected ? AppColors.primary : Colors.grey.shade700,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                    side: BorderSide(color: isSelected ? AppColors.primary : Colors.grey.shade300),
+                    onPressed: () => setState(() => _filter = f),
                   ),
                 );
               }).toList(),
