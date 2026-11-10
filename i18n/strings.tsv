@@ -453,3 +453,49 @@ historyShowing	Showing {shown} of {total}	Mostrando {shown} de {total}	shown:int
 clearFilters	Clear filters	Limpiar filtros
 copySignatureHash	Copy hash	Copiar huella
 signatureHashCopied	Hash copied	Huella copiada
+operationalOfTotal	operational of {total}	operativos de {total}	total:int
+iotOnline	{connected}/{total} IoT online	{connected}/{total} IoT en línea	connected:int,total:int
+clearSearch	Clear search	Borrar búsqueda
+tabMaintenance	Maintenance	Mantenimiento
+tabEvents	Events	Eventos
+tabAudit	Audit	Auditoría
+tabMovements	Movements	Movimientos
+tabUsedIn	Used in	Usado en
+tabGeneral	General	General
+mostUrgentAlert	Most urgent alert	Alerta más urgente
+noOpenAlertsShort	No open alerts	Sin alertas abiertas
+filterAlerts	Filter alerts	Filtrar alertas
+showingFilter	Showing: {filter}	Mostrando: {filter}	filter:String
+ofTotal	of {total}	de {total}	total:int
+filterBatches	Filter batches	Filtrar lotes
+searchAlerts	Search by variable, device or area	Buscar por variable, equipo o área
+filterEquipment	Filter equipment	Filtrar equipos
+moreOperations	Operations	Operación
+moreAccount	Account	Cuenta
+moreInventory	Inventory	Inventario
+moreInventoryHint	Raw materials, lots and stock	Materias primas, lotes y stock
+moreProducts	Products	Productos
+moreProductsHint	Pharmaceutical product catalog	Catálogo de productos farmacéuticos
+moreReports	Reports	Reportes
+moreReportsHint	Deviations, measurements and history	Desviaciones, mediciones e historial
+moreBilling	Subscription	Suscripción
+moreBillingHint	Plan and billing	Plan y facturación
+moreNotificationsHint	Messages from QualiTrack	Mensajes de QualiTrack
+moreAboutHint	Version and information	Versión e información
+moreQuality	Quality	Calidad
+moreAdministration	Administration	Administración
+navEquipment	Equipment	Equipos
+moreAlerts	Compliance alerts	Alertas de cumplimiento
+moreAlertsHint	Deviations to attend	Desviaciones por atender
+homeBatches	Production batches	Lotes de producción
+attentionCount	{count} need attention	{count} requieren atención	count:int
+allEquipmentOk	All operational	Todos operativos
+iotDevicesOnline	devices online	dispositivos en línea
+noIotDevices	No IoT devices	Sin dispositivos IoT
+stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
+filterMaterials	Filter materials	Filtrar materiales
+batchCycle	Batch cycle	Ciclo del lote
+qaDecision	QA decision	Decisión QA
+traceMaterials	Raw materials	Materias primas
+traceStaff	Staff	Personal
+batchesUnit	batches	lotes
