@@ -101,31 +101,7 @@ class _AlertDetailBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        InfoCard(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(alert.severity.tone.icon, color: alert.severity.tone.foreground, size: 32),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Semantics(
-                      header: true,
-                      child: Text(alertVariable(i18n, alert.parameterName), style: theme.textTheme.titleLarge),
-                    ),
-                    Text(
-                      Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    Text(i18n.alertNumber(alert.id), style: theme.textTheme.bodySmall),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        _AlertHeader(alert: alert, device: device, environment: names.environmentName),
         if (alert.normalizedAt != null && alert.isOpen) ...[
           const SizedBox(height: AppSpacing.md),
           InfoCard(
@@ -139,18 +115,6 @@ class _AlertDetailBody extends StatelessWidget {
           title: i18n.technicalInspection,
           child: DetailList(
             children: [
-              DetailRow(
-                label: i18n.severity,
-                value: alert.severity.label(i18n),
-                valueWidget: StatusBadge(label: alert.severity.label(i18n), tone: alert.severity.tone),
-              ),
-              DetailRow(
-                label: i18n.status,
-                value: alert.status.label(i18n),
-                valueWidget: StatusBadge(label: alert.status.label(i18n), tone: alert.status.tone, icon: alert.status.icon),
-              ),
-              DetailRow(label: i18n.recordedValue, value: formatAlertValue(alert.recordedValue, alert.unit, locale)),
-              DetailRow(label: i18n.thresholdValue, value: formatAlertValue(alert.thresholdValue, alert.unit, locale)),
               DetailRow(label: i18n.deviationsLabel, value: '${alert.deviationCount}'),
               DetailRow(label: i18n.firstDetected, value: Formatters.dateTime(alert.timestamp, locale)),
               if (names.environmentName != null) DetailRow(label: i18n.environment, value: names.environmentName!),
@@ -218,6 +182,71 @@ class _AlertDetailBody extends StatelessWidget {
             child: Text(i18n.auditorReadOnly, style: theme.textTheme.bodySmall),
           ),
       ],
+    );
+  }
+}
+
+/// Most important first (top to bottom, left to right): severity and status,
+/// the variable, the recorded value against its threshold, then where and when.
+class _AlertHeader extends StatelessWidget {
+  const _AlertHeader({required this.alert, required this.device, required this.environment});
+
+  final DeviationAlert alert;
+  final String device;
+  final String? environment;
+
+  @override
+  Widget build(BuildContext context) {
+    final i18n = context.i18n;
+    final locale = context.localeName;
+    final text = Theme.of(context).textTheme;
+    final tone = alert.severity.tone;
+    final where = [device, environment].whereType<String>().join(' · ');
+    final when = Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale);
+    return InfoCard(
+      color: alert.isOpen ? tone.background : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
+            children: [
+              StatusBadge(label: alert.severity.label(i18n), tone: tone),
+              StatusBadge(label: alert.status.label(i18n), tone: alert.status.tone, icon: alert.status.icon),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Semantics(
+            header: true,
+            child: Text(alertVariable(i18n, alert.parameterName), style: text.titleLarge),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.end,
+            spacing: AppSpacing.sm,
+            children: [
+              Text(
+                formatAlertValue(alert.recordedValue, alert.unit, locale),
+                style: text.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: alert.isOpen ? tone.foreground : AppColors.textPrimary,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                child: Text(
+                  '${i18n.thresholdValue}: ${formatAlertValue(alert.thresholdValue, alert.unit, locale)}',
+                  style: text.bodyMedium,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(where, style: text.bodySmall),
+          Text('$when · ${i18n.alertNumber(alert.id)}', style: text.bodySmall),
+        ],
+      ),
     );
   }
 }
