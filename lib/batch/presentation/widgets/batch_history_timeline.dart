@@ -148,7 +148,7 @@ class _TimelineEntry extends StatelessWidget {
     BatchHistoryKind.rejected => (Icons.block_outlined, AppColors.critical),
     BatchHistoryKind.stored => (Icons.kitchen_outlined, AppColors.info),
     BatchHistoryKind.blocked => (Icons.lock_outline, AppColors.warning),
-    BatchHistoryKind.compliance => (Icons.notifications_none_outlined, AppColors.warning),
+    BatchHistoryKind.compliance => (Icons.report_problem_outlined, AppColors.warning),
     BatchHistoryKind.other => (Icons.history, AppColors.textMuted),
   };
 
