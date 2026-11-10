@@ -207,7 +207,7 @@ void main() {
 
     tearDown(() => bell.dispose());
 
-    testWidgets('renders counters, names and the bell without overflow at 360x640', (tester) async {
+    testWidgets('renders the summary and the names without a bell or overflow at 360x640', (tester) async {
       await bell.refresh();
       final bloc = MockAlertsBloc();
       when(() => bloc.state).thenReturn(
@@ -224,13 +224,77 @@ void main() {
         ),
       );
 
-      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: AlertsScreen(notifications: bell)));
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
 
       expect(find.text('Temperature'), findsWidgets);
-      expect(find.text('Cold storage'), findsWidgets);
+      expect(find.textContaining('Cold storage'), findsWidgets);
       expect(find.textContaining('38.6'), findsWidgets);
-      expect(find.text('2'), findsWidgets);
+      expect(find.bySemanticsLabel('Showing: All, 2 of 2'), findsOneWidget);
+      expect(find.byIcon(Icons.notifications_outlined), findsNothing);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the FAB menu lists the filters with their counts and applies the chosen one', (tester) async {
+      await bell.refresh();
+      final bloc = MockAlertsBloc();
+      when(() => bloc.state).thenReturn(
+        AlertsState(
+          filter: AlertFilter.open,
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: AlertsData(
+              alerts: [alertFixture(id: 1), alertFixture(id: 2, status: AlertStatus.resolved, severity: AlertSeverity.low)],
+              deviceNames: const {},
+              environmentNames: const {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
+      expect(find.text('SHOWING: OPEN'), findsOneWidget);
+      expect(find.text('Resolved'), findsNothing);
+
+      await tester.tap(find.byTooltip('Filter alerts'));
+      await tester.pumpAndSettle();
+      expect(find.text('Resolved'), findsOneWidget);
+      expect(find.bySemanticsLabel('Resolved, 1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Resolved'));
+      await tester.pumpAndSettle();
+      verify(() => bloc.add(const AlertsFilterChanged(AlertFilter.resolved))).called(1);
+      expect(find.text('Resolved'), findsNothing);
+    });
+
+    testWidgets('the search matches the variable, the device and the area', (tester) async {
+      await bell.refresh();
+      final bloc = MockAlertsBloc();
+      AlertsState withQuery(String query) => AlertsState(
+        filter: AlertFilter.all,
+        query: query,
+        remote: RemoteState(
+          status: ViewStatus.success,
+          data: AlertsData(
+            alerts: [alertFixture(id: 1)],
+            deviceNames: const {10: 'Stability Chamber'},
+            environmentNames: const {3: 'Cold storage'},
+          ),
+        ),
+      );
+
+      for (final query in ['temperat', 'chamber', 'COLD']) {
+        when(() => bloc.state).thenReturn(withQuery(query));
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
+        expect(find.bySemanticsLabel('Showing: All, 1 of 1'), findsOneWidget, reason: query);
+      }
+
+      when(() => bloc.state).thenReturn(withQuery('humidity'));
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
+      expect(find.bySemanticsLabel('Showing: All, 0 of 1'), findsOneWidget);
+      expect(find.text('No results match the current filters'), findsOneWidget);
     });
   });
 
@@ -255,6 +319,8 @@ void main() {
     testWidgets('operators and quality managers acknowledge after confirming', (tester) async {
       await pump(tester, canAttend: true);
       await tester.scrollUntilVisible(find.byKey(const Key('alert.acknowledge')), 200, scrollable: find.byType(Scrollable).first);
+      await tester.ensureVisible(find.byKey(const Key('alert.acknowledge')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('alert.acknowledge')));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Acknowledge'));
