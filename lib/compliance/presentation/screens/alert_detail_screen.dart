@@ -55,6 +55,7 @@ class AlertDetailScreen extends StatelessWidget {
         builder: (context, state) => RemoteStateView<DeviationAlert>(
           state: state.alert,
           onRetry: () => context.read<AlertDetailBloc>().add(const AlertDetailRequested()),
+          onRefresh: () => context.read<AlertDetailBloc>().add(const AlertDetailRequested()),
           builder: (context, alert) => _AlertDetailBody(
             alert: alert,
             names: state.context,
@@ -136,26 +137,24 @@ class _AlertDetailBody extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         InfoCard(
           title: i18n.technicalInspection,
-          child: Wrap(
-            spacing: AppSpacing.xl,
-            runSpacing: AppSpacing.lg,
+          child: DetailList(
             children: [
-              KeyValue(
+              DetailRow(
                 label: i18n.severity,
                 value: alert.severity.label(i18n),
                 valueWidget: StatusBadge(label: alert.severity.label(i18n), tone: alert.severity.tone),
               ),
-              KeyValue(
+              DetailRow(
                 label: i18n.status,
                 value: alert.status.label(i18n),
                 valueWidget: StatusBadge(label: alert.status.label(i18n), tone: alert.status.tone, icon: alert.status.icon),
               ),
-              KeyValue(label: i18n.recordedValue, value: formatAlertValue(alert.recordedValue, alert.unit, locale)),
-              KeyValue(label: i18n.thresholdValue, value: formatAlertValue(alert.thresholdValue, alert.unit, locale)),
-              KeyValue(label: i18n.deviationsLabel, value: '${alert.deviationCount}'),
-              KeyValue(label: i18n.firstDetected, value: Formatters.dateTime(alert.timestamp, locale)),
-              if (names.environmentName != null) KeyValue(label: i18n.environment, value: names.environmentName!),
-              KeyValue(
+              DetailRow(label: i18n.recordedValue, value: formatAlertValue(alert.recordedValue, alert.unit, locale)),
+              DetailRow(label: i18n.thresholdValue, value: formatAlertValue(alert.thresholdValue, alert.unit, locale)),
+              DetailRow(label: i18n.deviationsLabel, value: '${alert.deviationCount}'),
+              DetailRow(label: i18n.firstDetected, value: Formatters.dateTime(alert.timestamp, locale)),
+              if (names.environmentName != null) DetailRow(label: i18n.environment, value: names.environmentName!),
+              DetailRow(
                 label: alert.origin == AlertOrigin.container ? i18n.containerMonitor : i18n.environmentalDevice,
                 value: device,
                 valueWidget: TextButton(
@@ -165,7 +164,7 @@ class _AlertDetailBody extends StatelessWidget {
                 ),
               ),
               if (alert.batchId != null)
-                KeyValue(
+                DetailRow(
                   label: i18n.batch,
                   value: i18n.batchNumberShort(alert.batchId!),
                   valueWidget: TextButton(
@@ -175,12 +174,12 @@ class _AlertDetailBody extends StatelessWidget {
                   ),
                 ),
               if (alert.acknowledgedBy != null)
-                KeyValue(
+                DetailRow(
                   label: i18n.acknowledgedBy,
                   value: _who(i18n, locale, alert.acknowledgedBy, alert.acknowledgedAt),
                 ),
               if (alert.resolvedBy != null)
-                KeyValue(label: i18n.resolvedBy, value: _who(i18n, locale, alert.resolvedBy, alert.resolvedAt)),
+                DetailRow(label: i18n.resolvedBy, value: _who(i18n, locale, alert.resolvedBy, alert.resolvedAt)),
             ],
           ),
         ),
