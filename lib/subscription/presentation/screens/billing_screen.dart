@@ -42,7 +42,7 @@ class BillingScreen extends StatelessWidget {
     final i18n = context.i18n;
     void reload() => context.read<BillingBloc>().add(const BillingRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.billingTitle)),
+      appBar: AppBar(title: AppBarTitle(title: i18n.billingTitle, subtitle: i18n.billingSubtitle)),
       body: BlocBuilder<BillingBloc, RemoteState<BillingSummary>>(
         builder: (context, state) => RemoteStateView<BillingSummary>(
           state: state,
@@ -73,8 +73,6 @@ class _BillingBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        PageHeader(title: i18n.billingTitle, subtitle: i18n.billingSubtitle),
-        const SizedBox(height: AppSpacing.md),
         InfoCard(
           title: i18n.currentSubscription,
           child: active == null
@@ -82,12 +80,10 @@ class _BillingBody extends StatelessWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Wrap(
-                      spacing: AppSpacing.xl,
-                      runSpacing: AppSpacing.lg,
+                    DetailList(
                       children: [
-                        KeyValue(label: i18n.plan, value: plan?.name ?? active.planCode),
-                        KeyValue(
+                        DetailRow(label: i18n.plan, value: plan?.name ?? active.planCode),
+                        DetailRow(
                           label: i18n.status,
                           value: Formatters.humanize(active.status),
                           valueWidget: StatusBadge(
@@ -95,24 +91,24 @@ class _BillingBody extends StatelessWidget {
                             tone: subscriptionTone(active.status),
                           ),
                         ),
-                        KeyValue(label: i18n.billingCycle, value: Formatters.humanize(active.billingCycle)),
-                        KeyValue(
+                        DetailRow(label: i18n.billingCycle, value: Formatters.humanize(active.billingCycle)),
+                        DetailRow(
                           label: i18n.periodStart,
                           value: Formatters.date(active.currentPeriodStart, locale),
                         ),
-                        KeyValue(
+                        DetailRow(
                           label: i18n.periodEnd,
                           value: Formatters.date(active.currentPeriodEnd, locale),
                         ),
                         if (plan != null && plan.amount != null)
-                          KeyValue(
+                          DetailRow(
                             label: i18n.amount,
                             value: Formatters.money(plan.amount, plan.currency, locale),
                           ),
                         if (plan != null && plan.maxUsers != null)
-                          KeyValue(label: i18n.maxUsers, value: '${plan.maxUsers}'),
+                          DetailRow(label: i18n.maxUsers, value: '${plan.maxUsers}'),
                         if (plan != null && plan.maxEquipment != null)
-                          KeyValue(label: i18n.maxEquipment, value: '${plan.maxEquipment}'),
+                          DetailRow(label: i18n.maxEquipment, value: '${plan.maxEquipment}'),
                       ],
                     ),
                     if (active.cancelAtPeriodEnd) ...[
