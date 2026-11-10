@@ -6,7 +6,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../domain/entities/reporting_enums.dart';
@@ -32,36 +31,19 @@ class PeriodFilter extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Horizontal scroll view to prevent overflow on small screens
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              // Iterate over all available periods in the enum
-              children: ReportPeriod.values.map((p) {
-                final isSelected = state.period == p;
-
-                return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: ChoiceChip(
-                    label: Text(reportPeriodLabel(i18n, p)),
-                    selected: isSelected,
-                    // Dispatch the event to the BLoC when tapped
-                    onSelected: (_) => bloc.add(ReportsPeriodChanged(p)),
-
-                    // Styling (same as ModernFilterChip)
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                    labelStyle: TextStyle(
-                      color: isSelected ? AppColors.primary : Colors.grey.shade700,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                    side: BorderSide(
-                      color: isSelected ? AppColors.primary : Colors.grey.shade300,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
+          // Connected button group: the periods are mutually exclusive options
+          // of the same setting, so they are joined in a single control.
+          SegmentedButton<ReportPeriod>(
+            showSelectedIcon: false,
+            segments: [
+              for (final p in ReportPeriod.values)
+                ButtonSegment(
+                  value: p,
+                  label: Text(reportPeriodLabel(i18n, p), maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+            ],
+            selected: {state.period},
+            onSelectionChanged: (selection) => bloc.add(ReportsPeriodChanged(selection.first)),
           ),
           const SizedBox(height: AppSpacing.md),
         ],
