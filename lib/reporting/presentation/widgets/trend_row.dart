@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
@@ -38,19 +39,16 @@ class TrendRow extends StatelessWidget {
     // Get the visual tone (color) based on the severity
     final tone = timeInRangeToneFromSeverity(trend.severity);
 
-    // Determine the icon color based on the tone
-    // (Note: You might want to use BadgeTone.critical here instead of BadgeTone.danger
-    // if 'danger' is not defined in your BadgeTone enum)
-    final iconColor = tone == BadgeTone.danger
-        ? Colors.redAccent
-        : (tone == BadgeTone.warning ? Colors.orange : Colors.green);
+    // Icon color from the palette's state text tones (they keep contrast on
+    // their tinted circle); `danger` uses the critical red.
+    final iconColor = tone == BadgeTone.danger ? AppColors.critical : tone.foreground;
 
     return ModernCard(
       child: Row(
         children: [
           // 1. Circular container with the direction icon
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -68,13 +66,13 @@ class TrendRow extends StatelessWidget {
                   alertVariable(i18n, trend.parameterName),
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   [
                     data.deviceNames[trend.equipmentId],
                     i18n.deviationsSummary(trend.deviationCount, trend.criticalDeviationCount),
                   ].whereType<String>().join(' · '),
-                  style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                  style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                 ),
               ],
             ),
