@@ -318,9 +318,7 @@ void main() {
 
     testWidgets('operators and quality managers acknowledge after confirming', (tester) async {
       await pump(tester, canAttend: true);
-      await tester.scrollUntilVisible(find.byKey(const Key('alert.acknowledge')), 200, scrollable: find.byType(Scrollable).first);
-      await tester.ensureVisible(find.byKey(const Key('alert.acknowledge')));
-      await tester.pumpAndSettle();
+      // The actions live in the bottom bar: no scrolling needed.
       await tester.tap(find.byKey(const Key('alert.acknowledge')));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Acknowledge'));
@@ -328,15 +326,26 @@ void main() {
       verify(() => bloc.add(const AlertAcknowledgeSubmitted())).called(1);
     });
 
-    testWidgets('resolve requires notes', (tester) async {
+    testWidgets('resolve asks for the notes in a sheet and requires them', (tester) async {
       await pump(tester, canAttend: true);
-      await tester.scrollUntilVisible(find.byKey(const Key('alert.resolve')), 200, scrollable: find.byType(Scrollable).first);
-      await tester.ensureVisible(find.byKey(const Key('alert.resolve')));
-      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('alert.resolve')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('alert.resolveSubmit')));
       await tester.pump();
       expect(find.text('Resolution notes are required'), findsOneWidget);
       verifyNever(() => bloc.add(any(that: isA<AlertResolveSubmitted>())));
+    });
+
+    testWidgets('resolve sends the notes after confirming', (tester) async {
+      await pump(tester, canAttend: true);
+      await tester.tap(find.byKey(const Key('alert.resolve')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('alert.resolutionNotes')), 'Door closed, temperature back in range');
+      await tester.tap(find.byKey(const Key('alert.resolveSubmit')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Mark as resolved').last);
+      await tester.pumpAndSettle();
+      verify(() => bloc.add(const AlertResolveSubmitted('Door closed, temperature back in range'))).called(1);
     });
 
     testWidgets('auditors only read', (tester) async {

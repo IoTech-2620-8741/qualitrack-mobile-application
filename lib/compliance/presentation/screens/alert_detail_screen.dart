@@ -17,6 +17,7 @@ import '../../domain/entities/alert_origin.dart';
 import '../../domain/entities/alert_status.dart';
 import '../../domain/entities/deviation_alert.dart';
 import '../bloc/alert_detail_bloc.dart';
+import '../widgets/alert_resolution_sheet.dart';
 import '../widgets/alert_widgets.dart';
 
 /// "Deviation Details" mockup. Operators and quality managers attend and
@@ -33,6 +34,15 @@ class AlertDetailScreen extends StatelessWidget {
     final i18n = context.i18n;
     return Scaffold(
       appBar: AppBar(title: Text(i18n.deviationDetails)),
+      // Acknowledge / resolve stay at hand at the bottom, as in the batch
+      // detail, instead of at the end of the scroll.
+      bottomNavigationBar: BlocBuilder<AlertDetailBloc, AlertDetailState>(
+        builder: (context, state) {
+          final alert = state.alert.data;
+          if (!canAttend || alert == null || !alert.canResolve) return const SizedBox.shrink();
+          return _ReviewBar(alert: alert, submitting: state.submitting);
+        },
+      ),
       body: BlocConsumer<AlertDetailBloc, AlertDetailState>(
         listenWhen: (a, b) => a.actionStatus != b.actionStatus,
         listener: (context, state) {
@@ -61,7 +71,6 @@ class AlertDetailScreen extends StatelessWidget {
             names: state.context,
             canAttend: canAttend,
             currentUserId: currentUserId,
-            submitting: state.submitting,
           ),
         ),
       ),
@@ -70,19 +79,12 @@ class AlertDetailScreen extends StatelessWidget {
 }
 
 class _AlertDetailBody extends StatelessWidget {
-  const _AlertDetailBody({
-    required this.alert,
-    required this.names,
-    required this.canAttend,
-    required this.currentUserId,
-    required this.submitting,
-  });
+  const _AlertDetailBody({required this.alert, required this.names, required this.canAttend, required this.currentUserId});
 
   final DeviationAlert alert;
   final AlertContext names;
   final bool canAttend;
   final int? currentUserId;
-  final bool submitting;
 
   String _person(AppLocalizations i18n, int id) =>
       id == currentUserId ? i18n.you : (names.people[id] ?? i18n.userNumber(id));
@@ -174,9 +176,7 @@ class _AlertDetailBody extends StatelessWidget {
             title: i18n.resolutionNotes,
             child: Text(alert.resolutionNotes?.isNotEmpty == true ? alert.resolutionNotes! : '—'),
           ),
-        if (canAttend && alert.canResolve)
-          _ReviewActions(alert: alert, submitting: submitting)
-        else if (!canAttend && alert.isOpen)
+        if (!canAttend && alert.isOpen)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.md),
             child: Text(i18n.auditorReadOnly, style: theme.textTheme.bodySmall),
@@ -251,27 +251,13 @@ class _AlertHeader extends StatelessWidget {
   }
 }
 
-class _ReviewActions extends StatefulWidget {
-  const _ReviewActions({required this.alert, required this.submitting});
+class _ReviewBar extends StatelessWidget {
+  const _ReviewBar({required this.alert, required this.submitting});
 
   final DeviationAlert alert;
   final bool submitting;
 
-  @override
-  State<_ReviewActions> createState() => _ReviewActionsState();
-}
-
-class _ReviewActionsState extends State<_ReviewActions> {
-  final _formKey = GlobalKey<FormState>();
-  final _notes = TextEditingController();
-
-  @override
-  void dispose() {
-    _notes.dispose();
-    super.dispose();
-  }
-
-  Future<void> _acknowledge() async {
+  Future<void> _acknowledge(BuildContext context) async {
     final i18n = context.i18n;
     final bloc = context.read<AlertDetailBloc>();
     final ok = await showConfirmDialog(
@@ -283,66 +269,50 @@ class _ReviewActionsState extends State<_ReviewActions> {
     if (ok) bloc.add(const AlertAcknowledgeSubmitted());
   }
 
-  Future<void> _resolve() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    final i18n = context.i18n;
+  Future<void> _resolve(BuildContext context) async {
     final bloc = context.read<AlertDetailBloc>();
-    final ok = await showConfirmDialog(
-      context,
-      title: i18n.markAsResolved,
-      message: i18n.resolveConfirm,
-      confirmLabel: i18n.markAsResolved,
-    );
-    if (ok) bloc.add(AlertResolveSubmitted(_notes.text));
+    final notes = await showAlertResolutionSheet(context, alert: alert);
+    if (notes != null) bloc.add(AlertResolveSubmitted(notes));
   }
 
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final busy = widget.submitting;
-    return InfoCard(
-      title: i18n.reviewActions,
-      child: Form(
-        key: _formKey,
+    return Material(
+      color: AppColors.surface,
+      elevation: 8,
+      shadowColor: Colors.black26,
+      child: SafeArea(
+        top: false,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            TextFormField(
-              key: const Key('alert.resolutionNotes'),
-              controller: _notes,
-              enabled: !busy,
-              minLines: 3,
-              maxLines: 6,
-              maxLength: 500,
-              decoration: InputDecoration(
-                labelText: i18n.resolutionNotes,
-                hintText: i18n.resolutionNotesHint,
-                alignLabelWithHint: true,
-              ),
-              validator: (v) => (v == null || v.trim().isEmpty) ? i18n.resolutionNotesRequired : null,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            if (busy) const LinearProgressIndicator(),
-            if (busy) const SizedBox(height: AppSpacing.md),
-            Wrap(
-              alignment: WrapAlignment.end,
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                if (widget.alert.canAcknowledge)
-                  OutlinedButton.icon(
-                    key: const Key('alert.acknowledge'),
-                    onPressed: busy ? null : _acknowledge,
-                    icon: const Icon(Icons.visibility_outlined),
-                    label: Text(i18n.acknowledge),
+            if (submitting) const LinearProgressIndicator(minHeight: 2),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
+              child: Row(
+                children: [
+                  if (alert.canAcknowledge) ...[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        key: const Key('alert.acknowledge'),
+                        onPressed: submitting ? null : () => _acknowledge(context),
+                        icon: const Icon(Icons.visibility_outlined),
+                        label: Text(i18n.acknowledge),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                  ],
+                  Expanded(
+                    child: FilledButton.icon(
+                      key: const Key('alert.resolve'),
+                      onPressed: submitting ? null : () => _resolve(context),
+                      icon: const Icon(Icons.task_alt),
+                      label: Text(i18n.markAsResolved),
+                    ),
                   ),
-                FilledButton.icon(
-                  key: const Key('alert.resolve'),
-                  onPressed: busy ? null : _resolve,
-                  icon: const Icon(Icons.task_alt),
-                  label: Text(i18n.markAsResolved),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
