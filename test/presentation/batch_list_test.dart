@@ -63,22 +63,31 @@ void main() {
       filter: filter,
     );
 
-    testWidgets('the counters filter by status instead of a chip bar', (tester) async {
+    testWidgets('the FAB menu filters by status and lists each count', (tester) async {
       final bloc = await pump(tester, loaded());
 
+      expect(find.text('SHOWING: ALL'), findsOneWidget);
       expect(find.byType(FilterChip), findsNothing);
-      await tester.tap(find.byKey(const Key('batch.counter.released')));
+      await tester.tap(find.byTooltip('Filter batches'));
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Released, 1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      // The option, not the "Released" status badge of a batch card.
+      await tester.tap(find.bySemanticsLabel('Released, 1'));
+      await tester.pumpAndSettle();
 
       verify(() => bloc.add(const BatchListFilterChanged(BatchFilter.released))).called(1);
-      expect(tester.takeException(), isNull);
+      expect(find.bySemanticsLabel('Released, 1'), findsNothing);
     });
 
-    testWidgets('choosing the active counter again shows every batch', (tester) async {
-      final bloc = await pump(tester, loaded(filter: BatchFilter.released));
+    testWidgets('the summary card shows the status in use and how many batches match', (tester) async {
+      await pump(tester, loaded(filter: BatchFilter.released));
 
-      await tester.tap(find.byKey(const Key('batch.counter.released')));
-
-      verify(() => bloc.add(const BatchListFilterChanged(BatchFilter.all))).called(1);
+      expect(find.text('SHOWING: RELEASED'), findsOneWidget);
+      expect(find.bySemanticsLabel('Showing: Released, 1 of 2'), findsOneWidget);
+      expect(find.text('LOT-B'), findsOneWidget);
+      expect(find.text('LOT-A'), findsNothing);
     });
 
     testWidgets('offers to clear the filters when no batch matches', (tester) async {
