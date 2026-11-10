@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/failure.dart';
 import '../remote_state.dart';
+import '../theme/app_spacing.dart';
 import '../view_status.dart';
 import 'failure_message.dart';
 import 'state_views.dart';
@@ -18,11 +19,17 @@ class RemoteStateView<T> extends StatelessWidget {
     this.emptyTitle,
     this.emptyMessage,
     this.emptyIcon = Icons.inbox_outlined,
+    this.onRefresh,
   });
 
   final RemoteState<T> state;
   final Widget Function(BuildContext context, T data) builder;
   final VoidCallback onRetry;
+
+  /// When set, the loaded content gets pull-to-refresh (swipe down from the
+  /// top). Screens refresh by gesture instead of an app-bar button. Leave it
+  /// null when [builder] already wraps its own `RefreshIndicator`.
+  final VoidCallback? onRefresh;
   final String? emptyTitle;
   final String? emptyMessage;
   final IconData emptyIcon;
@@ -46,7 +53,11 @@ class RemoteStateView<T> extends StatelessWidget {
           children: [
             RefreshingBar(visible: state.refreshing),
             if (state.failure != null) StaleDataNotice(failure: state.failure!),
-            Expanded(child: builder(context, data)),
+            Expanded(
+              child: onRefresh == null
+                  ? builder(context, data)
+                  : RefreshIndicator(onRefresh: () async => onRefresh!(), child: builder(context, data)),
+            ),
           ],
         );
     }
@@ -66,11 +77,11 @@ class StaleDataNotice extends StatelessWidget {
       child: Material(
         color: scheme.errorContainer,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
           child: Row(
             children: [
               Icon(Icons.cloud_off_outlined, size: 18, color: scheme.onErrorContainer),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   failureMessage(context, failure),
