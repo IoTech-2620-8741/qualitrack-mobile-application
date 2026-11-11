@@ -35,12 +35,11 @@ void main() {
     expect(find.text('Subscription'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    // Order of importance of the Web menu.
+    // Order of the Web menu; telemetry, alerts and batches are tabs.
     double top(String text) => tester.getTopLeft(find.text(text)).dy;
-    expect(top('Products'), lessThan(top('Compliance alerts')));
-    expect(top('Compliance alerts'), lessThan(top('Inventory')));
-    // Equipment is in the navigation bar now.
-    expect(find.text('Equipment'), findsNothing);
+    expect(top('Products'), lessThan(top('Equipment')));
+    expect(top('Equipment'), lessThan(top('Inventory')));
+    expect(find.text('Compliance alerts'), findsNothing);
     expect(top('Operations'), lessThan(top('Quality')));
     expect(top('Quality'), lessThan(top('Administration')));
   });

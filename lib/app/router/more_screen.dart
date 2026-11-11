@@ -49,13 +49,18 @@ class MoreScreen extends StatelessWidget {
             builder: (context, _) => _ProfileCard(session: session, currentProfile: currentProfile),
           ),
           const SizedBox(height: AppSpacing.xl),
-          // Sections and order of the Web menu. Batches, equipment and
-          // telemetry live in the navigation bar, so Operation lists the rest.
+          // Sections and order of the Web menu. Telemetry, alerts and batches
+          // live in the navigation bar, so Operation lists the rest.
           _MenuSection(
             title: i18n.moreOperations,
             entries: [
               _Entry(Icons.medication_outlined, i18n.moreProducts, i18n.moreProductsHint, AppRoutes.products),
-              _Entry(Icons.report_problem_outlined, i18n.moreAlerts, i18n.moreAlertsHint, AppRoutes.alerts),
+              _Entry(
+                Icons.precision_manufacturing_outlined,
+                i18n.navEquipment,
+                i18n.moreEquipmentHint,
+                AppRoutes.equipment,
+              ),
               _Entry(Icons.science_outlined, i18n.moreInventory, i18n.moreInventoryHint, AppRoutes.inventory),
             ],
           ),

@@ -591,6 +591,7 @@ class AppLocalizations {
   String get moreOperations => _t('moreOperations');
   String get moreAccount => _t('moreAccount');
   String get moreInventory => _t('moreInventory');
+  String get moreEquipmentHint => _t('moreEquipmentHint');
   String get moreInventoryHint => _t('moreInventoryHint');
   String get moreProducts => _t('moreProducts');
   String get moreProductsHint => _t('moreProductsHint');
@@ -1095,6 +1096,7 @@ const Map<String, String> _en = {
   'moreOperations': 'Operations',
   'moreAccount': 'Account',
   'moreInventory': 'Inventory',
+  'moreEquipmentHint': 'Instruments and IoT devices',
   'moreInventoryHint': 'Raw materials, lots and stock',
   'moreProducts': 'Products',
   'moreProductsHint': 'Pharmaceutical product catalog',
@@ -1598,6 +1600,7 @@ const Map<String, String> _es = {
   'moreOperations': 'Operación',
   'moreAccount': 'Cuenta',
   'moreInventory': 'Inventario',
+  'moreEquipmentHint': 'Instrumentos y dispositivos IoT',
   'moreInventoryHint': 'Materias primas, lotes y stock',
   'moreProducts': 'Productos',
   'moreProductsHint': 'Catálogo de productos farmacéuticos',

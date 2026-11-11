@@ -148,58 +148,7 @@ GoRouter createRouter(
               ),
             ],
           ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.batches,
-                builder: (context, state) => BlocProvider(
-                  create: (_) => sl<BatchListBloc>()..add(const BatchListRequested()),
-                  child: const BatchListScreen(),
-                ),
-                routes: [
-                  GoRoute(
-                    path: ':id',
-                    builder: (context, state) {
-                      final id = _intParam(state.pathParameters['id']);
-                      if (id == null) return _invalidId(context);
-                      return BlocProvider(
-                        create: (_) => sl<BatchDetailBloc>(param1: id)..add(const BatchDetailRequested()),
-                        child: BatchDetailScreen(
-                          canReview: session.session?.canManageQuality ?? false,
-                          currentUserId: currentUserId(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          // Equipment: catalog and detail (second in the Web menu).
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.equipment,
-                builder: (context, state) => BlocProvider(
-                  create: (_) => sl<EquipmentListBloc>()..add(const EquipmentListRequested()),
-                  child: const EquipmentListScreen(),
-                ),
-                routes: [
-                  GoRoute(
-                    path: ':id',
-                    builder: (context, state) {
-                      final id = _intParam(state.pathParameters['id']);
-                      if (id == null) return _invalidId(context);
-                      return BlocProvider(
-                        create: (_) => sl<EquipmentDetailBloc>(param1: id)..add(const EquipmentDetailRequested()),
-                        child: EquipmentDetailScreen(currentUserId: currentUserId()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
+          // Tabs in the order of the Report: Home, Telemetry, Alerts, Batches, More.
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -228,6 +177,61 @@ GoRouter createRouter(
               ),
             ],
           ),
+          // Compliance alerts and their detail.
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.alerts,
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<AlertsBloc>()..add(const AlertsRequested()),
+                  child: const AlertsScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) {
+                      final id = _intParam(state.pathParameters['id']);
+                      if (id == null) return _invalidId(context);
+                      return BlocProvider(
+                        create: (_) => sl<AlertDetailBloc>(param1: id)..add(const AlertDetailRequested()),
+                        child: AlertDetailScreen(
+                          canAttend: session.session?.canAttendAlerts ?? false,
+                          currentUserId: currentUserId(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.batches,
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<BatchListBloc>()..add(const BatchListRequested()),
+                  child: const BatchListScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) {
+                      final id = _intParam(state.pathParameters['id']);
+                      if (id == null) return _invalidId(context);
+                      return BlocProvider(
+                        create: (_) => sl<BatchDetailBloc>(param1: id)..add(const BatchDetailRequested()),
+                        child: BatchDetailScreen(
+                          canReview: session.session?.canManageQuality ?? false,
+                          currentUserId: currentUserId(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -237,6 +241,27 @@ GoRouter createRouter(
                   if (current == null) return const SplashScreen();
                   return MoreScreen(session: current, currentProfile: currentProfile, onSignOut: session.signOut);
                 },
+              ),
+              // Equipment: catalog and detail; the live state of the IoT devices is in Telemetry.
+              GoRoute(
+                path: AppRoutes.equipment,
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<EquipmentListBloc>()..add(const EquipmentListRequested()),
+                  child: const EquipmentListScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) {
+                      final id = _intParam(state.pathParameters['id']);
+                      if (id == null) return _invalidId(context);
+                      return BlocProvider(
+                        create: (_) => sl<EquipmentDetailBloc>(param1: id)..add(const EquipmentDetailRequested()),
+                        child: EquipmentDetailScreen(currentUserId: currentUserId()),
+                      );
+                    },
+                  ),
+                ],
               ),
               GoRoute(
                 path: AppRoutes.inventory,
@@ -323,30 +348,6 @@ GoRouter createRouter(
                 ],
               ),
               GoRoute(path: AppRoutes.about, builder: (context, state) => const AboutScreen()),
-              // Compliance alerts and notifications open from More (and from Home).
-              GoRoute(
-                path: AppRoutes.alerts,
-                builder: (context, state) => BlocProvider(
-                  create: (_) => sl<AlertsBloc>()..add(const AlertsRequested()),
-                  child: const AlertsScreen(),
-                ),
-                routes: [
-                  GoRoute(
-                    path: ':id',
-                    builder: (context, state) {
-                      final id = _intParam(state.pathParameters['id']);
-                      if (id == null) return _invalidId(context);
-                      return BlocProvider(
-                        create: (_) => sl<AlertDetailBloc>(param1: id)..add(const AlertDetailRequested()),
-                        child: AlertDetailScreen(
-                          canAttend: session.session?.canAttendAlerts ?? false,
-                          currentUserId: currentUserId(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
               GoRoute(
                 path: AppRoutes.notifications,
                 builder: (context, state) => BlocProvider(
