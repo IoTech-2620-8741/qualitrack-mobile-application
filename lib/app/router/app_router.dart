@@ -42,6 +42,7 @@ import '../../profile/presentation/screens/profile_screen.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
 import '../../reporting/presentation/screens/reports_screen.dart';
 import '../../common/presentation/i18n/app_localizations.dart';
+import '../../common/presentation/orientation.dart';
 import '../../common/presentation/widgets/state_views.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
 import '../../subscription/presentation/screens/billing_screen.dart';
@@ -218,7 +219,8 @@ GoRouter createRouter(
                       final id = _intParam(state.uri.queryParameters['deviceId']);
                       return BlocProvider(
                         create: (_) => sl<TelemetryHistoryBloc>()..add(TelemetryHistoryStarted(deviceId: id)),
-                        child: const TelemetryHistoryScreen(),
+                        // The only screen that may turn to landscape: its chart.
+                        child: const LandscapeAllowed(child: TelemetryHistoryScreen()),
                       );
                     },
                   ),
