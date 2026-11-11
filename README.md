@@ -14,7 +14,7 @@ production batches, inventory, equipment, indicators and the subscription.
 
 - Secure sign-in (JWT in Keychain/Keystore), session restore, expiry handling and logout
 - Forced password change on the first sign-in of staff members (temporary password)
-- Control panel with the same cards as the Web dashboard (equipment, batches in progress, open alerts, low stock, subscription for quality managers)
+- Home with four cards ordered by importance: open and critical alerts, IoT devices connected, batches awaiting the QA decision and materials below the minimum stock; it never scrolls nor shrinks at the normal text size
 - Monitoring of environments and containers: connection, readings with their state, normal and critical ranges, deviations, automatic actions, live polling (15 s); reading history of up to 31 days
 - Alerts of every environment with filters and detail; **acknowledge** and **resolve** (operators and quality managers)
 - In-app notifications (bell) and notification preferences
@@ -24,7 +24,7 @@ production batches, inventory, equipment, indicators and the subscription.
 - Product catalog, measurement summary and deviation indicators per period, report history, subscription
 - Profile: personal data, photo and password
 - Auditors only read
-- English / Spanish, accessible badges (icon + text), responsive from 360×640
+- English / Spanish, accessible badges (icon + text), portrait from 360×640 (the telemetry history also turns to landscape), text size up to 130% without scrolling
 
 ## Architecture
 

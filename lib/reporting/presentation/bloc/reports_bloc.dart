@@ -22,25 +22,23 @@ final class ReportsRequested extends ReportsEvent {
   const ReportsRequested({this.refresh = false});
 
   /// If true, shows a refreshing indicator instead of a full loading screen.
-  /// (Si es true, muestra el indicador de "recargando" en lugar de la pantalla de carga completa).
   final bool refresh;
 
   @override
   List<Object?> get props => [refresh];
 }
 
-/// Event triggered when the user changes the time period filter.
-/// (Se dispara cuando el usuario toca los botones de "24 horas", "7 días", "31 días").
+/// Event triggered when the user picks another period (24 hours, 7 days or
+/// 31 days).
 final class ReportsPeriodChanged extends ReportsEvent {
   const ReportsPeriodChanged(this.period);
 
-  /// El nuevo periodo seleccionado (last24Hours, last7Days, last31Days).
+  /// The period the user picked.
   final ReportPeriod period;
 
   @override
   List<Object?> get props => [period];
 }
-
 
 /// Represents the current state of the Reports screen.
 class ReportsState extends Equatable {
@@ -49,15 +47,12 @@ class ReportsState extends Equatable {
     this.period = ReportPeriod.last24Hours,
   });
 
-  /// Contiene los datos de Reportes (KPI, Tendencias, Historial)
-  /// y el estado de la petición (cargando, éxito, error).
+  /// The reports data (indicators, trends, history) and the state of its request.
   final RemoteState<ReportsData> remote;
 
-  /// El filtro de tiempo actualmente seleccionado.
+  /// The period currently selected.
   final ReportPeriod period;
 
-  /// Método para crear una copia del estado actual con cambios específicos.
-  /// (Patrón inmutable muy usado en BLoC para evitar bugs).
   ReportsState copyWith({RemoteState<ReportsData>? remote, ReportPeriod? period}) =>
       ReportsState(remote: remote ?? this.remote, period: period ?? this.period);
 
@@ -84,15 +79,20 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     });
   }
 
-  /// Dependencias inyectadas: La fachada que orquesta las peticiones.
+  /// The facade that gathers the reports data.
   final ReportingFacadeService reportingService;
 
-  /// Función para obtener el ID del laboratorio actual (viene de la sesión del usuario).
+  /// The laboratory of the session.
   final LaboratoryId Function() _laboratoryId;
 
-  /// Internal method to load the reports data.
-  /// (Método privado que hace la magia de cargar los datos y emitir los estados).
+  /// Number of the latest request: the answer of an earlier one (another
+  /// period, or a refresh that took longer) is ignored, so a slow answer never
+  /// replaces the data of the period on screen.
+  int _latestRequest = 0;
+
+  /// Loads the reports data of the selected period.
   Future<void> _load(Emitter<ReportsState> emit, {required bool refresh}) async {
+    final request = ++_latestRequest;
     final current = state.remote;
 
     emit(state.copyWith(
@@ -102,9 +102,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
     ));
 
     try {
-
       final data = await reportingService.loadReportsData(_laboratoryId(), state.period);
-
+      if (request != _latestRequest) return;
 
       if (data.everythingFailed) {
         emit(state.copyWith(remote: state.remote.failed(data.kpiFailure!)));
@@ -112,8 +111,8 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       }
 
       emit(state.copyWith(remote: state.remote.success(data)));
-
     } catch (error) {
+      if (request != _latestRequest) return;
       emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }

@@ -42,6 +42,7 @@ import '../../profile/presentation/screens/profile_screen.dart';
 import '../../reporting/presentation/bloc/reports_bloc.dart';
 import '../../reporting/presentation/screens/reports_screen.dart';
 import '../../common/presentation/i18n/app_localizations.dart';
+import '../../common/presentation/orientation.dart';
 import '../../common/presentation/widgets/state_views.dart';
 import '../../subscription/presentation/bloc/billing_bloc.dart';
 import '../../subscription/presentation/screens/billing_screen.dart';
@@ -147,6 +148,63 @@ GoRouter createRouter(
               ),
             ],
           ),
+          // Tabs in the order of the Report: Home, Telemetry, Alerts, Batches, More.
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.telemetry,
+                builder: (context, state) {
+                  final id = _intParam(state.uri.queryParameters['deviceId']);
+                  return BlocProvider(
+                    key: ValueKey('telemetry-$id'),
+                    create: (_) => sl<TelemetryDashboardBloc>()..add(TelemetryStarted(deviceId: id)),
+                    child: const TelemetryDashboardScreen(),
+                  );
+                },
+                routes: [
+                  GoRoute(
+                    path: 'history',
+                    builder: (context, state) {
+                      final id = _intParam(state.uri.queryParameters['deviceId']);
+                      return BlocProvider(
+                        create: (_) => sl<TelemetryHistoryBloc>()..add(TelemetryHistoryStarted(deviceId: id)),
+                        // The only screen that may turn to landscape: its chart.
+                        child: const LandscapeAllowed(child: TelemetryHistoryScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Compliance alerts and their detail.
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.alerts,
+                builder: (context, state) => BlocProvider(
+                  create: (_) => sl<AlertsBloc>()..add(const AlertsRequested()),
+                  child: const AlertsScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) {
+                      final id = _intParam(state.pathParameters['id']);
+                      if (id == null) return _invalidId(context);
+                      return BlocProvider(
+                        create: (_) => sl<AlertDetailBloc>(param1: id)..add(const AlertDetailRequested()),
+                        child: AlertDetailScreen(
+                          canAttend: session.session?.canAttendAlerts ?? false,
+                          currentUserId: currentUserId(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -174,9 +232,17 @@ GoRouter createRouter(
               ),
             ],
           ),
-          // Equipment: catalog and detail (second in the Web menu).
           StatefulShellBranch(
             routes: [
+              GoRoute(
+                path: AppRoutes.more,
+                builder: (context, state) {
+                  final current = session.session;
+                  if (current == null) return const SplashScreen();
+                  return MoreScreen(session: current, currentProfile: currentProfile, onSignOut: session.signOut);
+                },
+              ),
+              // Equipment: catalog and detail; the live state of the IoT devices is in Telemetry.
               GoRoute(
                 path: AppRoutes.equipment,
                 builder: (context, state) => BlocProvider(
@@ -196,45 +262,6 @@ GoRouter createRouter(
                     },
                   ),
                 ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.telemetry,
-                builder: (context, state) {
-                  final id = _intParam(state.uri.queryParameters['deviceId']);
-                  return BlocProvider(
-                    key: ValueKey('telemetry-$id'),
-                    create: (_) => sl<TelemetryDashboardBloc>()..add(TelemetryStarted(deviceId: id)),
-                    child: const TelemetryDashboardScreen(),
-                  );
-                },
-                routes: [
-                  GoRoute(
-                    path: 'history',
-                    builder: (context, state) {
-                      final id = _intParam(state.uri.queryParameters['deviceId']);
-                      return BlocProvider(
-                        create: (_) => sl<TelemetryHistoryBloc>()..add(TelemetryHistoryStarted(deviceId: id)),
-                        child: const TelemetryHistoryScreen(),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.more,
-                builder: (context, state) {
-                  final current = session.session;
-                  if (current == null) return const SplashScreen();
-                  return MoreScreen(session: current, currentProfile: currentProfile, onSignOut: session.signOut);
-                },
               ),
               GoRoute(
                 path: AppRoutes.inventory,
@@ -321,30 +348,6 @@ GoRouter createRouter(
                 ],
               ),
               GoRoute(path: AppRoutes.about, builder: (context, state) => const AboutScreen()),
-              // Compliance alerts and notifications open from More (and from Home).
-              GoRoute(
-                path: AppRoutes.alerts,
-                builder: (context, state) => BlocProvider(
-                  create: (_) => sl<AlertsBloc>()..add(const AlertsRequested()),
-                  child: const AlertsScreen(),
-                ),
-                routes: [
-                  GoRoute(
-                    path: ':id',
-                    builder: (context, state) {
-                      final id = _intParam(state.pathParameters['id']);
-                      if (id == null) return _invalidId(context);
-                      return BlocProvider(
-                        create: (_) => sl<AlertDetailBloc>(param1: id)..add(const AlertDetailRequested()),
-                        child: AlertDetailScreen(
-                          canAttend: session.session?.canAttendAlerts ?? false,
-                          currentUserId: currentUserId(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
               GoRoute(
                 path: AppRoutes.notifications,
                 builder: (context, state) => BlocProvider(

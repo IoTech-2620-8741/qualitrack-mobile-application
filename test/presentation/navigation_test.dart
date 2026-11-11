@@ -15,12 +15,12 @@ import 'package:qualitrack_mobile/profile/presentation/bloc/current_profile_cont
 
 import '../helpers/mocks.dart';
 
-/// Order of importance of the Web menu: products & batches → equipment →
-/// tracking & telemetry; compliance alerts open from More and Home.
-const _expectedTabs = [AppRoutes.home, AppRoutes.batches, AppRoutes.equipment, AppRoutes.telemetry, AppRoutes.more];
+/// Tabs of the Report (Mobile Style Guidelines): Home, Telemetry, Alerts,
+/// Batches and More; equipment and inventory open from More.
+const _expectedTabs = [AppRoutes.home, AppRoutes.telemetry, AppRoutes.alerts, AppRoutes.batches, AppRoutes.more];
 
 void main() {
-  test('the app router has its tabs in the order of the Web menu', () {
+  test('the app router has the tabs of the Report, in its order', () {
     final router = createRouter(
       SessionController(iamService: IamFacadeService(repository: MockIamRepository())),
       notifications: UnreadNotificationsController(complianceService: complianceFacade(MockComplianceRepository())),
@@ -31,9 +31,10 @@ void main() {
     final shell = router.configuration.routes.whereType<StatefulShellRoute>().single;
 
     expect([for (final b in shell.branches) b.defaultRoute?.path], _expectedTabs);
-    // Alerts and notifications live in the More branch.
+    // Equipment, inventory and notifications live in the More branch.
     final more = shell.branches.last.routes.whereType<GoRoute>().map((r) => r.path);
-    expect(more, containsAll([AppRoutes.alerts, AppRoutes.notifications]));
+    expect(more, containsAll([AppRoutes.equipment, AppRoutes.inventory, AppRoutes.notifications]));
+    expect(more, isNot(contains(AppRoutes.alerts)));
     router.dispose();
   });
 
@@ -68,18 +69,60 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final labels = {
-      AppRoutes.batches: 'Batches',
-      AppRoutes.equipment: 'Equipment',
-      AppRoutes.telemetry: 'Telemetry',
-      AppRoutes.more: 'More',
-      AppRoutes.home: 'Home',
+    // The same icon as the section uses everywhere else (More, Home, lists).
+    final tabs = {
+      AppRoutes.telemetry: ('Telemetry', Icons.monitor_heart),
+      AppRoutes.alerts: ('Alerts', Icons.report_problem),
+      AppRoutes.batches: ('Batches', Icons.inventory_2),
+      AppRoutes.more: ('More', Icons.menu_open),
+      AppRoutes.home: ('Home', Icons.space_dashboard),
     };
-    for (final MapEntry(key: path, value: label) in labels.entries) {
-      await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)));
+    final bar = find.byType(NavigationBar);
+    for (final MapEntry(key: path, value: (label, selectedIcon)) in tabs.entries) {
+      await tester.tap(find.descendant(of: bar, matching: find.text(label)));
       await tester.pumpAndSettle();
       expect(find.text('screen $path'), findsOneWidget, reason: 'tab "$label"');
       expect(router.routerDelegate.currentConfiguration.uri.path, path);
+      expect(find.descendant(of: bar, matching: find.byIcon(selectedIcon)), findsOneWidget, reason: 'icon of "$label"');
     }
   });
+
+  testWidgets('the tab labels grow with the text up to 115%, so no word breaks', (tester) async {
+    final router = GoRouter(
+      initialLocation: AppRoutes.home,
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) => MainShell(shell: shell),
+          branches: [
+            for (final path in _expectedTabs)
+              StatefulShellBranch(routes: [GoRoute(path: path, builder: (context, state) => Text('screen $path'))]),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      MediaQuery.withClampedTextScaling(
+        minScaleFactor: 1.3,
+        maxScaleFactor: 1.3,
+        child: MaterialApp.router(
+          theme: AppTheme.light(),
+          routerConfig: router,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    double scaleOf(Finder text) => MediaQuery.textScalerOf(tester.element(text)).scale(100) / 100;
+    expect(scaleOf(find.text('screen ${AppRoutes.home}')), closeTo(1.3, 0.001));
+    expect(scaleOf(find.text('Telemetry')), closeTo(MainShell.maxLabelScale, 0.001));
+  });
 }
+

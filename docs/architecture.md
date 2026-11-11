@@ -95,7 +95,8 @@ the interface.
 A context is used by another one only through `api/index.dart`, which exposes a
 `*Api` class wrapping the facade and re-exports the entities consumers need. It
 never exports widgets: when a context must show something of another one, `app/`
-passes it in (see `app/router/command_center_views.dart`).
+passes it in (see `command_center/presentation/command_center_views.dart`, filled
+in by `app/router/command_center_views.dart`).
 
 | Context | Entry point | Used by |
 |---|---|---|
@@ -140,6 +141,25 @@ For a new read or command in a context (the order of the guide):
 | `profile` | Profile | Personal data, photo |
 
 ## Key flows
+
+**Navigation.** The bottom bar has the tabs of the Report (Mobile Style
+Guidelines), in its order: Home, Telemetry, Alerts, Batches and More. Each tab
+is a branch of a `StatefulShellRoute`; `MainShell` builds the bar from the
+branches, so the order is defined once, in `app/router/app_router.dart`. More
+holds the rest: products, equipment, inventory, reports, subscription (quality
+managers), notifications, profile and about. Every section keeps one icon on the
+bar, in More, on Home and in its lists (alerts use `report_problem`; the bell is
+the notifications). A Home card opens its tab with `go`, or pushes inventory,
+which is not a tab; links to a detail use `push`, which keeps the current tab and
+adds a back arrow.
+
+**Home.** Four cards, two per row, read by importance top to bottom and left
+to right: alerts, telemetry, batches awaiting the QA decision, and inventory
+below the minimum stock. They fill the screen without scrolling; on a short
+screen each card leaves out its detail instead of shrinking, and only when the
+user's larger text does not fit even then the panel scrolls, so the text keeps
+the size the user chose. The app is portrait (`AppOrientation`); only the
+telemetry history may turn to landscape, through `LandscapeAllowed`.
 
 **Session.** `SplashScreen` → `SessionController.restore()` reads the JWT from the
 keystore, discards it if `exp` has passed, and calls `GET /users/me/onboarding`.

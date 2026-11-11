@@ -6,9 +6,11 @@ import 'compliance/presentation/bloc/unread_notifications_controller.dart';
 import 'iam/application/session_controller.dart';
 import 'profile/presentation/bloc/current_profile_controller.dart';
 import 'common/infrastructure/configuration/api_config.dart';
+import 'common/presentation/orientation.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppOrientation.lockPortrait();
   await configureDependencies();
   final config = sl<ApiConfig>();
   if (!config.isConfigured) {
