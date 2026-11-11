@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../common/domain/failure.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
-import '../../../common/presentation/labels.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_radius.dart';
@@ -73,15 +73,32 @@ class CommandCenterScreen extends StatelessWidget {
                       final compact = constraints.maxHeight < MediaQuery.textScalerOf(context).scale(fullHeight);
                       return RefreshIndicator(
                         onRefresh: () async => reload(),
-                        // At least one viewport tall: the cards share the
-                        // whole height, and only content taller than the
-                        // screen (large text) scrolls.
-                        child: SingleChildScrollView(
+                        // The cards take their own height and the latest
+                        // alerts the rest of the screen, so nothing is
+                        // stretched; only cards taller than the screen (large
+                        // text) scroll.
+                        child: CustomScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                            child: IntrinsicHeight(child: _Panel(summary: summary, compact: compact)),
-                          ),
+                          slivers: [
+                            SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+                              sliver: SliverToBoxAdapter(child: _Panel(summary: summary, compact: compact)),
+                            ),
+                            SliverLayoutBuilder(
+                              builder: (context, sliver) {
+                                // Measured without the scroll offset, so it
+                                // does not change while pulling to refresh.
+                                final rest = sliver.viewportMainAxisExtent - sliver.precedingScrollExtent;
+                                final fits = rest >= MediaQuery.textScalerOf(context).scale(_LatestAlerts.minHeight);
+                                return SliverToBoxAdapter(
+                                  child: SizedBox(
+                                    height: rest > 0 ? rest : 0,
+                                    child: fits ? _LatestAlerts(summary: summary, views: views) : null,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -126,22 +143,20 @@ class _Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget row(Widget start, Widget end) => Expanded(
+    // Both cards of a row are as tall as the taller one.
+    Widget row(Widget start, Widget end) => IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [Expanded(child: start), _gap, Expanded(child: end)],
       ),
     );
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          row(_AlertCard(summary: summary, compact: compact), _TelemetryCard(summary: summary, compact: compact)),
-          _gap,
-          row(_BatchesCard(summary: summary, compact: compact), _InventoryCard(summary: summary, compact: compact)),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        row(_AlertCard(summary: summary, compact: compact), _TelemetryCard(summary: summary, compact: compact)),
+        _gap,
+        row(_BatchesCard(summary: summary, compact: compact), _InventoryCard(summary: summary, compact: compact)),
+      ],
     );
   }
 }
@@ -263,11 +278,9 @@ class _CardBody extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       header,
-      const SizedBox(height: AppSpacing.sm),
-      const Spacer(),
+      const SizedBox(height: AppSpacing.md),
       figure,
       if (!compact && detail.isNotEmpty) ...[const SizedBox(height: AppSpacing.sm), ...detail],
-      const Spacer(), // centers the content in the card
     ],
   );
 }
@@ -317,7 +330,8 @@ List<Widget> _breakdown(List<(int, Color, String)> segments) => [
 // 1 · Compliance alerts
 // ---------------------------------------------------------------------------
 
-/// Open alerts, how many are critical and the one to look at first.
+/// Open alerts and how many are critical; the latest ones are listed below
+/// the cards.
 class _AlertCard extends StatelessWidget {
   const _AlertCard({required this.summary, required this.compact});
 
@@ -327,21 +341,24 @@ class _AlertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final text = Theme.of(context).textTheme;
     final part = summary.alerts;
     final overview = part.value;
     final open = overview?.summary.open;
     final critical = overview?.summary.critical ?? 0;
-    final alert = overview?.mostUrgent;
     final tone =
         overview == null
             ? BadgeTone.neutral
-            : (critical > 0 ? BadgeTone.critical : (alert != null ? BadgeTone.warning : BadgeTone.success));
-    final variable = alert == null ? null : alertVariable(i18n, alert.parameterName);
-    final device = alert == null ? null : summary.equipmentNames[alert.equipmentId];
+            : (critical > 0 ? BadgeTone.critical : ((open ?? 0) > 0 ? BadgeTone.warning : BadgeTone.success));
     final label =
         overview == null ? _error(context, part.failure) : (open == 0 ? i18n.noOpenAlertsShort : i18n.openAlerts);
     final highlighted = tone == BadgeTone.critical || tone == BadgeTone.warning;
+    final segments =
+        overview == null
+            ? const <(int, Color, String)>[]
+            : [
+              (overview.summary.unresolved, AppColors.criticalBase, i18n.alertUnresolved),
+              (overview.summary.acknowledged, AppColors.info, i18n.alertAcknowledged),
+            ];
     return _HomeCard(
       onTap: () => context.go('/alerts'),
       color: critical > 0 ? tone.background : null,
@@ -349,10 +366,11 @@ class _AlertCard extends StatelessWidget {
         i18n.navAlerts,
         if (open != null) '$open $label' else label,
         if (critical > 0) i18n.criticalCount(critical),
-        if (variable != null) '${i18n.mostUrgentAlert}: ${[variable, device].whereType<String>().join(', ')}',
+        for (final (count, _, name) in segments) '$name: $count',
       ].join(', '),
       child: _CardBody(
         compact: compact,
+        detail: (open ?? 0) > 0 ? _breakdown(segments) : const [],
         header: _CardHeader(title: i18n.navAlerts, icon: Icons.report_problem_outlined, tone: tone),
         figure: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,17 +387,6 @@ class _AlertCard extends StatelessWidget {
             ],
           ],
         ),
-        detail: [
-          if (variable != null) ...[
-            Text(
-              variable,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: text.titleSmall?.copyWith(color: tone.foreground, fontWeight: FontWeight.w700),
-            ),
-            if (device != null) Text(device, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall),
-          ],
-        ],
       ),
     );
   }
@@ -514,8 +521,15 @@ class _InventoryCard extends StatelessWidget {
     final low = materials?.where((m) => m.isBelowMinimum).length;
     final tone = low == null ? BadgeTone.neutral : (low > 0 ? BadgeTone.warning : BadgeTone.success);
     final label = low == null ? _error(context, part.failure) : i18n.belowMinimum;
-    final detail =
-        materials == null ? null : (low == 0 ? i18n.stockAboveMinimum : i18n.materialsCount(materials.length));
+    // With materials below the minimum the bar and its legend tell the rest.
+    final detail = low == 0 ? i18n.stockAboveMinimum : null;
+    final segments =
+        materials == null || low == null || low == 0
+            ? const <(int, Color, String)>[]
+            : [
+              (low, AppColors.warningBase, i18n.belowMinimum),
+              (materials.length - low, AppColors.successBase, i18n.stockOk),
+            ];
     return _HomeCard(
       // Inventory is not a tab: it opens over Home, with its back arrow.
       onTap: () => context.push('/inventory'),
@@ -531,8 +545,179 @@ class _InventoryCard extends StatelessWidget {
         detail: [
           if (detail != null)
             Text(detail, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
+          if (segments.isNotEmpty) ...[const SizedBox(height: AppSpacing.sm), ..._breakdown(segments)],
         ],
       ),
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Latest alerts, in the rest of the screen
+// ---------------------------------------------------------------------------
+
+/// The open alerts, most urgent first, as many as fit whole in the height the
+/// cards leave (the same cards as the Alerts tab).
+class _LatestAlerts extends StatelessWidget {
+  const _LatestAlerts({required this.summary, required this.views});
+
+  final CommandCenterSummary summary;
+  final CommandCenterViews views;
+
+  /// Alerts built at most; a phone never shows more.
+  static const int _limit = 8;
+
+  /// Height under which the section is left out: its title with the link
+  /// (48dp touch target), its padding and room for a card.
+  static const double minHeight = 160;
+
+  @override
+  Widget build(BuildContext context) {
+    final i18n = context.i18n;
+    final text = Theme.of(context).textTheme;
+    final part = summary.alerts;
+    final open = part.value?.byPriority ?? const [];
+    final empty = part.isOk ? i18n.noOpenAlertsShort : _error(context, part.failure);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  i18n.latestAlerts,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.titleSmall?.copyWith(color: AppColors.navy),
+                ),
+              ),
+              if (open.isNotEmpty) TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Expanded(
+            child:
+                open.isEmpty
+                    ? Text(empty, style: text.bodyMedium?.copyWith(color: AppColors.textMuted))
+                    : _FitColumn(
+                      spacing: AppSpacing.sm,
+                      children: [
+                        for (final alert in open.take(_limit))
+                          views.alertCard(
+                            alert,
+                            deviceName: summary.equipmentNames[alert.equipmentId],
+                            environmentName: summary.environmentNames[alert.environmentId],
+                            onTap: () => context.push('/alerts/${alert.id}'),
+                          ),
+                      ],
+                    ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Lays out its children top to bottom, [spacing] apart, and shows only the
+/// ones that fit whole in its height: a card is never cut in half.
+class _FitColumn extends MultiChildRenderObjectWidget {
+  const _FitColumn({required super.children, this.spacing = 0});
+
+  final double spacing;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderFitColumn(spacing);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderFitColumn renderObject) => renderObject.spacing = spacing;
+}
+
+class _FitColumnParentData extends ContainerBoxParentData<RenderBox> {
+  bool shown = false;
+}
+
+class _RenderFitColumn extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _FitColumnParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _FitColumnParentData> {
+  _RenderFitColumn(this._spacing);
+
+  double _spacing;
+
+  set spacing(double value) {
+    if (value == _spacing) return;
+    _spacing = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _FitColumnParentData) child.parentData = _FitColumnParentData();
+  }
+
+  @override
+  void performLayout() {
+    final width = constraints.maxWidth;
+    var bottom = 0.0;
+    var full = false;
+    var index = 0;
+    var child = firstChild;
+    while (child != null) {
+      final data = child.parentData! as _FitColumnParentData;
+      child.layout(BoxConstraints.tightFor(width: width), parentUsesSize: true);
+      final top = index == 0 ? 0.0 : bottom + _spacing;
+      data.shown = !full && top + child.size.height <= constraints.maxHeight;
+      if (data.shown) {
+        data.offset = Offset(0, top);
+        bottom = top + child.size.height;
+      } else {
+        full = true;
+        data.offset = Offset.zero;
+      }
+      index++;
+      child = data.nextSibling;
+    }
+    size = constraints.constrain(Size(width, bottom));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    var child = firstChild;
+    while (child != null) {
+      final data = child.parentData! as _FitColumnParentData;
+      if (data.shown) context.paintChild(child, data.offset + offset);
+      child = data.nextSibling;
+    }
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    var child = lastChild;
+    while (child != null) {
+      final data = child.parentData! as _FitColumnParentData;
+      final current = child;
+      if (data.shown &&
+          result.addWithPaintOffset(
+            offset: data.offset,
+            position: position,
+            hitTest: (result, transformed) => current.hitTest(result, position: transformed),
+          )) {
+        return true;
+      }
+      child = data.previousSibling;
+    }
+    return false;
+  }
+
+  @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {
+    var child = firstChild;
+    while (child != null) {
+      final data = child.parentData! as _FitColumnParentData;
+      if (data.shown) visitor(child);
+      child = data.nextSibling;
+    }
   }
 }
