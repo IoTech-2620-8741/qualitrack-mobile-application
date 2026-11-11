@@ -64,7 +64,9 @@ CommandCenterViews _views() => CommandCenterViews(
   profileChanges: ChangeNotifier(),
   displayName: () => 'Ana Torres',
   roleLabel: (role, i18n) => 'QA Manager',
-  alertCard: (alert, {deviceName, environmentName, onTap}) => const SizedBox.shrink(),
+  // An alert card of a fixed height, named after its alert and its device.
+  alertCard: (alert, {deviceName, environmentName, onTap}) =>
+      SizedBox(height: 90, child: Text('alert ${alert.id} · $deviceName')),
   batchStatusBadge: (status) => const Text('Pending'),
 );
 
@@ -143,13 +145,53 @@ void main() {
       expect(find.text('Below minimum'), findsOneWidget);
       // A short screen leaves the detail out instead of shrinking the cards.
       expect(find.text('Released 4'), full ? findsOneWidget : findsNothing);
-      expect(find.text('2 materials'), full ? findsOneWidget : findsNothing);
+      expect(find.text('Stock OK 1'), full ? findsOneWidget : findsNothing);
       // Touch targets of at least 48 dp (Report: operators with gloves).
-      for (final card in find.byType(InkWell).evaluate()) {
-        expect(tester.getRect(find.byWidget(card.widget)).height, greaterThanOrEqualTo(48));
+      for (final title in ['Alerts', 'Telemetry', 'Batches', 'Inventory']) {
+        final card = find.ancestor(of: find.text(title), matching: find.byType(InkWell)).first;
+        expect(tester.getSize(card).height, greaterThanOrEqualTo(48));
       }
     });
   }
+
+  testWidgets('the cards keep their own height and the latest alerts fill the rest', (tester) async {
+    await pumpHome(tester, const Size(412, 915));
+
+    expect(tester.takeException(), isNull);
+    expect(scrollExtent(tester), 0);
+    // Not stretched to share the whole screen: a card is as tall as its content.
+    final alertsCard = find.ancestor(of: find.text('Alerts'), matching: find.byType(InkWell)).first;
+    expect(tester.getSize(alertsCard).height, lessThan(260));
+    // The latest alerts, most urgent first (critical and most recent), only
+    // whole cards and all of them above the navigation bar.
+    expect(find.text('Latest alerts'), findsOneWidget);
+    expect(find.text('View all'), findsOneWidget);
+    final shown = [
+      for (final id in [1, 2, 3])
+        if (find.text('alert $id · Device $id').hitTestable().evaluate().isNotEmpty) id,
+    ];
+    expect(shown, isNotEmpty);
+    expect(shown, [for (var id = 1; id <= shown.length; id++) id]);
+    final barTop = tester.getTopLeft(find.byType(NavigationBar)).dy;
+    for (final id in shown) {
+      final card = find.ancestor(of: find.text('alert $id · Device $id'), matching: find.byType(SizedBox)).first;
+      expect(tester.getRect(card).height, 90);
+      expect(tester.getRect(card).bottom, lessThanOrEqualTo(barTop));
+    }
+  });
+
+  testWidgets('a short screen shows fewer latest alerts, never half a card', (tester) async {
+    await pumpHome(tester, const Size(360, 640));
+
+    expect(tester.takeException(), isNull);
+    expect(scrollExtent(tester), 0);
+    final barTop = tester.getTopLeft(find.byType(NavigationBar)).dy;
+    for (final id in [1, 2, 3]) {
+      final card = find.text('alert $id · Device $id');
+      if (card.hitTestable().evaluate().isEmpty) continue;
+      expect(tester.getRect(find.ancestor(of: card, matching: find.byType(SizedBox)).first).bottom, lessThanOrEqualTo(barTop));
+    }
+  });
 
   testWidgets('Home keeps the text size the user chose', (tester) async {
     await pumpHome(tester, const Size(360, 800));

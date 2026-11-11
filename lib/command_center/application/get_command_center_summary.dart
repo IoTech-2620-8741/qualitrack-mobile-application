@@ -64,11 +64,9 @@ final class AlertOverview extends Equatable {
   final AlertSummary summary;
   final List<DeviationAlert> open;
 
-  /// The open alert to look at first (critical, then most recent).
-  DeviationAlert? get mostUrgent {
-    if (open.isEmpty) return null;
-    return ([...open]..sort(DeviationAlert.compareByPriority)).first;
-  }
+  /// The open alerts in the order to look at them: critical first, then the
+  /// most recent.
+  List<DeviationAlert> get byPriority => [...open]..sort(DeviationAlert.compareByPriority);
 
   @override
   List<Object?> get props => [summary, open];

@@ -543,8 +543,9 @@ class AppLocalizations {
   String get tabMovements => _t('tabMovements');
   String get tabUsedIn => _t('tabUsedIn');
   String get tabGeneral => _t('tabGeneral');
-  String get mostUrgentAlert => _t('mostUrgentAlert');
   String get noOpenAlertsShort => _t('noOpenAlertsShort');
+  String get latestAlerts => _t('latestAlerts');
+  String get viewAll => _t('viewAll');
   String get filterAlerts => _t('filterAlerts');
   String showingFilter(String filter) => _t('showingFilter')
       .replaceAll('{filter}', filter);
@@ -1016,8 +1017,9 @@ const Map<String, String> _en = {
   'tabMovements': 'Movements',
   'tabUsedIn': 'Used in',
   'tabGeneral': 'General',
-  'mostUrgentAlert': 'Most urgent alert',
   'noOpenAlertsShort': 'No open alerts',
+  'latestAlerts': 'Latest alerts',
+  'viewAll': 'View all',
   'filterAlerts': 'Filter alerts',
   'showingFilter': 'Showing: {filter}',
   'ofTotal': 'of {total}',
@@ -1486,8 +1488,9 @@ const Map<String, String> _es = {
   'tabMovements': 'Movimientos',
   'tabUsedIn': 'Usado en',
   'tabGeneral': 'General',
-  'mostUrgentAlert': 'Alerta más urgente',
   'noOpenAlertsShort': 'Sin alertas abiertas',
+  'latestAlerts': 'Últimas alertas',
+  'viewAll': 'Ver todas',
   'filterAlerts': 'Filtrar alertas',
   'showingFilter': 'Mostrando: {filter}',
   'ofTotal': 'de {total}',

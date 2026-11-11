@@ -433,8 +433,9 @@ tabAudit	Audit	Auditoría
 tabMovements	Movements	Movimientos
 tabUsedIn	Used in	Usado en
 tabGeneral	General	General
-mostUrgentAlert	Most urgent alert	Alerta más urgente
 noOpenAlertsShort	No open alerts	Sin alertas abiertas
+latestAlerts	Latest alerts	Últimas alertas
+viewAll	View all	Ver todas
 filterAlerts	Filter alerts	Filtrar alertas
 showingFilter	Showing: {filter}	Mostrando: {filter}	filter:String
 ofTotal	of {total}	de {total}	total:int
