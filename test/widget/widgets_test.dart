@@ -237,6 +237,10 @@ void main() {
       expect(find.textContaining('Cold storage'), findsWidgets);
       expect(find.textContaining('38.6'), findsWidgets);
       expect(find.bySemanticsLabel('Showing: All, 2 of 2'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp(r'^Critical, Temperature, 38\.6 °C, Stability Chamber with a very long descriptive name · Cold storage, Unresolved, ')),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.notifications_outlined), findsNothing);
       expect(tester.takeException(), isNull);
     });

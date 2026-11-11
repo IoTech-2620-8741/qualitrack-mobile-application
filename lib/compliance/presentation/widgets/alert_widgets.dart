@@ -75,85 +75,101 @@ class AlertCard extends StatelessWidget {
       deviceName ?? i18n.equipmentNumber(alert.equipmentId),
       environmentName,
     ].whereType<String>().join(' · ');
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(color: severity.background, shape: BoxShape.circle),
-                child: Icon(severity.icon, size: 22, color: severity.foreground, semanticLabel: alert.severity.label(i18n)),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            alertVariable(i18n, alert.parameterName),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.titleMedium?.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          formatAlertValue(alert.recordedValue, alert.unit, locale),
-                          style: text.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: alert.isOpen ? severity.foreground : AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(where, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall),
-                    const SizedBox(height: AppSpacing.sm),
-                    // Status on the left, time on the right; on narrow screens
-                    // or long translations the time drops to the next line.
-                    Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.xs,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            StatusBadge(
-                              label: alert.status.label(i18n),
-                              tone: alert.status.tone,
-                              icon: alert.status.icon,
-                            ),
-                            if (alert.deviationCount > 1) ...[
-                              const SizedBox(width: AppSpacing.sm),
-                              const Icon(Icons.repeat, size: 14, color: AppColors.textMuted),
-                              const SizedBox(width: AppSpacing.xxs),
-                              Text('${alert.deviationCount}', style: text.bodySmall),
-                            ],
-                          ],
-                        ),
-                        Text(Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale), style: text.bodySmall),
-                      ],
-                    ),
-                  ],
+    final when = Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale);
+    // One label for screen readers, in the order the card is read visually.
+    final semanticLabel = [
+      alert.severity.label(i18n),
+      alertVariable(i18n, alert.parameterName),
+      formatAlertValue(alert.recordedValue, alert.unit, locale),
+      where,
+      alert.status.label(i18n),
+      if (alert.deviationCount > 1) i18n.deviationsCount(alert.deviationCount),
+      when,
+    ].where((part) => part.isNotEmpty).join(', ');
+    return Semantics(
+      button: onTap != null,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: severity.background, shape: BoxShape.circle),
+                  child: Icon(severity.icon, size: 22, color: severity.foreground, semanticLabel: alert.severity.label(i18n)),
                 ),
-              ),
-            ],
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              alertVariable(i18n, alert.parameterName),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.titleMedium?.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            formatAlertValue(alert.recordedValue, alert.unit, locale),
+                            style: text.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: alert.isOpen ? severity.foreground : AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      Text(where, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall),
+                      const SizedBox(height: AppSpacing.sm),
+                      // Status on the left, time on the right; on narrow screens
+                      // or long translations the time drops to the next line.
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              StatusBadge(
+                                label: alert.status.label(i18n),
+                                tone: alert.status.tone,
+                                icon: alert.status.icon,
+                              ),
+                              if (alert.deviationCount > 1) ...[
+                                const SizedBox(width: AppSpacing.sm),
+                                const Icon(Icons.repeat, size: 14, color: AppColors.textMuted),
+                                const SizedBox(width: AppSpacing.xxs),
+                                Text('${alert.deviationCount}', style: text.bodySmall),
+                              ],
+                            ],
+                          ),
+                          Text(when, style: text.bodySmall),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
+    ),
     );
   }
 }
