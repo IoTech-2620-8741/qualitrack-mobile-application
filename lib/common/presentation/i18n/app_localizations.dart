@@ -134,18 +134,10 @@ class AppLocalizations {
   String get regulations => _t('regulations');
   String welcomeUser(String name) => _t('welcomeUser')
       .replaceAll('{name}', name);
-  String get keyOperationalMetrics => _t('keyOperationalMetrics');
   String get openAlerts => _t('openAlerts');
-  String operationalCount(int count) => _t('operationalCount')
-      .replaceAll('{count}', '$count');
   String criticalCount(int count) => _t('criticalCount')
       .replaceAll('{count}', '$count');
-  String criticalAlertsCount(int count) => _t('criticalAlertsCount')
-      .replaceAll('{count}', '$count');
-  String get noCriticalAlerts => _t('noCriticalAlerts');
-  String get liveTelemetry => _t('liveTelemetry');
   String get liveTelemetryHint => _t('liveTelemetryHint');
-  String get lowStock => _t('lowStock');
   String get equipmentTitle => _t('equipmentTitle');
   String get equipmentDetail => _t('equipmentDetail');
   String get equipmentEmpty => _t('equipmentEmpty');
@@ -163,13 +155,11 @@ class AppLocalizations {
   String get viewTelemetry => _t('viewTelemetry');
   String get bpmLimits => _t('bpmLimits');
   String get bpmLimitsEmpty => _t('bpmLimitsEmpty');
-  String get maintenanceHistory => _t('maintenanceHistory');
   String get maintenanceEmpty => _t('maintenanceEmpty');
   String get complianceEvents => _t('complianceEvents');
   String get auditLog => _t('auditLog');
   String get telemetryTitle => _t('telemetryTitle');
   String get telemetrySubtitle => _t('telemetrySubtitle');
-  String get liveUpdates => _t('liveUpdates');
   String get telemetryUnavailable => _t('telemetryUnavailable');
   String get connectionStatus => _t('connectionStatus');
   String eventsCount(int count) => _t('eventsCount')
@@ -193,7 +183,6 @@ class AppLocalizations {
   String get alertsSubtitle => _t('alertsSubtitle');
   String get alertsEmptyTitle => _t('alertsEmptyTitle');
   String get alertsEmptyMessage => _t('alertsEmptyMessage');
-  String get totalAlerts => _t('totalAlerts');
   String get criticalOpen => _t('criticalOpen');
   String get alertUnresolved => _t('alertUnresolved');
   String get alertAcknowledged => _t('alertAcknowledged');
@@ -217,7 +206,6 @@ class AppLocalizations {
   String get resolutionNotes => _t('resolutionNotes');
   String get resolutionNotesHint => _t('resolutionNotesHint');
   String get resolutionNotesRequired => _t('resolutionNotesRequired');
-  String get reviewActions => _t('reviewActions');
   String get reviewRestricted => _t('reviewRestricted');
   String get acknowledge => _t('acknowledge');
   String get acknowledgeAlert => _t('acknowledgeAlert');
@@ -240,8 +228,6 @@ class AppLocalizations {
   String get rawMaterialsUsed => _t('rawMaterialsUsed');
   String get traceability => _t('traceability');
   String get bpmNotes => _t('bpmNotes');
-  String get qaReview => _t('qaReview');
-  String get qaReviewHint => _t('qaReviewHint');
   String get releaseBatch => _t('releaseBatch');
   String get rejectBatch => _t('rejectBatch');
   String get releaseDate => _t('releaseDate');
@@ -269,8 +255,6 @@ class AppLocalizations {
   String get inventoryTitle => _t('inventoryTitle');
   String get inventoryEmpty => _t('inventoryEmpty');
   String materialsCount(int count) => _t('materialsCount')
-      .replaceAll('{count}', '$count');
-  String lowStockAlert(int count) => _t('lowStockAlert')
       .replaceAll('{count}', '$count');
   String get searchMaterials => _t('searchMaterials');
   String get belowMinimum => _t('belowMinimum');
@@ -301,7 +285,6 @@ class AppLocalizations {
   String get productDetail => _t('productDetail');
   String get bpmSpecifications => _t('bpmSpecifications');
   String get reportsTitle => _t('reportsTitle');
-  String get reportsSubtitle => _t('reportsSubtitle');
   String get reportsEmpty => _t('reportsEmpty');
   String get reportHistory => _t('reportHistory');
   String get reportHistoryEmpty => _t('reportHistoryEmpty');
@@ -337,8 +320,6 @@ class AppLocalizations {
   String get auditorReadOnly => _t('auditorReadOnly');
   String get automaticActions => _t('automaticActions');
   String get automaticActionsHint => _t('automaticActionsHint');
-  String get batchesInProgress => _t('batchesInProgress');
-  String get batchesThatUsedIt => _t('batchesThatUsedIt');
   String get changePassword => _t('changePassword');
   String get changePasswordForcedHint => _t('changePasswordForcedHint');
   String get changePasswordTitle => _t('changePasswordTitle');
@@ -356,7 +337,6 @@ class AppLocalizations {
   String criticalRangeValue(String range) => _t('criticalRangeValue')
       .replaceAll('{range}', range);
   String get currentPassword => _t('currentPassword');
-  String get deviationIndicators => _t('deviationIndicators');
   String get deviationIndicators7d => _t('deviationIndicators7d');
   String get deviations24h => _t('deviations24h');
   String deviationsCount(int count) => _t('deviationsCount')
@@ -395,7 +375,6 @@ class AppLocalizations {
   String get lotNotYetReceived => _t('lotNotYetReceived');
   String get markAllRead => _t('markAllRead');
   String get materialLots => _t('materialLots');
-  String get measurementSummary => _t('measurementSummary');
   String get metricAirQuality => _t('metricAirQuality');
   String get metricHumidity => _t('metricHumidity');
   String get metricLuminosity => _t('metricLuminosity');
@@ -419,7 +398,6 @@ class AppLocalizations {
   String get noContainerAssigned => _t('noContainerAssigned');
   String get noDeviations => _t('noDeviations');
   String get noEquipmentUsed => _t('noEquipmentUsed');
-  String get noOpenAlerts => _t('noOpenAlerts');
   String get noParticipatingStaff => _t('noParticipatingStaff');
   String get noProfileConfigured => _t('noProfileConfigured');
   String get noReadings24h => _t('noReadings24h');
@@ -468,13 +446,10 @@ class AppLocalizations {
   String notificationsUnread(int count) => _t('notificationsUnread')
       .replaceAll('{count}', '$count');
   String get onlyDeviations => _t('onlyDeviations');
-  String get openAlertsHint => _t('openAlertsHint');
   String get participatingStaff => _t('participatingStaff');
   String get passwordChanged => _t('passwordChanged');
   String get passwordPolicyHint => _t('passwordPolicyHint');
   String get passwordsDoNotMatch => _t('passwordsDoNotMatch');
-  String pendingCount(int count) => _t('pendingCount')
-      .replaceAll('{count}', '$count');
   String get period24h => _t('period24h');
   String get period31d => _t('period31d');
   String get period7d => _t('period7d');
@@ -489,9 +464,6 @@ class AppLocalizations {
   String get profileSaved => _t('profileSaved');
   String profileVersion(String version) => _t('profileVersion')
       .replaceAll('{version}', version);
-  String readingsCount(int count) => _t('readingsCount')
-      .replaceAll('{count}', '$count');
-  String get recentBatches => _t('recentBatches');
   String get removePhoto => _t('removePhoto');
   String get removePhotoConfirm => _t('removePhotoConfirm');
   String renewalCancelled(String date) => _t('renewalCancelled')
@@ -501,7 +473,6 @@ class AppLocalizations {
   String get reportEquipmentLog => _t('reportEquipmentLog');
   String get reportInventory => _t('reportInventory');
   String get reportKpiSummary => _t('reportKpiSummary');
-  String get reportsGeneratedOnWeb => _t('reportsGeneratedOnWeb');
   String get requiresReview => _t('requiresReview');
   String get roleAuditor => _t('roleAuditor');
   String get save => _t('save');
@@ -521,19 +492,15 @@ class AppLocalizations {
   String get unread => _t('unread');
   String until(String date) => _t('until')
       .replaceAll('{date}', date);
-  String get viewAll => _t('viewAll');
   String get you => _t('you');
-  String get overallHealth => _t('overallHealth');
   String get healthOnTrack => _t('healthOnTrack');
   String get healthAtRisk => _t('healthAtRisk');
   String get healthCritical => _t('healthCritical');
-  String get healthNoData => _t('healthNoData');
   String tabDeviations(int count) => _t('tabDeviations')
       .replaceAll('{count}', '$count');
   String get tabMeasurements => _t('tabMeasurements');
   String get tabHistory => _t('tabHistory');
   String get noData => _t('noData');
-  String get seeMore => _t('seeMore');
   String get seeAll => _t('seeAll');
   String totalReadings(int count) => _t('totalReadings')
       .replaceAll('{count}', '$count');
@@ -566,8 +533,6 @@ class AppLocalizations {
   String get clearFilters => _t('clearFilters');
   String get copySignatureHash => _t('copySignatureHash');
   String get signatureHashCopied => _t('signatureHashCopied');
-  String operationalOfTotal(int total) => _t('operationalOfTotal')
-      .replaceAll('{total}', '$total');
   String iotOnline(int connected, int total) => _t('iotOnline')
       .replaceAll('{connected}', '$connected')
       .replaceAll('{total}', '$total');
@@ -604,12 +569,8 @@ class AppLocalizations {
   String get moreQuality => _t('moreQuality');
   String get moreAdministration => _t('moreAdministration');
   String get navEquipment => _t('navEquipment');
-  String get moreAlerts => _t('moreAlerts');
-  String get moreAlertsHint => _t('moreAlertsHint');
-  String get homeBatches => _t('homeBatches');
   String attentionCount(int count) => _t('attentionCount')
       .replaceAll('{count}', '$count');
-  String get allEquipmentOk => _t('allEquipmentOk');
   String get iotDevicesOnline => _t('iotDevicesOnline');
   String get noIotDevices => _t('noIotDevices');
   String get stockAboveMinimum => _t('stockAboveMinimum');
@@ -618,7 +579,6 @@ class AppLocalizations {
   String get qaDecision => _t('qaDecision');
   String get traceMaterials => _t('traceMaterials');
   String get traceStaff => _t('traceStaff');
-  String get batchesUnit => _t('batchesUnit');
 }
 
 const Map<String, String> _en = {
@@ -713,15 +673,9 @@ const Map<String, String> _en = {
   'address': 'Address',
   'regulations': 'Applicable regulations',
   'welcomeUser': 'Hello, {name}',
-  'keyOperationalMetrics': 'Key operational metrics',
   'openAlerts': 'Open alerts',
-  'operationalCount': '{count} operational',
   'criticalCount': '{count} critical',
-  'criticalAlertsCount': '{count} critical alerts open',
-  'noCriticalAlerts': 'No critical alerts open',
-  'liveTelemetry': 'Live telemetry',
   'liveTelemetryHint': 'Readings of the last 24 hours',
-  'lowStock': 'Low stock',
   'equipmentTitle': 'Equipment',
   'equipmentDetail': 'Equipment detail',
   'equipmentEmpty': 'No equipment has been registered in QualiTrack Web yet.',
@@ -736,13 +690,11 @@ const Map<String, String> _en = {
   'viewTelemetry': 'View telemetry',
   'bpmLimits': 'BPM limits',
   'bpmLimitsEmpty': 'No BPM limits configured.',
-  'maintenanceHistory': 'Maintenance history',
   'maintenanceEmpty': 'No maintenance records.',
   'complianceEvents': 'Compliance events',
   'auditLog': 'Audit log',
   'telemetryTitle': 'Telemetry Dashboard',
   'telemetrySubtitle': 'Real-time sensory data and parameter monitoring',
-  'liveUpdates': 'Live · 15 s',
   'telemetryUnavailable': 'Telemetry unavailable',
   'connectionStatus': 'Connection status',
   'eventsCount': '{count} events',
@@ -762,7 +714,6 @@ const Map<String, String> _en = {
   'alertsSubtitle': 'Deviations to attend',
   'alertsEmptyTitle': 'No deviation alerts',
   'alertsEmptyMessage': 'All monitored parameters are within limits.',
-  'totalAlerts': 'Total alerts',
   'criticalOpen': 'Critical open',
   'alertUnresolved': 'Unresolved',
   'alertAcknowledged': 'Acknowledged',
@@ -783,7 +734,6 @@ const Map<String, String> _en = {
   'resolutionNotes': 'Resolution notes',
   'resolutionNotesHint': 'Describe the corrective action and verification',
   'resolutionNotesRequired': 'Resolution notes are required',
-  'reviewActions': 'Review actions',
   'reviewRestricted': 'Only the quality manager releases or rejects batches.',
   'acknowledge': 'Acknowledge',
   'acknowledgeAlert': 'Acknowledge alert',
@@ -806,8 +756,6 @@ const Map<String, String> _en = {
   'rawMaterialsUsed': 'Raw materials used',
   'traceability': 'Traceability',
   'bpmNotes': 'BPM notes',
-  'qaReview': 'QA review',
-  'qaReviewHint': 'Release or reject this existing batch. QualiTrack validates the transition.',
   'releaseBatch': 'Release batch',
   'rejectBatch': 'Reject batch',
   'releaseDate': 'Release date',
@@ -829,7 +777,6 @@ const Map<String, String> _en = {
   'inventoryTitle': 'Raw Materials Inventory',
   'inventoryEmpty': 'No raw materials have been registered in QualiTrack Web yet.',
   'materialsCount': '{count} materials',
-  'lowStockAlert': '{count} materials are below the minimum stock',
   'searchMaterials': 'Search by name or code',
   'belowMinimum': 'Below minimum',
   'blockedStock': 'Blocked stock',
@@ -858,7 +805,6 @@ const Map<String, String> _en = {
   'productDetail': 'Product detail',
   'bpmSpecifications': 'BPM specifications',
   'reportsTitle': 'Reports & KPIs',
-  'reportsSubtitle': 'KPI dashboard and generated reports',
   'reportsEmpty': 'No KPI dashboard or reports have been generated in QualiTrack Web yet.',
   'reportHistory': 'Report history',
   'reportHistoryEmpty': 'No reports generated.',
@@ -894,8 +840,6 @@ const Map<String, String> _en = {
   'auditorReadOnly': 'Auditors consult alerts without changing them.',
   'automaticActions': 'Automatic actions',
   'automaticActionsHint': 'Responses of the container in the last 24 hours',
-  'batchesInProgress': 'Batches in progress',
-  'batchesThatUsedIt': 'Batches that used it',
   'changePassword': 'Change password',
   'changePasswordForcedHint': 'You signed in with a temporary password. Choose your own password to continue.',
   'changePasswordTitle': 'Choose your password',
@@ -909,7 +853,6 @@ const Map<String, String> _en = {
   'criticalRange': 'Critical range',
   'criticalRangeValue': 'critical {range}',
   'currentPassword': 'Current password',
-  'deviationIndicators': 'Deviation indicators',
   'deviationIndicators7d': 'Deviation indicators (7 days)',
   'deviations24h': 'Deviations (24 h)',
   'deviationsCount': '{count} deviations',
@@ -945,7 +888,6 @@ const Map<String, String> _en = {
   'lotNotYetReceived': 'Not received yet',
   'markAllRead': 'Mark all as read',
   'materialLots': 'Lots',
-  'measurementSummary': 'Measurement summary',
   'metricAirQuality': 'Air quality',
   'metricHumidity': 'Humidity',
   'metricLuminosity': 'Luminosity',
@@ -967,7 +909,6 @@ const Map<String, String> _en = {
   'noContainerAssigned': 'The batch has no container assigned.',
   'noDeviations': 'No deviations in the last 24 hours.',
   'noEquipmentUsed': 'No equipment registered for this batch.',
-  'noOpenAlerts': 'There are no open alerts.',
   'noParticipatingStaff': 'No staff registered for this batch.',
   'noProfileConfigured': 'No ranges configured yet',
   'noReadings24h': 'The device sent no readings in the last 24 hours.',
@@ -993,12 +934,10 @@ const Map<String, String> _en = {
   'notificationsTitle': 'Notifications',
   'notificationsUnread': 'Notifications, {count} unread',
   'onlyDeviations': 'Only deviations',
-  'openAlertsHint': 'Most urgent first',
   'participatingStaff': 'Participating staff',
   'passwordChanged': 'Your password was changed.',
   'passwordPolicyHint': 'Between 8 and 72 characters, with letters and numbers.',
   'passwordsDoNotMatch': 'The passwords do not match.',
-  'pendingCount': '{count} pending',
   'period24h': '24 hours',
   'period31d': '31 days',
   'period7d': '7 days',
@@ -1012,8 +951,6 @@ const Map<String, String> _en = {
   'preferencesSaved': 'Preferences saved.',
   'profileSaved': 'Your data was saved.',
   'profileVersion': 'Profile version {version}',
-  'readingsCount': '{count} readings',
-  'recentBatches': 'Recent batches',
   'removePhoto': 'Remove photo',
   'removePhotoConfirm': 'Your initials will be shown instead of the photo.',
   'renewalCancelled': 'Renewal cancelled: access until {date}',
@@ -1022,7 +959,6 @@ const Map<String, String> _en = {
   'reportEquipmentLog': 'Equipment log',
   'reportInventory': 'Inventory',
   'reportKpiSummary': 'Indicator summary',
-  'reportsGeneratedOnWeb': 'Reports are generated and downloaded in QualiTrack Web.',
   'requiresReview': 'Requires review',
   'roleAuditor': 'Auditor',
   'save': 'Save',
@@ -1039,18 +975,14 @@ const Map<String, String> _en = {
   'timeInRange': '{value} in range',
   'unread': 'Unread',
   'until': 'until {date}',
-  'viewAll': 'View all',
   'you': 'You',
-  'overallHealth': 'Overall health',
   'healthOnTrack': 'on target',
   'healthAtRisk': 'at risk',
   'healthCritical': 'critical',
-  'healthNoData': 'No data',
   'tabDeviations': 'Deviations ({count})',
   'tabMeasurements': 'Measurements',
   'tabHistory': 'History',
   'noData': 'No data',
-  'seeMore': 'See more',
   'seeAll': 'See all',
   'totalReadings': '{count} readings per variable',
   'eventCount': '{count} event',
@@ -1076,7 +1008,6 @@ const Map<String, String> _en = {
   'clearFilters': 'Clear filters',
   'copySignatureHash': 'Copy hash',
   'signatureHashCopied': 'Hash copied',
-  'operationalOfTotal': 'operational of {total}',
   'iotOnline': '{connected}/{total} IoT online',
   'clearSearch': 'Clear search',
   'tabMaintenance': 'Maintenance',
@@ -1109,11 +1040,7 @@ const Map<String, String> _en = {
   'moreQuality': 'Quality',
   'moreAdministration': 'Administration',
   'navEquipment': 'Equipment',
-  'moreAlerts': 'Compliance alerts',
-  'moreAlertsHint': 'Deviations to attend',
-  'homeBatches': 'Production batches',
   'attentionCount': '{count} need attention',
-  'allEquipmentOk': 'All operational',
   'iotDevicesOnline': 'devices online',
   'noIotDevices': 'No IoT devices',
   'stockAboveMinimum': 'All materials above the minimum stock',
@@ -1122,7 +1049,6 @@ const Map<String, String> _en = {
   'qaDecision': 'QA decision',
   'traceMaterials': 'Raw materials',
   'traceStaff': 'Staff',
-  'batchesUnit': 'batches',
 };
 
 const Map<String, String> _es = {
@@ -1217,15 +1143,9 @@ const Map<String, String> _es = {
   'address': 'Dirección',
   'regulations': 'Normativas aplicables',
   'welcomeUser': 'Hola, {name}',
-  'keyOperationalMetrics': 'Métricas operativas clave',
   'openAlerts': 'Alertas abiertas',
-  'operationalCount': '{count} operativos',
   'criticalCount': '{count} críticas',
-  'criticalAlertsCount': '{count} alertas críticas abiertas',
-  'noCriticalAlerts': 'Sin alertas críticas abiertas',
-  'liveTelemetry': 'Telemetría en vivo',
   'liveTelemetryHint': 'Lecturas de las últimas 24 horas',
-  'lowStock': 'Stock bajo',
   'equipmentTitle': 'Equipos',
   'equipmentDetail': 'Detalle del equipo',
   'equipmentEmpty': 'Aún no se han registrado equipos en QualiTrack Web.',
@@ -1240,13 +1160,11 @@ const Map<String, String> _es = {
   'viewTelemetry': 'Ver telemetría',
   'bpmLimits': 'Límites BPM',
   'bpmLimitsEmpty': 'No hay límites BPM configurados.',
-  'maintenanceHistory': 'Historial de mantenimiento',
   'maintenanceEmpty': 'Sin registros de mantenimiento.',
   'complianceEvents': 'Eventos de cumplimiento',
   'auditLog': 'Registro de auditoría',
   'telemetryTitle': 'Panel de Telemetría',
   'telemetrySubtitle': 'Datos sensoriales y monitoreo de parámetros en tiempo real',
-  'liveUpdates': 'En vivo · 15 s',
   'telemetryUnavailable': 'Telemetría no disponible',
   'connectionStatus': 'Estado de conexión',
   'eventsCount': '{count} eventos',
@@ -1266,7 +1184,6 @@ const Map<String, String> _es = {
   'alertsSubtitle': 'Desviaciones por atender',
   'alertsEmptyTitle': 'Sin alertas de desviación',
   'alertsEmptyMessage': 'Todos los parámetros monitoreados están dentro de los límites.',
-  'totalAlerts': 'Total de alertas',
   'criticalOpen': 'Críticas abiertas',
   'alertUnresolved': 'Sin resolver',
   'alertAcknowledged': 'Reconocida',
@@ -1287,7 +1204,6 @@ const Map<String, String> _es = {
   'resolutionNotes': 'Notas de resolución',
   'resolutionNotesHint': 'Describe la acción correctiva y su verificación',
   'resolutionNotesRequired': 'Las notas de resolución son obligatorias',
-  'reviewActions': 'Acciones de revisión',
   'reviewRestricted': 'Solo el responsable de calidad libera o rechaza lotes.',
   'acknowledge': 'Reconocer',
   'acknowledgeAlert': 'Reconocer alerta',
@@ -1310,8 +1226,6 @@ const Map<String, String> _es = {
   'rawMaterialsUsed': 'Materias primas usadas',
   'traceability': 'Trazabilidad',
   'bpmNotes': 'Notas BPM',
-  'qaReview': 'Revisión QA',
-  'qaReviewHint': 'Libera o rechaza este lote existente. QualiTrack valida la transición.',
   'releaseBatch': 'Liberar lote',
   'rejectBatch': 'Rechazar lote',
   'releaseDate': 'Fecha de liberación',
@@ -1333,7 +1247,6 @@ const Map<String, String> _es = {
   'inventoryTitle': 'Inventario de Materias Primas',
   'inventoryEmpty': 'Aún no se han registrado materias primas en QualiTrack Web.',
   'materialsCount': '{count} materiales',
-  'lowStockAlert': '{count} materiales están por debajo del stock mínimo',
   'searchMaterials': 'Buscar por nombre o código',
   'belowMinimum': 'Bajo el mínimo',
   'blockedStock': 'Stock bloqueado',
@@ -1362,7 +1275,6 @@ const Map<String, String> _es = {
   'productDetail': 'Detalle del producto',
   'bpmSpecifications': 'Especificaciones BPM',
   'reportsTitle': 'Reportes y KPIs',
-  'reportsSubtitle': 'Panel de KPIs y reportes generados',
   'reportsEmpty': 'Aún no se han generado KPIs ni reportes en QualiTrack Web.',
   'reportHistory': 'Historial de reportes',
   'reportHistoryEmpty': 'No hay reportes generados.',
@@ -1398,8 +1310,6 @@ const Map<String, String> _es = {
   'auditorReadOnly': 'Los auditores consultan las alertas sin modificarlas.',
   'automaticActions': 'Acciones automáticas',
   'automaticActionsHint': 'Respuestas del contenedor en las últimas 24 horas',
-  'batchesInProgress': 'Lotes en proceso',
-  'batchesThatUsedIt': 'Lotes que la usaron',
   'changePassword': 'Cambiar contraseña',
   'changePasswordForcedHint': 'Ingresaste con una contraseña temporal. Elige tu propia contraseña para continuar.',
   'changePasswordTitle': 'Elige tu contraseña',
@@ -1413,7 +1323,6 @@ const Map<String, String> _es = {
   'criticalRange': 'Rango crítico',
   'criticalRangeValue': 'crítico {range}',
   'currentPassword': 'Contraseña actual',
-  'deviationIndicators': 'Indicadores de desviaciones',
   'deviationIndicators7d': 'Indicadores de desviaciones (7 días)',
   'deviations24h': 'Desviaciones (24 h)',
   'deviationsCount': '{count} desviaciones',
@@ -1449,7 +1358,6 @@ const Map<String, String> _es = {
   'lotNotYetReceived': 'Aún no recibido',
   'markAllRead': 'Marcar todas como leídas',
   'materialLots': 'Lotes',
-  'measurementSummary': 'Resumen de mediciones',
   'metricAirQuality': 'Calidad del aire',
   'metricHumidity': 'Humedad',
   'metricLuminosity': 'Luminosidad',
@@ -1471,7 +1379,6 @@ const Map<String, String> _es = {
   'noContainerAssigned': 'El lote no tiene contenedor asignado.',
   'noDeviations': 'Sin desviaciones en las últimas 24 horas.',
   'noEquipmentUsed': 'No hay equipos registrados para este lote.',
-  'noOpenAlerts': 'No hay alertas abiertas.',
   'noParticipatingStaff': 'No hay personal registrado para este lote.',
   'noProfileConfigured': 'Aún no hay rangos configurados',
   'noReadings24h': 'El dispositivo no envió lecturas en las últimas 24 horas.',
@@ -1497,12 +1404,10 @@ const Map<String, String> _es = {
   'notificationsTitle': 'Notificaciones',
   'notificationsUnread': 'Notificaciones, {count} sin leer',
   'onlyDeviations': 'Solo desviaciones',
-  'openAlertsHint': 'Las más urgentes primero',
   'participatingStaff': 'Personal participante',
   'passwordChanged': 'Tu contraseña se cambió.',
   'passwordPolicyHint': 'Entre 8 y 72 caracteres, con letras y números.',
   'passwordsDoNotMatch': 'Las contraseñas no coinciden.',
-  'pendingCount': '{count} pendientes',
   'period24h': '24 horas',
   'period31d': '31 días',
   'period7d': '7 días',
@@ -1516,8 +1421,6 @@ const Map<String, String> _es = {
   'preferencesSaved': 'Preferencias guardadas.',
   'profileSaved': 'Se guardaron tus datos.',
   'profileVersion': 'Perfil versión {version}',
-  'readingsCount': '{count} lecturas',
-  'recentBatches': 'Lotes recientes',
   'removePhoto': 'Quitar foto',
   'removePhotoConfirm': 'Se mostrarán tus iniciales en lugar de la foto.',
   'renewalCancelled': 'Renovación cancelada: acceso hasta el {date}',
@@ -1526,7 +1429,6 @@ const Map<String, String> _es = {
   'reportEquipmentLog': 'Bitácora de equipo',
   'reportInventory': 'Inventario',
   'reportKpiSummary': 'Resumen de indicadores',
-  'reportsGeneratedOnWeb': 'Los reportes se generan y descargan en QualiTrack Web.',
   'requiresReview': 'Requiere revisión',
   'roleAuditor': 'Auditor',
   'save': 'Guardar',
@@ -1543,18 +1445,14 @@ const Map<String, String> _es = {
   'timeInRange': '{value} en rango',
   'unread': 'Sin leer',
   'until': 'hasta el {date}',
-  'viewAll': 'Ver todas',
   'you': 'Tú',
-  'overallHealth': 'Salud general',
   'healthOnTrack': 'en meta',
   'healthAtRisk': 'en riesgo',
   'healthCritical': 'crítico',
-  'healthNoData': 'Sin datos',
   'tabDeviations': 'Desviaciones ({count})',
   'tabMeasurements': 'Mediciones',
   'tabHistory': 'Historial',
   'noData': 'Sin datos',
-  'seeMore': 'Ver más',
   'seeAll': 'Ver todos',
   'totalReadings': '{count} lecturas por variable',
   'eventCount': '{count} evento',
@@ -1580,7 +1478,6 @@ const Map<String, String> _es = {
   'clearFilters': 'Limpiar filtros',
   'copySignatureHash': 'Copiar huella',
   'signatureHashCopied': 'Huella copiada',
-  'operationalOfTotal': 'operativos de {total}',
   'iotOnline': '{connected}/{total} IoT en línea',
   'clearSearch': 'Borrar búsqueda',
   'tabMaintenance': 'Mantenimiento',
@@ -1613,11 +1510,7 @@ const Map<String, String> _es = {
   'moreQuality': 'Calidad',
   'moreAdministration': 'Administración',
   'navEquipment': 'Equipos',
-  'moreAlerts': 'Alertas de cumplimiento',
-  'moreAlertsHint': 'Desviaciones por atender',
-  'homeBatches': 'Lotes de producción',
   'attentionCount': '{count} requieren atención',
-  'allEquipmentOk': 'Todos operativos',
   'iotDevicesOnline': 'dispositivos en línea',
   'noIotDevices': 'Sin dispositivos IoT',
   'stockAboveMinimum': 'Todos los materiales sobre el stock mínimo',
@@ -1626,7 +1519,6 @@ const Map<String, String> _es = {
   'qaDecision': 'Decisión QA',
   'traceMaterials': 'Materias primas',
   'traceStaff': 'Personal',
-  'batchesUnit': 'lotes',
 };
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -90,15 +90,9 @@ phone	Phone	Teléfono
 address	Address	Dirección
 regulations	Applicable regulations	Normativas aplicables
 welcomeUser	Hello, {name}	Hola, {name}	name:String
-keyOperationalMetrics	Key operational metrics	Métricas operativas clave
 openAlerts	Open alerts	Alertas abiertas
-operationalCount	{count} operational	{count} operativos	count:int
 criticalCount	{count} critical	{count} críticas	count:int
-criticalAlertsCount	{count} critical alerts open	{count} alertas críticas abiertas	count:int
-noCriticalAlerts	No critical alerts open	Sin alertas críticas abiertas
-liveTelemetry	Live telemetry	Telemetría en vivo
 liveTelemetryHint	Readings of the last 24 hours	Lecturas de las últimas 24 horas
-lowStock	Low stock	Stock bajo
 equipmentTitle	Equipment	Equipos
 equipmentDetail	Equipment detail	Detalle del equipo
 equipmentEmpty	No equipment has been registered in QualiTrack Web yet.	Aún no se han registrado equipos en QualiTrack Web.
@@ -113,13 +107,11 @@ serialNumber	Serial number	N.° de serie
 viewTelemetry	View telemetry	Ver telemetría
 bpmLimits	BPM limits	Límites BPM
 bpmLimitsEmpty	No BPM limits configured.	No hay límites BPM configurados.
-maintenanceHistory	Maintenance history	Historial de mantenimiento
 maintenanceEmpty	No maintenance records.	Sin registros de mantenimiento.
 complianceEvents	Compliance events	Eventos de cumplimiento
 auditLog	Audit log	Registro de auditoría
 telemetryTitle	Telemetry Dashboard	Panel de Telemetría
 telemetrySubtitle	Real-time sensory data and parameter monitoring	Datos sensoriales y monitoreo de parámetros en tiempo real
-liveUpdates	Live · 15 s	En vivo · 15 s
 telemetryUnavailable	Telemetry unavailable	Telemetría no disponible
 connectionStatus	Connection status	Estado de conexión
 eventsCount	{count} events	{count} eventos	count:int
@@ -139,7 +131,6 @@ alertsTitle	Compliance alerts	Alertas de cumplimiento
 alertsSubtitle	Deviations to attend	Desviaciones por atender
 alertsEmptyTitle	No deviation alerts	Sin alertas de desviación
 alertsEmptyMessage	All monitored parameters are within limits.	Todos los parámetros monitoreados están dentro de los límites.
-totalAlerts	Total alerts	Total de alertas
 criticalOpen	Critical open	Críticas abiertas
 alertUnresolved	Unresolved	Sin resolver
 alertAcknowledged	Acknowledged	Reconocida
@@ -160,7 +151,6 @@ resolvedBy	Resolved by	Resuelta por
 resolutionNotes	Resolution notes	Notas de resolución
 resolutionNotesHint	Describe the corrective action and verification	Describe la acción correctiva y su verificación
 resolutionNotesRequired	Resolution notes are required	Las notas de resolución son obligatorias
-reviewActions	Review actions	Acciones de revisión
 reviewRestricted	Only the quality manager releases or rejects batches.	Solo el responsable de calidad libera o rechaza lotes.
 acknowledge	Acknowledge	Reconocer
 acknowledgeAlert	Acknowledge alert	Reconocer alerta
@@ -183,8 +173,6 @@ batchDetail	Batch detail	Detalle del lote
 rawMaterialsUsed	Raw materials used	Materias primas usadas
 traceability	Traceability	Trazabilidad
 bpmNotes	BPM notes	Notas BPM
-qaReview	QA review	Revisión QA
-qaReviewHint	Release or reject this existing batch. QualiTrack validates the transition.	Libera o rechaza este lote existente. QualiTrack valida la transición.
 releaseBatch	Release batch	Liberar lote
 rejectBatch	Reject batch	Rechazar lote
 releaseDate	Release date	Fecha de liberación
@@ -206,7 +194,6 @@ receiptNumber	Receipt #{id}	Recepción #{id}	id:int
 inventoryTitle	Raw Materials Inventory	Inventario de Materias Primas
 inventoryEmpty	No raw materials have been registered in QualiTrack Web yet.	Aún no se han registrado materias primas en QualiTrack Web.
 materialsCount	{count} materials	{count} materiales	count:int
-lowStockAlert	{count} materials are below the minimum stock	{count} materiales están por debajo del stock mínimo	count:int
 searchMaterials	Search by name or code	Buscar por nombre o código
 belowMinimum	Below minimum	Bajo el mínimo
 blockedStock	Blocked stock	Stock bloqueado
@@ -235,7 +222,6 @@ searchProducts	Search by code or name	Buscar por código o nombre
 productDetail	Product detail	Detalle del producto
 bpmSpecifications	BPM specifications	Especificaciones BPM
 reportsTitle	Reports & KPIs	Reportes y KPIs
-reportsSubtitle	KPI dashboard and generated reports	Panel de KPIs y reportes generados
 reportsEmpty	No KPI dashboard or reports have been generated in QualiTrack Web yet.	Aún no se han generado KPIs ni reportes en QualiTrack Web.
 reportHistory	Report history	Historial de reportes
 reportHistoryEmpty	No reports generated.	No hay reportes generados.
@@ -271,8 +257,6 @@ anEnvironment	an environment	un ambiente
 auditorReadOnly	Auditors consult alerts without changing them.	Los auditores consultan las alertas sin modificarlas.
 automaticActions	Automatic actions	Acciones automáticas
 automaticActionsHint	Responses of the container in the last 24 hours	Respuestas del contenedor en las últimas 24 horas
-batchesInProgress	Batches in progress	Lotes en proceso
-batchesThatUsedIt	Batches that used it	Lotes que la usaron
 changePassword	Change password	Cambiar contraseña
 changePasswordForcedHint	You signed in with a temporary password. Choose your own password to continue.	Ingresaste con una contraseña temporal. Elige tu propia contraseña para continuar.
 changePasswordTitle	Choose your password	Elige tu contraseña
@@ -286,7 +270,6 @@ containerMonitor	Container monitor	Monitor de contenedor
 criticalRange	Critical range	Rango crítico
 criticalRangeValue	critical {range}	crítico {range}	range:String
 currentPassword	Current password	Contraseña actual
-deviationIndicators	Deviation indicators	Indicadores de desviaciones
 deviationIndicators7d	Deviation indicators (7 days)	Indicadores de desviaciones (7 días)
 deviations24h	Deviations (24 h)	Desviaciones (24 h)
 deviationsCount	{count} deviations	{count} desviaciones	count:int
@@ -322,7 +305,6 @@ lotNearExpiry	Near expiry	Próximo a vencer
 lotNotYetReceived	Not received yet	Aún no recibido
 markAllRead	Mark all as read	Marcar todas como leídas
 materialLots	Lots	Lotes
-measurementSummary	Measurement summary	Resumen de mediciones
 metricAirQuality	Air quality	Calidad del aire
 metricHumidity	Humidity	Humedad
 metricLuminosity	Luminosity	Luminosidad
@@ -344,7 +326,6 @@ noBatchesUsedIt	No batch has used this material.	Ningún lote ha usado este mate
 noContainerAssigned	The batch has no container assigned.	El lote no tiene contenedor asignado.
 noDeviations	No deviations in the last 24 hours.	Sin desviaciones en las últimas 24 horas.
 noEquipmentUsed	No equipment registered for this batch.	No hay equipos registrados para este lote.
-noOpenAlerts	There are no open alerts.	No hay alertas abiertas.
 noParticipatingStaff	No staff registered for this batch.	No hay personal registrado para este lote.
 noProfileConfigured	No ranges configured yet	Aún no hay rangos configurados
 noReadings24h	The device sent no readings in the last 24 hours.	El dispositivo no envió lecturas en las últimas 24 horas.
@@ -370,12 +351,10 @@ notificationsEmpty	You have no notifications yet.	Aún no tienes notificaciones.
 notificationsTitle	Notifications	Notificaciones
 notificationsUnread	Notifications, {count} unread	Notificaciones, {count} sin leer	count:int
 onlyDeviations	Only deviations	Solo desviaciones
-openAlertsHint	Most urgent first	Las más urgentes primero
 participatingStaff	Participating staff	Personal participante
 passwordChanged	Your password was changed.	Tu contraseña se cambió.
 passwordPolicyHint	Between 8 and 72 characters, with letters and numbers.	Entre 8 y 72 caracteres, con letras y números.
 passwordsDoNotMatch	The passwords do not match.	Las contraseñas no coinciden.
-pendingCount	{count} pending	{count} pendientes	count:int
 period24h	24 hours	24 horas
 period31d	31 days	31 días
 period7d	7 days	7 días
@@ -389,8 +368,6 @@ photoUpdated	Your photo was updated.	Se actualizó tu foto.
 preferencesSaved	Preferences saved.	Preferencias guardadas.
 profileSaved	Your data was saved.	Se guardaron tus datos.
 profileVersion	Profile version {version}	Perfil versión {version}	version:String
-readingsCount	{count} readings	{count} lecturas	count:int
-recentBatches	Recent batches	Lotes recientes
 removePhoto	Remove photo	Quitar foto
 removePhotoConfirm	Your initials will be shown instead of the photo.	Se mostrarán tus iniciales en lugar de la foto.
 renewalCancelled	Renewal cancelled: access until {date}	Renovación cancelada: acceso hasta el {date}	date:String
@@ -399,7 +376,6 @@ reportCompliance	Environmental compliance	Cumplimiento ambiental
 reportEquipmentLog	Equipment log	Bitácora de equipo
 reportInventory	Inventory	Inventario
 reportKpiSummary	Indicator summary	Resumen de indicadores
-reportsGeneratedOnWeb	Reports are generated and downloaded in QualiTrack Web.	Los reportes se generan y descargan en QualiTrack Web.
 requiresReview	Requires review	Requiere revisión
 roleAuditor	Auditor	Auditor
 save	Save	Guardar
@@ -416,18 +392,14 @@ thresholdExceeded	Limit exceeded: {value}	Límite superado: {value}	value:String
 timeInRange	{value} in range	{value} en rango	value:String
 unread	Unread	Sin leer
 until	until {date}	hasta el {date}	date:String
-viewAll	View all	Ver todas
 you	You	Tú
-overallHealth	Overall health	Salud general
 healthOnTrack	on target	en meta
 healthAtRisk	at risk	en riesgo
 healthCritical	critical	crítico
-healthNoData	No data	Sin datos
 tabDeviations	Deviations ({count})	Desviaciones ({count})	count:int
 tabMeasurements	Measurements	Mediciones
 tabHistory	History	Historial
 noData	No data	Sin datos
-seeMore	See more	Ver más
 seeAll	See all	Ver todos
 totalReadings	{count} readings per variable	{count} lecturas por variable	count:int
 eventCount	{count} event	{count} evento	count:int
@@ -453,7 +425,6 @@ historyShowing	Showing {shown} of {total}	Mostrando {shown} de {total}	shown:int
 clearFilters	Clear filters	Limpiar filtros
 copySignatureHash	Copy hash	Copiar huella
 signatureHashCopied	Hash copied	Huella copiada
-operationalOfTotal	operational of {total}	operativos de {total}	total:int
 iotOnline	{connected}/{total} IoT online	{connected}/{total} IoT en línea	connected:int,total:int
 clearSearch	Clear search	Borrar búsqueda
 tabMaintenance	Maintenance	Mantenimiento
@@ -486,11 +457,7 @@ moreAboutHint	Version and information	Versión e información
 moreQuality	Quality	Calidad
 moreAdministration	Administration	Administración
 navEquipment	Equipment	Equipos
-moreAlerts	Compliance alerts	Alertas de cumplimiento
-moreAlertsHint	Deviations to attend	Desviaciones por atender
-homeBatches	Production batches	Lotes de producción
 attentionCount	{count} need attention	{count} requieren atención	count:int
-allEquipmentOk	All operational	Todos operativos
 iotDevicesOnline	devices online	dispositivos en línea
 noIotDevices	No IoT devices	Sin dispositivos IoT
 stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
@@ -499,4 +466,3 @@ batchCycle	Batch cycle	Ciclo del lote
 qaDecision	QA decision	Decisión QA
 traceMaterials	Raw materials	Materias primas
 traceStaff	Staff	Personal
-batchesUnit	batches	lotes
