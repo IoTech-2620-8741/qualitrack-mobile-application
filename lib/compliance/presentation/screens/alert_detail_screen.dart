@@ -33,7 +33,17 @@ class AlertDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.deviationDetails)),
+            appBar: AppBar(
+        title: BlocBuilder<AlertDetailBloc, AlertDetailState>(
+          builder: (context, state) {
+            final alert = state.alert.data;
+            return AppBarTitle(
+              title: i18n.deviationDetails,
+              subtitle: alert == null ? null : i18n.alertNumber(alert.id),
+            );
+          },
+        ),
+      ),
       // Acknowledge / resolve stay at hand at the bottom, as in the batch
       // detail, instead of at the end of the scroll.
       bottomNavigationBar: BlocBuilder<AlertDetailBloc, AlertDetailState>(
@@ -120,24 +130,18 @@ class _AlertDetailBody extends StatelessWidget {
               DetailRow(label: i18n.deviationsLabel, value: '${alert.deviationCount}'),
               DetailRow(label: i18n.firstDetected, value: Formatters.dateTime(alert.timestamp, locale)),
               if (names.environmentName != null) DetailRow(label: i18n.environment, value: names.environmentName!),
-              DetailRow(
+              _LinkRow(
+                key: const Key('alert.deviceLink'),
                 label: alert.origin == AlertOrigin.container ? i18n.containerMonitor : i18n.environmentalDevice,
                 value: device,
-                valueWidget: TextButton(
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                  onPressed: () => context.push('/equipment/${alert.equipmentId}'),
-                  child: Text(device),
-                ),
+                onTap: () => context.push('/equipment/${alert.equipmentId}'),
               ),
               if (alert.batchId != null)
-                DetailRow(
+              _LinkRow(
+                  key: const Key('alert.batchLink'),
                   label: i18n.batch,
                   value: i18n.batchNumberShort(alert.batchId!),
-                  valueWidget: TextButton(
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                    onPressed: () => context.push('/batches/${alert.batchId}'),
-                    child: Text(i18n.batchNumberShort(alert.batchId!)),
-                  ),
+                  onTap: () => context.push('/batches/${alert.batchId}'),
                 ),
               if (alert.acknowledgedBy != null)
                 DetailRow(
@@ -185,6 +189,48 @@ class _AlertDetailBody extends StatelessWidget {
     );
   }
 }
+
+/// A detail row that opens another record: the value in the brand colour and
+/// a chevron, the whole row as the touch target (Material 3 list item).
+class _LinkRow extends StatelessWidget {
+  const _LinkRow({super.key, required this.label, required this.value, required this.onTap});
+
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Semantics(
+      button: true,
+      child: InkWell(
+        onTap: onTap,
+        child: DetailRow(
+          label: label,
+          value: value,
+          valueWidget: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: text.bodyLarge?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w500),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              const Icon(Icons.chevron_right, size: 20, color: AppColors.textMuted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 /// Most important first (top to bottom, left to right): severity and status,
 /// the variable, the recorded value against its threshold, then where and when.
@@ -244,7 +290,7 @@ class _AlertHeader extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(where, style: text.bodySmall),
-          Text('$when · ${i18n.alertNumber(alert.id)}', style: text.bodySmall),
+          Text(when, style: text.bodySmall),
         ],
       ),
     );

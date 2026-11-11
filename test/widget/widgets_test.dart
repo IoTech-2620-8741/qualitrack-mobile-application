@@ -348,6 +348,15 @@ void main() {
       verify(() => bloc.add(const AlertResolveSubmitted('Door closed, temperature back in range'))).called(1);
     });
 
+
+    testWidgets('titles the alert and links the device as a row', (tester) async {
+      await pump(tester, canAttend: false);
+      expect(find.text('Alert #1'), findsOneWidget);
+      expect(find.byKey(const Key('alert.deviceLink')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('alert.deviceLink')), matching: find.byIcon(Icons.chevron_right)), findsOneWidget);
+    });
+
+
     testWidgets('auditors only read', (tester) async {
       await pump(tester, canAttend: false);
       expect(find.byKey(const Key('alert.acknowledge')), findsNothing);
