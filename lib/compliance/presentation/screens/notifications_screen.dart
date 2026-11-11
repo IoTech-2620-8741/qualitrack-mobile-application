@@ -130,38 +130,36 @@ class _NotificationTile extends StatelessWidget {
     final locale = context.localeName;
     final n = notification;
     final theme = Theme.of(context);
-    return Material(
-      color: n.isRead ? null : AppColors.primaryContainer.withValues(alpha: 0.35),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _color.withValues(alpha: 0.12),
-          child: Icon(_icon, color: _color),
-        ),
-        title: Text(
-          notificationText(i18n, n, locale),
-          style: n.isRead ? theme.textTheme.bodyMedium : theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: AppSpacing.xs),
-          child: Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.xs,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(Formatters.dateTime(n.occurredAt, locale), style: theme.textTheme.bodySmall),
-              if (!n.isRead) StatusBadge(label: i18n.unread, tone: BadgeTone.info, icon: Icons.fiber_manual_record),
-            ],
-          ),
-        ),
-        onTap: () {
-          context.read<NotificationsBloc>().add(NotificationOpened(n));
-          if (n.isAboutAlert) {
-            context.push('/alerts/${n.subjectId}');
-          } else if (n.isAboutBatch) {
-            context.push('/batches/${n.subjectId}');
-          }
-        },
+    // Unread = bold text + the "Unread" badge; no tinted background on top.
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: _color.withValues(alpha: 0.12),
+        child: Icon(_icon, color: _color),
       ),
+      title: Text(
+        notificationText(i18n, n, locale),
+        style: n.isRead ? theme.textTheme.bodyMedium : theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.xs),
+        child: Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(Formatters.dateTime(n.occurredAt, locale), style: theme.textTheme.bodySmall),
+            if (!n.isRead) StatusBadge(label: i18n.unread, tone: BadgeTone.info, icon: Icons.fiber_manual_record),
+          ],
+        ),
+      ),
+      onTap: () {
+        context.read<NotificationsBloc>().add(NotificationOpened(n));
+        if (n.isAboutAlert) {
+          context.push('/alerts/${n.subjectId}');
+        } else if (n.isAboutBatch) {
+          context.push('/batches/${n.subjectId}');
+        }
+      },
     );
   }
 }

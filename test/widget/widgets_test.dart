@@ -22,6 +22,7 @@ import 'package:qualitrack_mobile/iam/presentation/screens/sign_in_screen.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
+import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
 import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
@@ -404,6 +405,38 @@ void main() {
       expect(find.text('Notifications'), findsOneWidget);
       expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
       expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    });
+
+    testWidgets('unread notices are marked by the badge and bold text only', (tester) async {
+      final bloc = MockNotificationsBloc();
+      when(() => bloc.state).thenReturn(
+        const NotificationsState(
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: [
+              AppNotification(
+                id: 1,
+                type: NotificationType.alertResolved,
+                subjectType: 'ALERT',
+                subjectId: 1,
+                parameterName: 'TEMPERATURE',
+                actorName: 'Ana',
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<NotificationsBloc>.value(value: bloc, child: const NotificationsScreen()));
+
+      expect(find.text('Unread'), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(ListTile),
+          matching: find.byWidgetPredicate((w) => w is Material && w.color == AppColors.primaryContainer.withValues(alpha: 0.35)),
+        ),
+        findsNothing,
+      );
     });
   });
 }
