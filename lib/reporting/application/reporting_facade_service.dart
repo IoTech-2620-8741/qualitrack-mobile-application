@@ -158,7 +158,7 @@ class ReportingFacadeService with ReportingLogic {
     } catch (e) {
       // Rethrow critical auth errors that must be handled by the upper layers
       if (e is UnauthorizedFailure || e is OnboardingRequiredFailure) rethrow;
-      kpiFailure = e as Failure;
+      kpiFailure = Failure.from(e);
     }
 
     // 3. Fetch secondary sections concurrently
