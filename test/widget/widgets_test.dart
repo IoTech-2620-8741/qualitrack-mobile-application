@@ -7,9 +7,13 @@ import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart
 import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
+import 'package:qualitrack_mobile/compliance/presentation/bloc/notifications_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
 import 'package:qualitrack_mobile/compliance/presentation/screens/alert_detail_screen.dart';
 import 'package:qualitrack_mobile/compliance/presentation/screens/alerts_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/notifications_screen.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
@@ -18,6 +22,7 @@ import 'package:qualitrack_mobile/iam/presentation/screens/sign_in_screen.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
+import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
 import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
@@ -36,6 +41,8 @@ class MockChangePasswordBloc extends MockBloc<PasswordChangeSubmitted, ChangePas
 class MockAlertsBloc extends MockBloc<AlertsEvent, AlertsState> implements AlertsBloc {}
 
 class MockAlertDetailBloc extends MockBloc<AlertDetailEvent, AlertDetailState> implements AlertDetailBloc {}
+
+class MockNotificationsBloc extends MockBloc<NotificationsEvent, NotificationsState> implements NotificationsBloc {}
 
 void main() {
   setUpAll(() {
@@ -230,6 +237,10 @@ void main() {
       expect(find.textContaining('Cold storage'), findsWidgets);
       expect(find.textContaining('38.6'), findsWidgets);
       expect(find.bySemanticsLabel('Showing: All, 2 of 2'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp(r'^Critical, Temperature, 38\.6 °C, Stability Chamber with a very long descriptive name · Cold storage, Unresolved, ')),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.notifications_outlined), findsNothing);
       expect(tester.takeException(), isNull);
     });
@@ -318,9 +329,7 @@ void main() {
 
     testWidgets('operators and quality managers acknowledge after confirming', (tester) async {
       await pump(tester, canAttend: true);
-      await tester.scrollUntilVisible(find.byKey(const Key('alert.acknowledge')), 200, scrollable: find.byType(Scrollable).first);
-      await tester.ensureVisible(find.byKey(const Key('alert.acknowledge')));
-      await tester.pumpAndSettle();
+      // The actions live in the bottom bar: no scrolling needed.
       await tester.tap(find.byKey(const Key('alert.acknowledge')));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Acknowledge'));
@@ -328,15 +337,33 @@ void main() {
       verify(() => bloc.add(const AlertAcknowledgeSubmitted())).called(1);
     });
 
-    testWidgets('resolve requires notes', (tester) async {
+    testWidgets('resolve asks for the notes in a sheet and requires them', (tester) async {
       await pump(tester, canAttend: true);
-      await tester.scrollUntilVisible(find.byKey(const Key('alert.resolve')), 200, scrollable: find.byType(Scrollable).first);
-      await tester.ensureVisible(find.byKey(const Key('alert.resolve')));
-      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('alert.resolve')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('alert.resolveSubmit')));
       await tester.pump();
       expect(find.text('Resolution notes are required'), findsOneWidget);
       verifyNever(() => bloc.add(any(that: isA<AlertResolveSubmitted>())));
+    });
+
+    testWidgets('resolve sends the notes after confirming', (tester) async {
+      await pump(tester, canAttend: true);
+      await tester.tap(find.byKey(const Key('alert.resolve')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('alert.resolutionNotes')), 'Door closed, temperature back in range');
+      await tester.tap(find.byKey(const Key('alert.resolveSubmit')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Mark as resolved').last);
+      await tester.pumpAndSettle();
+      verify(() => bloc.add(const AlertResolveSubmitted('Door closed, temperature back in range'))).called(1);
+    });
+
+    testWidgets('titles the alert and links the device as a row', (tester) async {
+      await pump(tester, canAttend: false);
+      expect(find.text('Alert #1'), findsOneWidget);
+      expect(find.byKey(const Key('alert.deviceLink')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('alert.deviceLink')), matching: find.byIcon(Icons.chevron_right)), findsOneWidget);
     });
 
     testWidgets('auditors only read', (tester) async {
@@ -349,6 +376,71 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.textContaining('Auditors consult alerts'), findsOneWidget);
+    });
+  });
+
+  group('Notifications', () {
+    testWidgets('alert notices use the same icon as the alerts', (tester) async {
+      final bloc = MockNotificationsBloc();
+      when(() => bloc.state).thenReturn(
+        NotificationsState(
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: [
+              AppNotification(
+                id: 1,
+                type: NotificationType.alertOpened,
+                subjectType: 'ALERT',
+                subjectId: 1,
+                severity: AlertSeverity.critical,
+                environmentName: 'Cold storage',
+                parameterName: 'TEMPERATURE',
+                recordedValue: 9,
+                unit: '°C',
+                occurredAt: DateTime(2026, 11, 10, 12),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<NotificationsBloc>.value(value: bloc, child: const NotificationsScreen()));
+
+      expect(find.text('Notifications'), findsOneWidget);
+      expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    });
+
+    testWidgets('unread notices are marked by the badge and bold text only', (tester) async {
+      final bloc = MockNotificationsBloc();
+      when(() => bloc.state).thenReturn(
+        const NotificationsState(
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: [
+              AppNotification(
+                id: 1,
+                type: NotificationType.alertResolved,
+                subjectType: 'ALERT',
+                subjectId: 1,
+                parameterName: 'TEMPERATURE',
+                actorName: 'Ana',
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<NotificationsBloc>.value(value: bloc, child: const NotificationsScreen()));
+
+      expect(find.text('Unread'), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(ListTile),
+          matching: find.byWidgetPredicate((w) => w is Material && w.color == AppColors.primaryContainer.withValues(alpha: 0.35)),
+        ),
+        findsNothing,
+      );
     });
   });
 }
