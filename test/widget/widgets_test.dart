@@ -7,9 +7,13 @@ import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart
 import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
+import 'package:qualitrack_mobile/compliance/presentation/bloc/notifications_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
 import 'package:qualitrack_mobile/compliance/presentation/screens/alert_detail_screen.dart';
 import 'package:qualitrack_mobile/compliance/presentation/screens/alerts_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/notifications_screen.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
@@ -36,6 +40,8 @@ class MockChangePasswordBloc extends MockBloc<PasswordChangeSubmitted, ChangePas
 class MockAlertsBloc extends MockBloc<AlertsEvent, AlertsState> implements AlertsBloc {}
 
 class MockAlertDetailBloc extends MockBloc<AlertDetailEvent, AlertDetailState> implements AlertDetailBloc {}
+
+class MockNotificationsBloc extends MockBloc<NotificationsEvent, NotificationsState> implements NotificationsBloc {}
 
 void main() {
   setUpAll(() {
@@ -348,14 +354,12 @@ void main() {
       verify(() => bloc.add(const AlertResolveSubmitted('Door closed, temperature back in range'))).called(1);
     });
 
-
     testWidgets('titles the alert and links the device as a row', (tester) async {
       await pump(tester, canAttend: false);
       expect(find.text('Alert #1'), findsOneWidget);
       expect(find.byKey(const Key('alert.deviceLink')), findsOneWidget);
       expect(find.descendant(of: find.byKey(const Key('alert.deviceLink')), matching: find.byIcon(Icons.chevron_right)), findsOneWidget);
     });
-
 
     testWidgets('auditors only read', (tester) async {
       await pump(tester, canAttend: false);
@@ -367,6 +371,39 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.textContaining('Auditors consult alerts'), findsOneWidget);
+    });
+  });
+
+  group('Notifications', () {
+    testWidgets('alert notices use the same icon as the alerts', (tester) async {
+      final bloc = MockNotificationsBloc();
+      when(() => bloc.state).thenReturn(
+        NotificationsState(
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: [
+              AppNotification(
+                id: 1,
+                type: NotificationType.alertOpened,
+                subjectType: 'ALERT',
+                subjectId: 1,
+                severity: AlertSeverity.critical,
+                environmentName: 'Cold storage',
+                parameterName: 'TEMPERATURE',
+                recordedValue: 9,
+                unit: '°C',
+                occurredAt: DateTime(2026, 11, 10, 12),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<NotificationsBloc>.value(value: bloc, child: const NotificationsScreen()));
+
+      expect(find.text('Notifications'), findsOneWidget);
+      expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
     });
   });
 }

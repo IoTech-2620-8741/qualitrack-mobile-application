@@ -9,6 +9,7 @@ import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
+import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/entities/alert_severity.dart';
@@ -33,7 +34,7 @@ class NotificationsScreen extends StatelessWidget {
       )),
       builder: (context, state) => Scaffold(
         appBar: AppBar(
-          title: Text(i18n.notificationsTitle),
+          title: AppBarTitle(title: i18n.notificationsTitle),
           actions: [
             IconButton(
               tooltip: i18n.markAllRead,
@@ -106,7 +107,8 @@ class _NotificationTile extends StatelessWidget {
   final AppNotification notification;
 
   IconData get _icon => switch (notification.type) {
-    NotificationType.alertOpened || NotificationType.alertEscalated => Icons.warning_amber_rounded,
+    // Same icon as the alerts everywhere else (More menu, navigation).
+    NotificationType.alertOpened || NotificationType.alertEscalated => Icons.report_problem_outlined,
     NotificationType.alertAcknowledged => Icons.visibility_outlined,
     NotificationType.alertResolved => Icons.task_alt,
     NotificationType.batchReleased => Icons.verified_outlined,
