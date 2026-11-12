@@ -153,12 +153,17 @@ the notifications). A Home card opens its tab with `go`, or pushes inventory,
 which is not a tab; links to a detail use `push`, which keeps the current tab and
 adds a back arrow.
 
-**Home.** Four cards, two per row, read by importance top to bottom and left
-to right: alerts, telemetry, batches awaiting the QA decision, and inventory
-below the minimum stock. They fill the screen without scrolling; on a short
-screen each card leaves out its detail instead of shrinking, and only when the
-user's larger text does not fit even then the panel scrolls, so the text keeps
-the size the user chose. The app is portrait (`AppOrientation`); only the
+**Home.** It reads state, then priority, then action. A strip says what the
+laboratory needs now (critical alerts, items to review or all in order) and
+when the data was read. Below it, four rows read by importance top to bottom:
+open alerts (the critical ones as a badge, unresolved and acknowledged as the
+detail), IoT devices online, batches awaiting the QA decision, and materials
+below the minimum stock. Each row has its figure, a short detail and a chevron
+to the screen that acts on it; the color of a state goes only to its icon and
+figure. The most urgent open alerts fill the rest of the screen, only as many
+as fit whole. The Home does not scroll; on a short screen each row leaves out
+its detail instead of shrinking, and only when the user's larger text does not
+fit even then the panel scrolls, so the text keeps the size the user chose. The app is portrait (`AppOrientation`); only the
 telemetry history may turn to landscape, through `LandscapeAllowed`.
 
 **Session.** `SplashScreen` → `SessionController.restore()` reads the JWT from the

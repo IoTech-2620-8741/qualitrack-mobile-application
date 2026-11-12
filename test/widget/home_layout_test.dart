@@ -116,55 +116,57 @@ void main() {
           .position
           .maxScrollExtent;
 
-  // Four cards, two per row, read by importance top to bottom and left to
-  // right; the Home never scrolls nor shrinks at the normal text size.
-  for (final (name, size, full) in [
-    ('common phone', const Size(360, 800), true),
-    ('large phone', const Size(412, 915), true),
-    ('small phone', const Size(360, 640), false),
+  // A status strip and four rows read by importance top to bottom; the Home
+  // never scrolls nor shrinks at the normal text size.
+  for (final (name, size) in [
+    ('common phone', const Size(360, 800)),
+    ('large phone', const Size(412, 915)),
+    ('small phone', const Size(360, 640)),
   ]) {
-    testWidgets('Home shows the four cards on a $name without scrolling', (tester) async {
+    testWidgets('Home shows the status and the four rows on a $name without scrolling', (tester) async {
       await pumpHome(tester, size);
 
       expect(tester.takeException(), isNull);
       expect(scrollExtent(tester), 0);
-      expect(find.text('Hello, Ana Torres'), findsOneWidget);
-      final alerts = tester.getTopLeft(find.text('Alerts'));
-      final telemetry = tester.getTopLeft(find.text('Telemetry'));
-      final batches = tester.getTopLeft(find.text('Batches'));
-      final inventory = tester.getTopLeft(find.text('Inventory'));
-      expect(telemetry.dy, alerts.dy);
-      expect(telemetry.dx, greaterThan(alerts.dx));
-      expect(batches.dx, alerts.dx);
-      expect(batches.dy, greaterThan(alerts.dy));
-      expect(inventory.dy, batches.dy);
-      expect(inventory.dx, telemetry.dx);
-      // The figures stay in every size.
+      // The first name greets; the full name stays in the profile.
+      expect(find.text('Hello, Ana'), findsOneWidget);
+      expect(find.text('Needs attention: 2 critical alerts'), findsOneWidget);
+      final alerts = tester.getTopLeft(find.text('Open alerts'));
+      final telemetry = tester.getTopLeft(find.text('devices online'));
+      final batches = tester.getTopLeft(find.text('Awaiting QA release'));
+      final inventory = tester.getTopLeft(find.text('Below minimum'));
+      expect(telemetry.dy, greaterThan(alerts.dy));
+      expect(batches.dy, greaterThan(telemetry.dy));
+      expect(inventory.dy, greaterThan(batches.dy));
+      // The figures and the critical badge stay in every size.
+      expect(find.text('6/9'), findsOneWidget);
       expect(find.text('2 critical'), findsOneWidget);
-      expect(find.text('Awaiting QA release'), findsOneWidget);
-      expect(find.text('Below minimum'), findsOneWidget);
-      // A short screen leaves the detail out instead of shrinking the cards.
-      expect(find.text('Released 4'), full ? findsOneWidget : findsNothing);
-      expect(find.text('Stock OK 1'), full ? findsOneWidget : findsNothing);
+      // Severity (the badge) and status (the detail) are told apart; the
+      // rows are short enough to keep their detail even on a small phone.
+      expect(find.text('3 unresolved · 1 acknowledged'), findsOneWidget);
+      expect(find.text('2 pending · 3 in progress'), findsOneWidget);
+      expect(find.text('of 2 materials'), findsOneWidget);
+      // No breakdown of released or rejected batches on Home.
+      expect(find.textContaining('Released'), findsNothing);
       // Touch targets of at least 48 dp (Report: operators with gloves).
-      for (final title in ['Alerts', 'Telemetry', 'Batches', 'Inventory']) {
-        final card = find.ancestor(of: find.text(title), matching: find.byType(InkWell)).first;
-        expect(tester.getSize(card).height, greaterThanOrEqualTo(48));
+      for (final label in ['Open alerts', 'devices online', 'Awaiting QA release', 'Below minimum']) {
+        final row = find.ancestor(of: find.text(label), matching: find.byType(InkWell)).first;
+        expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
       }
     });
   }
 
-  testWidgets('the cards keep their own height and the latest alerts fill the rest', (tester) async {
+  testWidgets('the rows keep their own height and the most urgent alerts fill the rest', (tester) async {
     await pumpHome(tester, const Size(412, 915));
 
     expect(tester.takeException(), isNull);
     expect(scrollExtent(tester), 0);
-    // Not stretched to share the whole screen: a card is as tall as its content.
-    final alertsCard = find.ancestor(of: find.text('Alerts'), matching: find.byType(InkWell)).first;
-    expect(tester.getSize(alertsCard).height, lessThan(260));
-    // The latest alerts, most urgent first (critical and most recent), only
-    // whole cards and all of them above the navigation bar.
-    expect(find.text('Latest alerts'), findsOneWidget);
+    // Not stretched to share the whole screen: a row is as tall as its content.
+    final alertsRow = find.ancestor(of: find.text('Open alerts'), matching: find.byType(InkWell)).first;
+    expect(tester.getSize(alertsRow).height, lessThan(120));
+    // The most urgent alerts (critical and most recent first), only whole
+    // cards and all of them above the navigation bar.
+    expect(find.text('Most urgent'), findsOneWidget);
     expect(find.text('View all'), findsOneWidget);
     final shown = [
       for (final id in [1, 2, 3])
@@ -195,17 +197,17 @@ void main() {
 
   testWidgets('Home keeps the text size the user chose', (tester) async {
     await pumpHome(tester, const Size(360, 800));
-    final normal = tester.getRect(find.text('Alerts')).height;
+    final normal = tester.getRect(find.text('Hello, Ana')).height;
 
     await pumpHome(tester, const Size(360, 800), textScale: 1.3);
 
     expect(tester.takeException(), isNull);
-    expect(tester.getRect(find.text('Alerts')).height / normal, closeTo(1.3, 0.05));
-    // Compact cards fit 130% text (the Report supports up to sp × 1.3).
+    expect(tester.getRect(find.text('Hello, Ana')).height / normal, closeTo(1.3, 0.05));
+    // The rows fit 130% text (the Report supports up to sp × 1.3).
     expect(scrollExtent(tester), 0);
   });
 
-  testWidgets('Home scrolls instead of shrinking when even the compact cards do not fit', (tester) async {
+  testWidgets('Home scrolls instead of shrinking when even the compact rows do not fit', (tester) async {
     await pumpHome(tester, const Size(360, 640), textScale: 2);
 
     expect(tester.takeException(), isNull);

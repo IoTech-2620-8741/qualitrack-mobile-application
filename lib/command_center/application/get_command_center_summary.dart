@@ -84,6 +84,7 @@ final class CommandCenterSummary extends Equatable {
     required this.materials,
     required this.subscription,
     this.environmentNames = const {},
+    this.loadedAt,
   });
 
   final Part<Laboratory> laboratory;
@@ -96,11 +97,14 @@ final class CommandCenterSummary extends Equatable {
   final Part<BillingSummary>? subscription;
   final Map<int, String> environmentNames;
 
+  /// When the summary was read, shown on Home as "Updated HH:mm".
+  final DateTime? loadedAt;
+
   /// Equipment names by id, to name the device of each open alert.
   Map<int, String> get equipmentNames => {for (final e in equipment.value?.equipments ?? const <Equipment>[]) e.id: e.name};
 
   @override
-  List<Object?> get props => [laboratory, equipment, batches, alerts, materials, subscription, environmentNames];
+  List<Object?> get props => [laboratory, equipment, batches, alerts, materials, subscription, environmentNames, loadedAt];
 }
 
 class GetCommandCenterSummary {
@@ -164,6 +168,7 @@ class GetCommandCenterSummary {
       materials: results[4]! as Part<List<InventoryMaterial>>,
       subscription: results[5] as Part<BillingSummary>?,
       environmentNames: {for (final e in environmentsPart.value ?? const <LabEnvironment>[]) e.id: e.name},
+      loadedAt: DateTime.now(),
     );
   }
 

@@ -425,7 +425,6 @@ historyShowing	Showing {shown} of {total}	Mostrando {shown} de {total}	shown:int
 clearFilters	Clear filters	Limpiar filtros
 copySignatureHash	Copy hash	Copiar huella
 signatureHashCopied	Hash copied	Huella copiada
-iotOnline	{connected}/{total} IoT online	{connected}/{total} IoT en línea	connected:int,total:int
 clearSearch	Clear search	Borrar búsqueda
 tabMaintenance	Maintenance	Mantenimiento
 tabEvents	Events	Eventos
@@ -434,7 +433,6 @@ tabMovements	Movements	Movimientos
 tabUsedIn	Used in	Usado en
 tabGeneral	General	General
 noOpenAlertsShort	No open alerts	Sin alertas abiertas
-latestAlerts	Latest alerts	Últimas alertas
 viewAll	View all	Ver todas
 filterAlerts	Filter alerts	Filtrar alertas
 showingFilter	Showing: {filter}	Mostrando: {filter}	filter:String
@@ -458,10 +456,20 @@ moreAboutHint	Version and information	Versión e información
 moreQuality	Quality	Calidad
 moreAdministration	Administration	Administración
 navEquipment	Equipment	Equipos
-attentionCount	{count} need attention	{count} requieren atención	count:int
 iotDevicesOnline	devices online	dispositivos en línea
 noIotDevices	No IoT devices	Sin dispositivos IoT
 stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
+homeStatusCritical	Needs attention: {count} critical alerts	Requiere atención: {count} alertas críticas	count:int
+homeStatusPending	There are items to review	Hay pendientes por revisar
+homeStatusAllClear	All in order	Todo en orden
+homeUpdatedAt	Updated {time}	Actualizado {time}	time:String
+homeAlertsDetail	{unresolved} unresolved · {acknowledged} acknowledged	{unresolved} sin resolver · {acknowledged} reconocidas	unresolved:int,acknowledged:int
+homeDevicesToReview	{count} to review	{count} por revisar	count:int
+homeDevicesNoData	{count} without data	{count} sin datos	count:int
+homeBatchesDetail	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en progreso	pending:int,inProgress:int
+homeMaterialsTotal	of {count} materials	de {count} materiales	count:int
+homeNothingPending	Nothing pending	Sin pendientes
+homeMostUrgent	Most urgent	Lo más urgente
 filterMaterials	Filter materials	Filtrar materiales
 batchCycle	Batch cycle	Ciclo del lote
 qaDecision	QA decision	Decisión QA
