@@ -38,6 +38,14 @@ class Equipment extends Equatable {
   /// Only IoT devices report telemetry (environmental devices and container monitors).
   bool get isIotDevice => deviceType != null;
 
+  /// Edge Gateway (Raspberry Pi) of an environment: an equipment of type
+  /// `EDGE_GATEWAY` with no device type, which forwards the readings of the
+  /// IoT devices of its environment to the platform.
+  bool get isEdgeGateway => type == edgeGatewayType;
+
+  /// Type the backend stores for an Edge Gateway.
+  static const String edgeGatewayType = 'EDGE_GATEWAY';
+
   bool get isContainerMonitor => deviceType == IotDeviceType.containerMonitor;
 
   /// Equipment that is not operational requires attention.

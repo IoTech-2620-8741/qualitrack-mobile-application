@@ -24,6 +24,7 @@ class EquipmentListScreen extends StatelessWidget {
       EquipmentFilter.all => i18n.filterAll,
       EquipmentFilter.attention => i18n.needsAttention,
       EquipmentFilter.iotDevices => i18n.iotDevices,
+      EquipmentFilter.edgeGateways => i18n.edgeGateways,
       EquipmentFilter.operational => i18n.equipmentOperational,
       EquipmentFilter.maintenance => i18n.equipmentMaintenance,
       EquipmentFilter.outOfService => i18n.equipmentOutOfService,
@@ -35,6 +36,7 @@ class EquipmentListScreen extends StatelessWidget {
     EquipmentFilter.all => Icons.list_alt,
     EquipmentFilter.attention => Icons.warning_amber_rounded,
     EquipmentFilter.iotDevices => Icons.sensors,
+    EquipmentFilter.edgeGateways => Icons.router_outlined,
     EquipmentFilter.operational => Icons.check_circle_outline,
     EquipmentFilter.maintenance => Icons.build_outlined,
     EquipmentFilter.outOfService => Icons.block,
@@ -45,6 +47,7 @@ class EquipmentListScreen extends StatelessWidget {
     EquipmentFilter.all => BadgeTone.neutral,
     EquipmentFilter.attention => BadgeTone.warning,
     EquipmentFilter.iotDevices => BadgeTone.info,
+    EquipmentFilter.edgeGateways => BadgeTone.info,
     EquipmentFilter.operational => BadgeTone.success,
     EquipmentFilter.maintenance => BadgeTone.warning,
     EquipmentFilter.outOfService => BadgeTone.critical,
@@ -167,7 +170,7 @@ class EquipmentCard extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      e.deviceType != null ? Icons.sensors : Icons.precision_manufacturing_outlined,
+                      e.kindIcon,
                       size: 22,
                       color: attention ? AppColors.warning : AppColors.primaryDark,
                     ),
@@ -187,7 +190,9 @@ class EquipmentCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          [if (e.deviceType == null) e.type, item.environmentName].whereType<String>().join(' · '),
+                          [if (e.deviceType == null && !e.isEdgeGateway) e.type, item.environmentName]
+                              .whereType<String>()
+                              .join(' · '),
                           style: theme.textTheme.bodySmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -210,6 +215,8 @@ class EquipmentCard extends StatelessWidget {
                       StatusBadge(label: e.deviceType!.label(i18n), tone: BadgeTone.info, icon: Icons.sensors),
                       if (e.environmentId != null) ConnectionBadge(connected: item.connection?.reachable),
                     ],
+                    if (e.isEdgeGateway)
+                      StatusBadge(label: i18n.edgeGateway, tone: BadgeTone.info, icon: Icons.router_outlined),
                   ],
                 ),
               ),

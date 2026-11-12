@@ -26,7 +26,7 @@ final class EquipmentOverview extends Equatable {
   List<Object?> get props => [equipment, environmentName, connection];
 }
 
-enum EquipmentFilter { all, attention, iotDevices, operational, maintenance, outOfService, inactive }
+enum EquipmentFilter { all, attention, iotDevices, edgeGateways, operational, maintenance, outOfService, inactive }
 
 sealed class EquipmentListEvent extends Equatable {
   const EquipmentListEvent();
@@ -81,6 +81,7 @@ final class EquipmentListState extends Equatable {
     EquipmentFilter.all => true,
     EquipmentFilter.attention => item.needsAttention,
     EquipmentFilter.iotDevices => item.equipment.isIotDevice,
+    EquipmentFilter.edgeGateways => item.equipment.isEdgeGateway,
     EquipmentFilter.operational => item.equipment.status == EquipmentStatus.operational,
     EquipmentFilter.maintenance => item.equipment.status == EquipmentStatus.maintenance,
     EquipmentFilter.outOfService => item.equipment.status == EquipmentStatus.outOfService,
