@@ -175,12 +175,14 @@ class _DeviceChips extends StatelessWidget {
       children: [
         Text(i18n.selectDevice, style: text.titleSmall?.copyWith(color: AppColors.navy)),
         const SizedBox(height: AppSpacing.xs),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final device in catalog.devices) ...[
-                Semantics(
+        // The chips wrap onto more lines instead of scrolling sideways, so
+        // every device, the selected one included, is always in sight.
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
+          children: [
+            for (final device in catalog.devices)
+              Semantics(
                   label: [device.name, _status(i18n, device.status)].whereType<String>().join(', '),
                   excludeSemantics: true,
                   selected: device.id == selectedId,
@@ -203,10 +205,7 @@ class _DeviceChips extends StatelessWidget {
                     onSelected: (_) => context.read<TelemetryDashboardBloc>().add(TelemetryDeviceSelected(device.id)),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-              ],
-            ],
-          ),
+          ],
         ),
         if (environment != null) ...[
           const SizedBox(height: AppSpacing.xs),
@@ -244,15 +243,15 @@ class _SnapshotSection extends StatelessWidget {
         RefreshingBar(visible: remote.refreshing),
         if (remote.failure != null) StaleDataNotice(failure: remote.failure!),
         _StatusRow(snapshot: data),
-        SectionHeader(
-          title: i18n.currentReadings,
-          subtitle: profile == null
-              ? i18n.noProfileConfigured
-              : i18n.profileVersion('${profile.version}'),
-        ),
-        if (readings.isEmpty)
-          InfoCard(child: Text(i18n.noReadings24h))
-        else
+        // Without readings there is nothing to chart or evaluate: one message
+        // instead of several empty sections.
+        if (readings.isEmpty) ...[
+          SectionHeader(title: i18n.currentReadings),
+          EmptyNotice(icon: Icons.sensors_off_outlined, message: i18n.noReadings24h),
+        ] else ...[
+          // The profile version is a technical detail; only a missing profile
+          // matters to the user.
+          SectionHeader(title: i18n.currentReadings, subtitle: profile == null ? i18n.noProfileConfigured : null),
           ResponsiveGrid(
             minItemWidth: 160,
             children: [
@@ -260,19 +259,21 @@ class _SnapshotSection extends StatelessWidget {
                 _ReadingCard(reading: reading, threshold: data.thresholdFor(reading.latest.metric)),
             ],
           ),
-        if (data.chartMetrics.isNotEmpty) ...[
-          SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
-          _ChartCard(state: state, snapshot: data),
-        ],
-        SectionHeader(title: i18n.deviations24h, subtitle: i18n.deviationsHint),
-        if (deviations.isEmpty)
-          InfoCard(child: Text(i18n.noDeviations))
-        else
-          for (final measurement in deviations.take(5)) ...[
-            _DeviationTile(measurement: measurement),
-            const SizedBox(height: AppSpacing.sm),
+          if (data.chartMetrics.isNotEmpty) ...[
+            SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
+            _ChartCard(state: state, snapshot: data),
           ],
-        if (data.target.containerMonitor) ...[
+          SectionHeader(title: i18n.deviations24h, subtitle: i18n.deviationsHint),
+          if (deviations.isEmpty)
+            InfoCard(child: Text(i18n.noDeviations))
+          else
+            for (final measurement in deviations.take(5)) ...[
+              _DeviationTile(measurement: measurement),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+        ],
+        // Automatic actions show up without readings only when there are some.
+        if (data.target.containerMonitor && (readings.isNotEmpty || data.actuations.isNotEmpty)) ...[
           SectionHeader(title: i18n.automaticActions, subtitle: i18n.automaticActionsHint),
           if (data.actuationsFailure != null)
             StaleDataNotice(failure: data.actuationsFailure!)
@@ -347,7 +348,7 @@ class _StatusRow extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                i18n.updatedAt(Formatters.time(snapshot.fetchedAt, context.localeName)),
+                updatedText(context, snapshot.fetchedAt),
                 style: theme.textTheme.bodySmall,
               ),
             ],
