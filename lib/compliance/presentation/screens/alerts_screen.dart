@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
+import '../../../common/presentation/widgets/minute_ticker.dart';
 import '../../../common/presentation/labels.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/widgets/fab_menu.dart';
@@ -30,7 +32,21 @@ class AlertsScreen extends StatelessWidget {
     final bloc = context.read<AlertsBloc>();
     void reload() => bloc.add(const AlertsRequested(refresh: true));
     return Scaffold(
-      appBar: AppBar(title: AppBarTitle(title: i18n.alertsTitle, subtitle: i18n.alertsSubtitle)),
+      // How current the list is, once loaded ("Updated 2 min ago").
+      appBar: AppBar(
+        title: BlocBuilder<AlertsBloc, AlertsState>(
+          buildWhen: (a, b) => a.remote.loadedAt != b.remote.loadedAt,
+          builder: (context, state) => MinuteTicker(
+            builder: (context) {
+              final at = state.remote.loadedAt;
+              return AppBarTitle(
+                title: i18n.alertsTitle,
+                subtitle: at == null ? i18n.alertsSubtitle : updatedText(context, at),
+              );
+            },
+          ),
+        ),
+      ),
       body: BlocBuilder<AlertsBloc, AlertsState>(
         builder: (context, state) => RemoteStateView<AlertsData>(
           state: state.remote,
