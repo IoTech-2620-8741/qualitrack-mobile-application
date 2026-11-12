@@ -69,30 +69,13 @@ class _DetailBody extends StatelessWidget {
     final e = detail.equipment;
     final connection = detail.connection;
     String person(int userId) => userId == currentUserId ? i18n.you : (detail.people[userId] ?? i18n.userNumber(userId));
+    // Most important first: for an IoT device, whether it is connected and
+    // how its variables behaved come before the specs (model, serial,
+    // firmware), which are looked up rarely.
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        InfoCard(
-          title: i18n.generalInformation,
-          child: DetailList(
-            children: [
-              DetailRow(
-                label: i18n.status,
-                value: e.statusLabel(i18n),
-                valueWidget: StatusBadge(label: e.statusLabel(i18n), tone: e.status.tone),
-              ),
-              DetailRow(label: i18n.environment, value: detail.environmentName ?? i18n.notLocated),
-              DetailRow(label: i18n.type, value: e.typeLabel(i18n) ?? '—'),
-              DetailRow(label: i18n.model, value: e.model ?? '—'),
-              DetailRow(label: i18n.serialNumber, value: e.serialNumber ?? '—'),
-              if (e.deviceType != null) DetailRow(label: i18n.iotRole, value: e.deviceType!.label(i18n)),
-              if (e.sensorExternalId != null) DetailRow(label: i18n.deviceIdentifier, value: e.sensorExternalId!),
-              if (e.firmwareVersion != null) DetailRow(label: i18n.firmware, value: e.firmwareVersion!),
-            ],
-          ),
-        ),
         if (e.isIotDevice) ...[
-          const SizedBox(height: AppSpacing.md),
           InfoCard(
             title: i18n.connectionStatus,
             child: Column(
@@ -135,7 +118,27 @@ class _DetailBody extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(height: AppSpacing.md),
         ],
+        InfoCard(
+          title: i18n.generalInformation,
+          child: DetailList(
+            children: [
+              DetailRow(
+                label: i18n.status,
+                value: e.statusLabel(i18n),
+                valueWidget: StatusBadge(label: e.statusLabel(i18n), tone: e.status.tone),
+              ),
+              DetailRow(label: i18n.environment, value: detail.environmentName ?? i18n.notLocated),
+              DetailRow(label: i18n.type, value: e.typeLabel(i18n) ?? '—'),
+              DetailRow(label: i18n.model, value: e.model ?? '—'),
+              DetailRow(label: i18n.serialNumber, value: e.serialNumber ?? '—'),
+              if (e.deviceType != null) DetailRow(label: i18n.iotRole, value: e.deviceType!.label(i18n)),
+              if (e.sensorExternalId != null) DetailRow(label: i18n.deviceIdentifier, value: e.sensorExternalId!),
+              if (e.firmwareVersion != null) DetailRow(label: i18n.firmware, value: e.firmwareVersion!),
+            ],
+          ),
+        ),
         const SizedBox(height: AppSpacing.md),
         // An Edge Gateway has no process parameters, so no BPM limits.
         if (!e.isEdgeGateway) ...[
