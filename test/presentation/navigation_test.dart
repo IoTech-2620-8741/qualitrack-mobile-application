@@ -87,6 +87,68 @@ void main() {
     }
   });
 
+  testWidgets('content tabs keep where they were left; More always opens on its menu', (tester) async {
+    Widget screen(String name) => Center(child: Text('screen $name'));
+    final router = GoRouter(
+      initialLocation: AppRoutes.home,
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) => MainShell(shell: shell),
+          branches: [
+            for (final path in _expectedTabs)
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: path,
+                    builder: (context, state) => screen(path),
+                    routes: [GoRoute(path: 'detail', builder: (context, state) => screen('$path/detail'))],
+                  ),
+                  // Sections of More are routes of their own in its branch.
+                  if (path == AppRoutes.more)
+                    GoRoute(path: AppRoutes.inventory, builder: (context, state) => screen(AppRoutes.inventory)),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: AppTheme.light(),
+        routerConfig: router,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    final bar = find.byType(NavigationBar);
+    Future<void> tapTab(String label) async {
+      await tester.tap(find.descendant(of: bar, matching: find.text(label)));
+      await tester.pumpAndSettle();
+    }
+
+    // An alert left open is still there when coming back to Alerts.
+    router.go('${AppRoutes.alerts}/detail');
+    await tester.pumpAndSettle();
+    await tapTab('Home');
+    await tapTab('Alerts');
+    expect(find.text('screen ${AppRoutes.alerts}/detail'), findsOneWidget);
+
+    // A section of More is not: More opens on its menu.
+    router.go(AppRoutes.inventory);
+    await tester.pumpAndSettle();
+    await tapTab('Home');
+    await tapTab('More');
+    expect(find.text('screen ${AppRoutes.more}'), findsOneWidget);
+    expect(router.routerDelegate.currentConfiguration.uri.path, AppRoutes.more);
+  });
+
   testWidgets('the tab labels grow with the text up to 115%, so no word breaks', (tester) async {
     final router = GoRouter(
       initialLocation: AppRoutes.home,

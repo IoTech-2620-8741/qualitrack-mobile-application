@@ -44,7 +44,16 @@ class MainShell extends StatelessWidget {
         maxScaleFactor: maxLabelScale,
         child: NavigationBar(
           selectedIndex: shell.currentIndex,
-          onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+          // A tab opens where it was left, and tapping it again goes back to
+          // its start. More is the exception: it is a menu of unrelated
+          // sections, so it always opens on the menu instead of the section
+          // seen last (the tab would say "More" over, say, Billing).
+          onDestinationSelected:
+              (index) => shell.goBranch(
+                index,
+                initialLocation:
+                    index == shell.currentIndex || shell.route.branches[index].defaultRoute?.path == AppRoutes.more,
+              ),
           destinations: [
             for (final branch in shell.route.branches)
               () {
