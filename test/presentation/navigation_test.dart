@@ -15,12 +15,12 @@ import 'package:qualitrack_mobile/profile/presentation/bloc/current_profile_cont
 
 import '../helpers/mocks.dart';
 
-/// Tabs of the Report (Mobile Style Guidelines): Home, Telemetry, Alerts,
-/// Batches and More; equipment and inventory open from More.
-const _expectedTabs = [AppRoutes.home, AppRoutes.telemetry, AppRoutes.alerts, AppRoutes.batches, AppRoutes.more];
+/// Tabs by importance: Home, Alerts, Telemetry, Batches and More; equipment
+/// and inventory open from More.
+const _expectedTabs = [AppRoutes.home, AppRoutes.alerts, AppRoutes.telemetry, AppRoutes.batches, AppRoutes.more];
 
 void main() {
-  test('the app router has the tabs of the Report, in its order', () {
+  test('the app router has the tabs by importance, alerts right after Home', () {
     final router = createRouter(
       SessionController(iamService: IamFacadeService(repository: MockIamRepository())),
       notifications: UnreadNotificationsController(complianceService: complianceFacade(MockComplianceRepository())),

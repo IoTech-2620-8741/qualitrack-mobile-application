@@ -143,7 +143,8 @@ For a new read or command in a context (the order of the guide):
 ## Key flows
 
 **Navigation.** The bottom bar has the tabs of the Report (Mobile Style
-Guidelines), in its order: Home, Telemetry, Alerts, Batches and More. Each tab
+Guidelines), ordered by importance: Home, Alerts, Telemetry, Batches and More
+(alerts right after Home, as what a QA user acts on first). Each tab
 is a branch of a `StatefulShellRoute`; `MainShell` builds the bar from the
 branches, so the order is defined once, in `app/router/app_router.dart`. More
 holds the rest: products, equipment, inventory, reports, subscription (quality
