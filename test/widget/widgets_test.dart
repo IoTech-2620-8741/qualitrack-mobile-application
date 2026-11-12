@@ -212,6 +212,27 @@ void main() {
     expect(materialFixture().stockTone, BadgeTone.warning);
   });
 
+  testWidgets('the telemetry help explains the states, the chart and the connection', (tester) async {
+    await tester.pumpLocalized(
+      Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(onPressed: () => showTelemetryHelp(context), child: const Text('help')),
+        ),
+      ),
+      locale: const Locale('es'),
+      // A tall phone shows the whole sheet; a short one scrolls it.
+      size: const Size(412, 915),
+    );
+    await tester.tap(find.text('help'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cómo leer la telemetría'), findsOneWidget);
+    for (final state in ['Normal', 'Advertencia', 'Crítico', 'Requiere revisión']) {
+      expect(find.text(state), findsOneWidget, reason: state);
+    }
+    expect(find.textContaining('franja verde'), findsOneWidget);
+  });
+
   group('State views', () {
     testWidgets('empty state shows the default message', (tester) async {
       await tester.pumpLocalized(const Scaffold(body: EmptyView()));

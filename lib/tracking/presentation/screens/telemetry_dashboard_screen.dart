@@ -74,6 +74,13 @@ class _TelemetryDashboardScreenState extends State<TelemetryDashboardScreen> wit
       appBar: AppBar(
         title: AppBarTitle(title: i18n.telemetryTitle, subtitle: i18n.telemetrySubtitle),
         actions: [
+          // Short help, where the terms are used (states, ranges, review).
+          IconButton(
+            key: const Key('telemetry.help'),
+            tooltip: i18n.telemetryHelp,
+            icon: const Icon(Icons.help_outline),
+            onPressed: () => showTelemetryHelp(context),
+          ),
           IconButton(
             tooltip: i18n.rawTelemetryLog,
             icon: const Icon(Icons.table_rows_outlined),
@@ -102,6 +109,41 @@ class _TelemetryDashboardScreenState extends State<TelemetryDashboardScreen> wit
       ),
     );
   }
+}
+
+/// A short sheet that explains the states, the chart and the connection,
+/// focused on reading this screen.
+Future<void> showTelemetryHelp(BuildContext context) {
+  final i18n = context.i18n;
+  final text = Theme.of(context).textTheme;
+  Widget item(Widget leading, String title, String body) => ListTile(
+    contentPadding: EdgeInsets.zero,
+    leading: SizedBox(width: 96, child: Align(alignment: Alignment.centerLeft, child: leading)),
+    title: title.isEmpty ? null : Text(title, style: text.titleSmall),
+    subtitle: Text(body, style: text.bodyMedium),
+  );
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder:
+        (sheet) => ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xl),
+          children: [
+            Text(i18n.telemetryHelp, style: text.titleLarge),
+            const SizedBox(height: AppSpacing.sm),
+            item(const StateBadge(state: EnvironmentalState.normal), '', i18n.telemetryHelpNormal),
+            item(const StateBadge(state: EnvironmentalState.warning), '', i18n.telemetryHelpWarning),
+            item(const StateBadge(state: EnvironmentalState.critical), '', i18n.telemetryHelpCritical),
+            const Divider(),
+            item(const Icon(Icons.show_chart, color: AppColors.chartNormalRange), i18n.normalRange, i18n.telemetryHelpRange),
+            item(const ConnectionBadge(connected: false), '', i18n.telemetryHelpReview),
+            item(const Icon(Icons.table_rows_outlined, color: AppColors.primary), i18n.rawTelemetryLog, i18n.telemetryHelpLog),
+          ],
+        ),
+  );
 }
 
 class _DeviceSelector extends StatelessWidget {
@@ -417,7 +459,7 @@ class _ChartCard extends StatelessWidget {
               _Legend(color: AppColors.chartWarning, label: i18n.stateWarning),
               _Legend(color: AppColors.chartCritical, label: i18n.stateCritical),
               if (threshold != null) ...[
-                _Legend(color: AppColors.chartNormalRange, label: i18n.normalRange, dashed: true),
+                _Legend(color: TelemetryChart.normalBand, label: i18n.normalRange),
                 _Legend(color: AppColors.chartCritical, label: i18n.criticalRange, dashed: true),
               ],
             ],
