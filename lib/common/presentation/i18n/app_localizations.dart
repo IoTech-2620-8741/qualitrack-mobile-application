@@ -74,7 +74,17 @@ class AppLocalizations {
   String get generalInformation => _t('generalInformation');
   String updatedAt(String time) => _t('updatedAt')
       .replaceAll('{time}', time);
+  String get timeJustNow => _t('timeJustNow');
+  String timeMinutesAgo(int count) => _t('timeMinutesAgo')
+      .replaceAll('{count}', '$count');
+  String timeHoursAgo(int count) => _t('timeHoursAgo')
+      .replaceAll('{count}', '$count');
   String get errorTitle => _t('errorTitle');
+  String get errorTitleNetwork => _t('errorTitleNetwork');
+  String get errorTitleTimeout => _t('errorTitleTimeout');
+  String get errorTitleAccess => _t('errorTitleAccess');
+  String get errorTitleNotFound => _t('errorTitleNotFound');
+  String get errorTitleServer => _t('errorTitleServer');
   String get errorNetwork => _t('errorNetwork');
   String get errorTimeout => _t('errorTimeout');
   String get errorBadRequest => _t('errorBadRequest');
@@ -618,7 +628,15 @@ const Map<String, String> _en = {
   'endDate': 'End date',
   'generalInformation': 'General information',
   'updatedAt': 'Updated at {time}',
-  'errorTitle': 'Something went wrong',
+  'timeJustNow': 'Just now',
+  'timeMinutesAgo': '{count} min ago',
+  'timeHoursAgo': '{count} h ago',
+  'errorTitle': 'The information could not be loaded',
+  'errorTitleNetwork': 'No connection',
+  'errorTitleTimeout': 'No response',
+  'errorTitleAccess': 'Access restricted',
+  'errorTitleNotFound': 'Not found',
+  'errorTitleServer': 'Service unavailable',
   'errorNetwork': 'No connection to QualiTrack. Check your internet connection or the API address.',
   'errorTimeout': 'The server took too long to respond. Try again.',
   'errorBadRequest': 'The request was rejected by QualiTrack.',
@@ -645,7 +663,7 @@ const Map<String, String> _en = {
   'hidePassword': 'Hide password',
   'signIn': 'Sign In',
   'signingIn': 'Signing in',
-  'invalidCredentials': 'Invalid username or password.',
+  'invalidCredentials': 'Invalid username or password. Check them and try again.',
   'sessionExpired': 'Your session has expired. Please sign in again.',
   'accountsManagedOnWeb': 'Accounts are created and managed in QualiTrack Web.',
   'signOut': 'Sign out',
@@ -1091,7 +1109,15 @@ const Map<String, String> _es = {
   'endDate': 'Fecha de fin',
   'generalInformation': 'Información general',
   'updatedAt': 'Actualizado a las {time}',
-  'errorTitle': 'Algo salió mal',
+  'timeJustNow': 'Hace un momento',
+  'timeMinutesAgo': 'Hace {count} min',
+  'timeHoursAgo': 'Hace {count} h',
+  'errorTitle': 'No se pudo cargar la información',
+  'errorTitleNetwork': 'Sin conexión',
+  'errorTitleTimeout': 'Sin respuesta',
+  'errorTitleAccess': 'Acceso restringido',
+  'errorTitleNotFound': 'No encontrado',
+  'errorTitleServer': 'Servicio no disponible',
   'errorNetwork': 'Sin conexión con QualiTrack. Verifica tu conexión a internet o la dirección de la API.',
   'errorTimeout': 'El servidor tardó demasiado en responder. Inténtalo de nuevo.',
   'errorBadRequest': 'QualiTrack rechazó la solicitud.',
@@ -1118,7 +1144,7 @@ const Map<String, String> _es = {
   'hidePassword': 'Ocultar contraseña',
   'signIn': 'Iniciar sesión',
   'signingIn': 'Iniciando sesión',
-  'invalidCredentials': 'Usuario o contraseña incorrectos.',
+  'invalidCredentials': 'Usuario o contraseña incorrectos. Revísalos e inténtalo de nuevo.',
   'sessionExpired': 'Tu sesión expiró. Inicia sesión nuevamente.',
   'accountsManagedOnWeb': 'Las cuentas se crean y administran en QualiTrack Web.',
   'signOut': 'Cerrar sesión',

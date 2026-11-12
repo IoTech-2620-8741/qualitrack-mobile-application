@@ -32,7 +32,15 @@ startDate	Start date	Fecha de inicio
 endDate	End date	Fecha de fin
 generalInformation	General information	Información general
 updatedAt	Updated at {time}	Actualizado a las {time}	time:String
-errorTitle	Something went wrong	Algo salió mal
+timeJustNow	Just now	Hace un momento
+timeMinutesAgo	{count} min ago	Hace {count} min	count:int
+timeHoursAgo	{count} h ago	Hace {count} h	count:int
+errorTitle	The information could not be loaded	No se pudo cargar la información
+errorTitleNetwork	No connection	Sin conexión
+errorTitleTimeout	No response	Sin respuesta
+errorTitleAccess	Access restricted	Acceso restringido
+errorTitleNotFound	Not found	No encontrado
+errorTitleServer	Service unavailable	Servicio no disponible
 errorNetwork	No connection to QualiTrack. Check your internet connection or the API address.	Sin conexión con QualiTrack. Verifica tu conexión a internet o la dirección de la API.
 errorTimeout	The server took too long to respond. Try again.	El servidor tardó demasiado en responder. Inténtalo de nuevo.
 errorBadRequest	The request was rejected by QualiTrack.	QualiTrack rechazó la solicitud.
@@ -59,7 +67,7 @@ showPassword	Show password	Mostrar contraseña
 hidePassword	Hide password	Ocultar contraseña
 signIn	Sign In	Iniciar sesión
 signingIn	Signing in	Iniciando sesión
-invalidCredentials	Invalid username or password.	Usuario o contraseña incorrectos.
+invalidCredentials	Invalid username or password. Check them and try again.	Usuario o contraseña incorrectos. Revísalos e inténtalo de nuevo.
 sessionExpired	Your session has expired. Please sign in again.	Tu sesión expiró. Inicia sesión nuevamente.
 accountsManagedOnWeb	Accounts are created and managed in QualiTrack Web.	Las cuentas se crean y administran en QualiTrack Web.
 signOut	Sign out	Cerrar sesión
