@@ -23,6 +23,7 @@ import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
+import 'package:qualitrack_mobile/common/presentation/formatting/relative_time.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
 import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
@@ -200,6 +201,40 @@ void main() {
       expect(find.textContaining('took too long'), findsOneWidget);
       await tester.tap(find.text('Retry'));
       expect(retried, isTrue);
+    });
+
+    testWidgets('the error title names the cause', (tester) async {
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: NetworkFailure())), locale: const Locale('es'));
+      expect(find.text('Sin conexión'), findsOneWidget);
+      expect(find.text('Algo salió mal'), findsNothing);
+
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: ForbiddenFailure())));
+      expect(find.text('Access restricted'), findsOneWidget);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: ParsingFailure())));
+      expect(find.text('The information could not be loaded'), findsOneWidget);
+    });
+
+    testWidgets('recent times read as elapsed time, older ones as a date', (tester) async {
+      late BuildContext context;
+      await tester.pumpLocalized(
+        Builder(
+          builder: (c) {
+            context = c;
+            return const SizedBox();
+          },
+        ),
+        locale: const Locale('es'),
+      );
+      final now = DateTime(2026, 11, 12, 10);
+      expect(relativeTime(context, now.subtract(const Duration(seconds: 20)), now: now), 'Hace un momento');
+      // A device clock ahead of the phone is still "just now".
+      expect(relativeTime(context, now.add(const Duration(seconds: 30)), now: now), 'Hace un momento');
+      expect(relativeTime(context, now.subtract(const Duration(minutes: 5)), now: now), 'Hace 5 min');
+      expect(relativeTime(context, now.subtract(const Duration(hours: 3)), now: now), 'Hace 3 h');
+      expect(relativeTime(context, now.subtract(const Duration(days: 2)), now: now), isNot(startsWith('Hace')));
+      expect(relativeTime(context, null, now: now), '—');
     });
   });
 
