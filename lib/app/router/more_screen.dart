@@ -230,7 +230,7 @@ class AboutScreen extends StatelessWidget {
     final i18n = context.i18n;
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.about)),
+      appBar: AppBar(title: AppBarTitle(title: i18n.about)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         children: [
@@ -243,7 +243,7 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(i18n.aboutWebScope, style: theme.textTheme.bodyMedium),
           const SizedBox(height: AppSpacing.lg),
-          Text('© IoTech · ClosedSource', textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+          Text(i18n.copyright, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
         ],
       ),
     );
