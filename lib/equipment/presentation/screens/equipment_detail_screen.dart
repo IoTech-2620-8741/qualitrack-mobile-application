@@ -172,7 +172,7 @@ class _DetailBody extends StatelessWidget {
           section: detail.maintenance,
           emptyMessage: context.i18n.maintenanceEmpty,
           itemBuilder: (context, m) => SectionRow(
-            title: Formatters.humanize(m.type),
+            title: codeLabel(context.i18n, m.type),
             subtitle: [m.description, m.technicianName].whereType<String>().join(' · '),
             trailing: Text(m.maintenanceDate != null ? Formatters.date(m.maintenanceDate, locale) : (m.rawDate ?? '—')),
           ),
@@ -182,7 +182,7 @@ class _DetailBody extends StatelessWidget {
           section: detail.events,
           maxItems: 10,
           itemBuilder: (context, ev) => SectionRow(
-            title: Formatters.humanize(ev.eventType),
+            title: codeLabel(context.i18n, ev.eventType),
             subtitle: ev.description,
             trailing: Text(
               ev.timestamp != null ? Formatters.dateTime(ev.timestamp, locale) : (ev.rawTimestamp ?? '—'),
@@ -195,7 +195,7 @@ class _DetailBody extends StatelessWidget {
           section: detail.auditLogs,
           maxItems: 10,
           itemBuilder: (context, log) => SectionRow(
-            title: Formatters.humanize(log.action),
+            title: codeLabel(context.i18n, log.action),
             subtitle: [log.details, if (log.performedBy != null) person(log.performedBy!)].whereType<String>().join(' · '),
             trailing: Text(
               log.timestamp != null ? Formatters.dateTime(log.timestamp, locale) : (log.rawTimestamp ?? '—'),

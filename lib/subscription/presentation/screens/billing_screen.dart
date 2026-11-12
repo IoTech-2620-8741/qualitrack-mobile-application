@@ -16,6 +16,7 @@ import '../../domain/entities/billing_summary.dart';
 import '../../domain/entities/subscription.dart';
 import '../../domain/entities/subscription_payment.dart';
 import '../bloc/billing_bloc.dart';
+import '../../../common/presentation/labels.dart';
 
 BadgeTone subscriptionTone(String status) => switch (status) {
   'ACTIVE' => BadgeTone.success,
@@ -85,13 +86,13 @@ class _BillingBody extends StatelessWidget {
                         DetailRow(label: i18n.plan, value: plan?.name ?? active.planCode),
                         DetailRow(
                           label: i18n.status,
-                          value: Formatters.humanize(active.status),
+                          value: codeLabel(i18n, active.status),
                           valueWidget: StatusBadge(
-                            label: Formatters.humanize(active.status),
+                            label: codeLabel(i18n, active.status),
                             tone: subscriptionTone(active.status),
                           ),
                         ),
-                        DetailRow(label: i18n.billingCycle, value: Formatters.humanize(active.billingCycle)),
+                        DetailRow(label: i18n.billingCycle, value: codeLabel(i18n, active.billingCycle)),
                         DetailRow(
                           label: i18n.periodStart,
                           value: Formatters.date(active.currentPeriodStart, locale),
@@ -134,7 +135,7 @@ class _BillingBody extends StatelessWidget {
               if (p.provider != null) '${i18n.provider}: ${p.provider}',
               Formatters.dateTime(p.paidAt, locale),
             ].join(' · '),
-            trailing: StatusBadge(label: Formatters.humanize(p.status), tone: paymentTone(p.status)),
+            trailing: StatusBadge(label: codeLabel(i18n, p.status), tone: paymentTone(p.status)),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -142,10 +143,10 @@ class _BillingBody extends StatelessWidget {
           title: i18n.subscriptionHistory,
           section: Section(summary.subscriptions),
           itemBuilder: (context, s) => SectionRow(
-            title: '${summary.planNameOf(s)} · ${Formatters.humanize(s.billingCycle)}',
+            title: '${summary.planNameOf(s)} · ${codeLabel(i18n, s.billingCycle)}',
             subtitle:
                 '${Formatters.date(s.currentPeriodStart, locale)} – ${Formatters.date(s.currentPeriodEnd, locale)}',
-            trailing: StatusBadge(label: Formatters.humanize(s.status), tone: subscriptionTone(s.status)),
+            trailing: StatusBadge(label: codeLabel(i18n, s.status), tone: subscriptionTone(s.status)),
           ),
         ),
         const SizedBox(height: AppSpacing.lg),

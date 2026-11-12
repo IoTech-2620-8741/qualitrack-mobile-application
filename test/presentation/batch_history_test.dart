@@ -73,7 +73,8 @@ void main() {
       expect(history.entries[0].fromCompliance, isFalse);
       expect(history.entries[1].fromCompliance, isTrue);
       expect(history.entries[2].values['resourceName'], 'Autoclave AV-200');
-      expect(history.entries.last.label, 'Update');
+      // The raw code: the timeline names it in the language of the app.
+      expect(history.entries.last.label, 'UPDATE');
       expect(history.entries.last.description, 'Something without shape');
     });
 

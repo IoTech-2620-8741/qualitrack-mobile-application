@@ -1,6 +1,5 @@
 import '../../../common/application/section.dart';
 import '../../../common/domain/failure.dart';
-import '../../../common/presentation/formatting/formatters.dart';
 import '../../../compliance/api/index.dart';
 import '../../../reporting/api/index.dart';
 
@@ -144,7 +143,8 @@ final class BatchHistory {
     };
     return BatchHistoryEntry(
       kind: kind,
-      label: event?.words ?? Formatters.humanize(log.action),
+      // Raw code when there is no recorded event: the timeline names it.
+      label: event?.words ?? log.action,
       at: log.timestamp,
       rawAt: log.rawTimestamp,
       actorUserId: log.performedBy,
@@ -160,7 +160,7 @@ final class BatchHistory {
       'BATCH_BLOCKED' => BatchHistoryKind.blocked,
       _ => BatchHistoryKind.compliance,
     },
-    label: Formatters.humanize(event.eventType),
+    label: event.eventType,
     at: event.timestamp,
     rawAt: event.rawTimestamp,
     description: event.description,
