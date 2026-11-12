@@ -456,7 +456,7 @@ moreAboutHint	Version and information	Versión e información
 moreQuality	Quality	Calidad
 moreAdministration	Administration	Administración
 navEquipment	Equipment	Equipos
-iotDevicesOnline	devices online	dispositivos en línea
+iotDevicesOnline	Devices online	Dispositivos en línea
 noIotDevices	No IoT devices	Sin dispositivos IoT
 stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
 homeStatusCritical	Needs attention: {count} critical alerts	Requiere atención: {count} alertas críticas	count:int

@@ -132,7 +132,7 @@ void main() {
       expect(find.text('Hello, Ana'), findsOneWidget);
       expect(find.text('Needs attention: 2 critical alerts'), findsOneWidget);
       final alerts = tester.getTopLeft(find.text('Open alerts'));
-      final telemetry = tester.getTopLeft(find.text('devices online'));
+      final telemetry = tester.getTopLeft(find.text('Devices online'));
       final batches = tester.getTopLeft(find.text('Awaiting QA release'));
       final inventory = tester.getTopLeft(find.text('Below minimum'));
       expect(telemetry.dy, greaterThan(alerts.dy));
@@ -149,7 +149,7 @@ void main() {
       // No breakdown of released or rejected batches on Home.
       expect(find.textContaining('Released'), findsNothing);
       // Touch targets of at least 48 dp (Report: operators with gloves).
-      for (final label in ['Open alerts', 'devices online', 'Awaiting QA release', 'Below minimum']) {
+      for (final label in ['Open alerts', 'Devices online', 'Awaiting QA release', 'Below minimum']) {
         final row = find.ancestor(of: find.text(label), matching: find.byType(InkWell)).first;
         expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
       }
