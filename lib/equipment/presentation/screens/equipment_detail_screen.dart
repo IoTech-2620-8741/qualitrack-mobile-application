@@ -137,18 +137,21 @@ class _DetailBody extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppSpacing.md),
-        SectionCard<BpmParameterConfig>(
-          title: i18n.bpmLimits,
-          section: detail.bpmConfigs,
-          emptyMessage: i18n.bpmLimitsEmpty,
-          itemBuilder: (context, c) => SectionRow(
-            title: c.parameterName,
-            trailing: Text(
-              '${Formatters.number(c.minValue, locale)} – ${Formatters.number(c.maxValue, locale)} ${c.unit ?? ''}'.trim(),
+        // An Edge Gateway has no process parameters, so no BPM limits.
+        if (!e.isEdgeGateway) ...[
+          SectionCard<BpmParameterConfig>(
+            title: i18n.bpmLimits,
+            section: detail.bpmConfigs,
+            emptyMessage: i18n.bpmLimitsEmpty,
+            itemBuilder: (context, c) => SectionRow(
+              title: c.parameterName,
+              trailing: Text(
+                '${Formatters.number(c.minValue, locale)} – ${Formatters.number(c.maxValue, locale)} ${c.unit ?? ''}'.trim(),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         // The three history lists are alternative views of the same
         // equipment, so they share one place behind secondary tabs.
         SecondaryTabs(

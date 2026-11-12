@@ -295,6 +295,8 @@ history	History	Historial
 inAppNotifications	In the app	En la aplicación
 inAppNotificationsHint	Show notices in the bell	Mostrar los avisos en la campanita
 iotDevices	IoT devices	Dispositivos IoT
+edgeGateway	Edge Gateway	Edge Gateway
+edgeGateways	Edge Gateways	Edge Gateways
 iotRole	IoT role	Rol IoT
 lastCommunication	Last communication	Última comunicación
 location	Location	Ubicación

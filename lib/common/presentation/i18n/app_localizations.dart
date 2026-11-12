@@ -365,6 +365,8 @@ class AppLocalizations {
   String get inAppNotifications => _t('inAppNotifications');
   String get inAppNotificationsHint => _t('inAppNotificationsHint');
   String get iotDevices => _t('iotDevices');
+  String get edgeGateway => _t('edgeGateway');
+  String get edgeGateways => _t('edgeGateways');
   String get iotRole => _t('iotRole');
   String get lastCommunication => _t('lastCommunication');
   String get location => _t('location');
@@ -879,6 +881,8 @@ const Map<String, String> _en = {
   'inAppNotifications': 'In the app',
   'inAppNotificationsHint': 'Show notices in the bell',
   'iotDevices': 'IoT devices',
+  'edgeGateway': 'Edge Gateway',
+  'edgeGateways': 'Edge Gateways',
   'iotRole': 'IoT role',
   'lastCommunication': 'Last communication',
   'location': 'Location',
@@ -1350,6 +1354,8 @@ const Map<String, String> _es = {
   'inAppNotifications': 'En la aplicación',
   'inAppNotificationsHint': 'Mostrar los avisos en la campanita',
   'iotDevices': 'Dispositivos IoT',
+  'edgeGateway': 'Edge Gateway',
+  'edgeGateways': 'Edge Gateways',
   'iotRole': 'Rol IoT',
   'lastCommunication': 'Última comunicación',
   'location': 'Ubicación',
