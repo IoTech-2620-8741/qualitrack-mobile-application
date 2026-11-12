@@ -146,6 +146,13 @@ complianceEvents	Compliance events	Eventos de cumplimiento
 auditLog	Audit log	Registro de auditoría
 telemetryTitle	Telemetry Dashboard	Panel de Telemetría
 telemetrySubtitle	Conditions of environments and containers	Condiciones de ambientes y contenedores
+telemetryHelp	How to read telemetry	Cómo leer la telemetría
+telemetryHelpNormal	Within the normal range set for the variable.	Dentro del rango normal configurado para la variable.
+telemetryHelpWarning	Out of the normal range, but not yet critical.	Fuera del rango normal, sin llegar al crítico.
+telemetryHelpCritical	Beyond the critical limits: needs attention now.	Más allá de los límites críticos: requiere atención inmediata.
+telemetryHelpRange	In the chart, the green band is the normal range and the dashed red lines are the critical limits.	En el gráfico, la franja verde es el rango normal y las líneas rojas punteadas son los límites críticos.
+telemetryHelpReview	The device has not communicated within its expected period: check that it is on and connected.	El dispositivo no se comunicó en el período esperado: revisa que esté encendido y conectado.
+telemetryHelpLog	The raw data log lists every reading, to look up a past period.	El registro de datos lista cada lectura, para consultar un período pasado.
 telemetryUnavailable	Telemetry unavailable	Telemetría no disponible
 connectionStatus	Connection status	Estado de conexión
 eventsCount	{count} events	{count} eventos	count:int
@@ -340,6 +347,8 @@ lotExpired	Expired	Vencido
 lotNearExpiry	Near expiry	Próximo a vencer
 lotNotYetReceived	Not received yet	Aún no recibido
 markAllRead	Mark all as read	Marcar todas como leídas
+allMarkedRead	All notices marked as read	Todas las notificaciones se marcaron como leídas
+undo	Undo	Deshacer
 materialLots	Lots	Lotes
 metricAirQuality	Air quality	Calidad del aire
 metricHumidity	Humidity	Humedad

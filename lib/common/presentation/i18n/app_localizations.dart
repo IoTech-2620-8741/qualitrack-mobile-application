@@ -197,6 +197,13 @@ class AppLocalizations {
   String get auditLog => _t('auditLog');
   String get telemetryTitle => _t('telemetryTitle');
   String get telemetrySubtitle => _t('telemetrySubtitle');
+  String get telemetryHelp => _t('telemetryHelp');
+  String get telemetryHelpNormal => _t('telemetryHelpNormal');
+  String get telemetryHelpWarning => _t('telemetryHelpWarning');
+  String get telemetryHelpCritical => _t('telemetryHelpCritical');
+  String get telemetryHelpRange => _t('telemetryHelpRange');
+  String get telemetryHelpReview => _t('telemetryHelpReview');
+  String get telemetryHelpLog => _t('telemetryHelpLog');
   String get telemetryUnavailable => _t('telemetryUnavailable');
   String get connectionStatus => _t('connectionStatus');
   String eventsCount(int count) => _t('eventsCount')
@@ -413,6 +420,8 @@ class AppLocalizations {
   String get lotNearExpiry => _t('lotNearExpiry');
   String get lotNotYetReceived => _t('lotNotYetReceived');
   String get markAllRead => _t('markAllRead');
+  String get allMarkedRead => _t('allMarkedRead');
+  String get undo => _t('undo');
   String get materialLots => _t('materialLots');
   String get metricAirQuality => _t('metricAirQuality');
   String get metricHumidity => _t('metricHumidity');
@@ -772,6 +781,13 @@ const Map<String, String> _en = {
   'auditLog': 'Audit log',
   'telemetryTitle': 'Telemetry Dashboard',
   'telemetrySubtitle': 'Conditions of environments and containers',
+  'telemetryHelp': 'How to read telemetry',
+  'telemetryHelpNormal': 'Within the normal range set for the variable.',
+  'telemetryHelpWarning': 'Out of the normal range, but not yet critical.',
+  'telemetryHelpCritical': 'Beyond the critical limits: needs attention now.',
+  'telemetryHelpRange': 'In the chart, the green band is the normal range and the dashed red lines are the critical limits.',
+  'telemetryHelpReview': 'The device has not communicated within its expected period: check that it is on and connected.',
+  'telemetryHelpLog': 'The raw data log lists every reading, to look up a past period.',
   'telemetryUnavailable': 'Telemetry unavailable',
   'connectionStatus': 'Connection status',
   'eventsCount': '{count} events',
@@ -966,6 +982,8 @@ const Map<String, String> _en = {
   'lotNearExpiry': 'Near expiry',
   'lotNotYetReceived': 'Not received yet',
   'markAllRead': 'Mark all as read',
+  'allMarkedRead': 'All notices marked as read',
+  'undo': 'Undo',
   'materialLots': 'Lots',
   'metricAirQuality': 'Air quality',
   'metricHumidity': 'Humidity',
@@ -1280,6 +1298,13 @@ const Map<String, String> _es = {
   'auditLog': 'Registro de auditoría',
   'telemetryTitle': 'Panel de Telemetría',
   'telemetrySubtitle': 'Condiciones de ambientes y contenedores',
+  'telemetryHelp': 'Cómo leer la telemetría',
+  'telemetryHelpNormal': 'Dentro del rango normal configurado para la variable.',
+  'telemetryHelpWarning': 'Fuera del rango normal, sin llegar al crítico.',
+  'telemetryHelpCritical': 'Más allá de los límites críticos: requiere atención inmediata.',
+  'telemetryHelpRange': 'En el gráfico, la franja verde es el rango normal y las líneas rojas punteadas son los límites críticos.',
+  'telemetryHelpReview': 'El dispositivo no se comunicó en el período esperado: revisa que esté encendido y conectado.',
+  'telemetryHelpLog': 'El registro de datos lista cada lectura, para consultar un período pasado.',
   'telemetryUnavailable': 'Telemetría no disponible',
   'connectionStatus': 'Estado de conexión',
   'eventsCount': '{count} eventos',
@@ -1474,6 +1499,8 @@ const Map<String, String> _es = {
   'lotNearExpiry': 'Próximo a vencer',
   'lotNotYetReceived': 'Aún no recibido',
   'markAllRead': 'Marcar todas como leídas',
+  'allMarkedRead': 'Todas las notificaciones se marcaron como leídas',
+  'undo': 'Deshacer',
   'materialLots': 'Lotes',
   'metricAirQuality': 'Calidad del aire',
   'metricHumidity': 'Humedad',
