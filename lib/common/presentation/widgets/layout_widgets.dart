@@ -278,10 +278,41 @@ class DetailList extends StatelessWidget {
   }
 }
 
+/// "Nothing here" inside a section: a muted icon and text on the background,
+/// without a card, so an empty section weighs less than one with content.
+class EmptyNotice extends StatelessWidget {
+  const EmptyNotice({super.key, required this.message, this.icon = Icons.inbox_outlined});
+
+  final String message;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
+    child: Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.textMuted),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Text(message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textMuted)),
+        ),
+      ],
+    ),
+  );
+}
+
 /// A section of a screen: an optional header outside the surface (as in
 /// grouped mobile lists) and a borderless rounded surface with the content.
 class InfoCard extends StatelessWidget {
-  const InfoCard({super.key, required this.child, this.title, this.color, this.borderColor, this.padding});
+  const InfoCard({
+    super.key,
+    required this.child,
+    this.title,
+    this.color,
+    this.borderColor,
+    this.padding,
+    this.bare = false,
+  });
 
   final Widget child;
   final String? title;
@@ -293,9 +324,13 @@ class InfoCard extends StatelessWidget {
   /// Inner padding; defaults to 16dp horizontal and a little less vertical.
   final EdgeInsetsGeometry? padding;
 
+  /// The title over the content without the rounded surface, e.g. for an
+  /// empty section ([EmptyNotice]).
+  final bool bare;
+
   @override
   Widget build(BuildContext context) {
-    final surface = Material(
+    final surface = bare ? child : Material(
       color: color ?? AppColors.surface,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(

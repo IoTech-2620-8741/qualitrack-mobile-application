@@ -14,6 +14,40 @@ String metricLabel(AppLocalizations i18n, String? code, {String? raw}) => switch
   _ => raw ?? i18n.unknown,
 };
 
+/// Localized name of a status, cycle or type code sent by the backend
+/// (`ACTIVE`, `MONTHLY`, `PREVENTIVE`…). A code it does not know is shown
+/// humanized rather than raw, so the screen never shows `PENDING_PAYMENT`.
+String codeLabel(AppLocalizations i18n, String? code) => switch (code?.toUpperCase()) {
+  'ACTIVE' => i18n.active,
+  'INACTIVE' => i18n.inactive,
+  'PENDING' => i18n.codePending,
+  'PENDING_PAYMENT' => i18n.codePendingPayment,
+  'SUSPENDED' => i18n.codeSuspended,
+  'CANCELLED' || 'CANCELED' => i18n.codeCancelled,
+  'EXPIRED' => i18n.codeExpired,
+  'PAID' || 'SUCCEEDED' => i18n.codePaid,
+  'FAILED' => i18n.codeFailed,
+  'REFUNDED' => i18n.codeRefunded,
+  'MONTHLY' => i18n.codeMonthly,
+  'QUARTERLY' => i18n.codeQuarterly,
+  'ANNUAL' || 'YEARLY' => i18n.codeAnnual,
+  'PREVENTIVE' => i18n.codePreventive,
+  'CORRECTIVE' => i18n.codeCorrective,
+  'CALIBRATION' => i18n.codeCalibration,
+  'INSPECTION' => i18n.codeInspection,
+  'CLEANING' => i18n.codeCleaning,
+  'BATCH_RELEASED' => i18n.codeBatchReleased,
+  'BATCH_REJECTED' => i18n.codeBatchRejected,
+  'BATCH_BLOCKED' => i18n.codeBatchBlocked,
+  'CREATE' || 'CREATED' => i18n.codeCreated,
+  'UPDATE' || 'UPDATED' => i18n.codeUpdated,
+  'DELETE' || 'DELETED' => i18n.codeDeleted,
+  _ => Formatters.humanize(code),
+};
+
+/// A regulation code as it is written: `BPM_DIGEMID` → `BPM DIGEMID`.
+String regulationLabel(String code) => code.replaceAll('_', ' ');
+
 /// Localized name of the monitored variable of an alert or report row.
 String alertVariable(AppLocalizations i18n, String parameterName) =>
     metricLabel(i18n, parameterName, raw: Formatters.humanize(parameterName));

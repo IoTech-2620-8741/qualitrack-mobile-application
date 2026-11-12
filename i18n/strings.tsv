@@ -28,10 +28,32 @@ timestamp	Timestamp	Fecha y hora
 parameter	Parameter	Parámetro
 active	Active	Activo
 inactive	Inactive	Inactivo
+codePending	Pending	Pendiente
+codePendingPayment	Pending payment	Pago pendiente
+codeSuspended	Suspended	Suspendido
+codeCancelled	Cancelled	Cancelado
+codeExpired	Expired	Vencido
+codePaid	Paid	Pagado
+codeFailed	Failed	Fallido
+codeRefunded	Refunded	Reembolsado
+codeMonthly	Monthly	Mensual
+codeQuarterly	Quarterly	Trimestral
+codeAnnual	Annual	Anual
+codePreventive	Preventive	Preventivo
+codeCorrective	Corrective	Correctivo
+codeCalibration	Calibration	Calibración
+codeInspection	Inspection	Inspección
+codeCleaning	Cleaning	Limpieza
+codeBatchReleased	Batch released	Lote liberado
+codeBatchRejected	Batch rejected	Lote rechazado
+codeBatchBlocked	Batch blocked	Lote bloqueado
+codeCreated	Created	Creado
+codeUpdated	Updated	Actualizado
+codeDeleted	Deleted	Eliminado
+changePhotoMenu	Profile photo	Foto de perfil
 startDate	Start date	Fecha de inicio
 endDate	End date	Fecha de fin
 generalInformation	General information	Información general
-updatedAt	Updated at {time}	Actualizado a las {time}	time:String
 timeJustNow	Just now	Hace un momento
 timeMinutesAgo	{count} min ago	Hace {count} min	count:int
 timeHoursAgo	{count} h ago	Hace {count} h	count:int
@@ -96,6 +118,7 @@ about	About	Acerca de
 versionLabel	Version {version}	Versión {version}	version:String
 aboutDescription	QualiTrack Mobile is the monitoring and review companion of the QualiTrack pharmaceutical quality management platform: telemetry, deviation alerts, production batches, inventory and billing at a glance.	QualiTrack Mobile es la app de monitoreo y revisión de la plataforma de gestión de calidad farmacéutica QualiTrack: telemetría, alertas de desviación, lotes de producción, inventario y facturación de un vistazo.
 aboutWebScope	Configuration and data registration (laboratories, products, materials, equipment, sensors, limits, batches, users and subscriptions) are performed in QualiTrack Web.	La configuración y el registro de datos (laboratorios, productos, materiales, equipos, sensores, límites, lotes, usuarios y suscripciones) se realizan en QualiTrack Web.
+copyright	© 2026 IoTech. All rights reserved.	© 2026 IoTech. Todos los derechos reservados.
 laboratory	Laboratory	Laboratorio
 ruc	RUC	RUC
 phone	Phone	Teléfono
@@ -122,7 +145,7 @@ maintenanceEmpty	No maintenance records.	Sin registros de mantenimiento.
 complianceEvents	Compliance events	Eventos de cumplimiento
 auditLog	Audit log	Registro de auditoría
 telemetryTitle	Telemetry Dashboard	Panel de Telemetría
-telemetrySubtitle	Real-time sensory data and parameter monitoring	Datos sensoriales y monitoreo de parámetros en tiempo real
+telemetrySubtitle	Conditions of environments and containers	Condiciones de ambientes y contenedores
 telemetryUnavailable	Telemetry unavailable	Telemetría no disponible
 connectionStatus	Connection status	Estado de conexión
 eventsCount	{count} events	{count} eventos	count:int
@@ -380,7 +403,6 @@ photoTypeNotAllowed	Choose a JPG, PNG or WebP image.	Elige una imagen JPG, PNG o
 photoUpdated	Your photo was updated.	Se actualizó tu foto.
 preferencesSaved	Preferences saved.	Preferencias guardadas.
 profileSaved	Your data was saved.	Se guardaron tus datos.
-profileVersion	Profile version {version}	Perfil versión {version}	version:String
 removePhoto	Remove photo	Quitar foto
 removePhotoConfirm	Your initials will be shown instead of the photo.	Se mostrarán tus iniciales en lugar de la foto.
 renewalCancelled	Renewal cancelled: access until {date}	Renovación cancelada: acceso hasta el {date}	date:String
@@ -410,6 +432,7 @@ healthOnTrack	on target	en meta
 healthAtRisk	at risk	en riesgo
 healthCritical	critical	crítico
 tabDeviations	Deviations ({count})	Desviaciones ({count})	count:int
+tabDeviationsPlain	Deviations	Desviaciones
 tabMeasurements	Measurements	Mediciones
 tabHistory	History	Historial
 noData	No data	Sin datos
@@ -418,9 +441,7 @@ totalReadings	{count} readings per variable	{count} lecturas por variable	count:
 eventCount	{count} event	{count} evento	count:int
 eventCountPlural	{count} events	{count} eventos	count:int
 seeLast31Days	See last 31 days	Ver últimos 31 días
-historyIndependentOfPeriod	Independent of the selected period	No depende del período seleccionado
 reportHistoryBanner	Reports are generated and downloaded in QualiTrack Web.	Los reportes se generan y descargan en QualiTrack Web.
-swipeHint	Swipe sideways to change section	Desliza a los lados para cambiar de sección
 seeMoreCount	See {count} more	Ver {count} más	count:int
 historyBatchCreated	Batch registered	Lote registrado
 historyBatchStarted	Manufacturing started	Fabricación iniciada
