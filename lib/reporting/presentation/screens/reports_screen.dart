@@ -32,65 +32,84 @@ class ReportsScreen extends StatelessWidget {
     void reload() => bloc.add(const ReportsRequested(refresh: true));
 
     return Scaffold(
-      appBar: AppBar(
-        title: AppBarTitle(title: i18n.reportsTitle),
-      ),
+      appBar: AppBar(title: AppBarTitle(title: i18n.reportsTitle)),
       // Listen to the BLoC state to rebuild the UI
       body: BlocBuilder<ReportsBloc, ReportsState>(
-        builder: (context, state) => RemoteStateView<ReportsData>(
-          state: state.remote,
-          onRetry: reload,
-          emptyIcon: Icons.insights_outlined,
-          emptyMessage: i18n.reportsEmpty,
+        builder: (context, state) {
+          final seeLast31Days =
+              state.period == ReportPeriod.last31Days
+                  ? null
+                  : () => bloc.add(const ReportsPeriodChanged(ReportPeriod.last31Days));
+          return RemoteStateView<ReportsData>(
+            state: state.remote,
+            onRetry: reload,
+            emptyIcon: Icons.insights_outlined,
+            emptyMessage: i18n.reportsEmpty,
 
-          // If data is loaded successfully, build the tabbed layout
-          builder: (context, data) => DefaultTabController(
-            length: 3,
-            child: NestedScrollView(
-              // 1. Header that scrolls with the page (Period Filter)
-              headerSliverBuilder: (context, _) => [
-                SliverToBoxAdapter(
-                  child: PeriodFilter(state: state, bloc: bloc),
-                ),
+            builder:
+                (context, data) => DefaultTabController(
+                  length: 3,
+                  child: NestedScrollView(
+                    // 1. Header that scrolls with the page (Period Filter)
+                    headerSliverBuilder:
+                        (context, _) => [
+                          // The period applies to deviations and measurements; the
+                          // report history does not depend on it, so the filter is
+                          // left out on that tab.
+                          SliverToBoxAdapter(
+                            child: Builder(
+                              builder: (context) {
+                                final tabs = DefaultTabController.of(context);
+                                return ListenableBuilder(
+                                  listenable: tabs,
+                                  builder:
+                                      (context, _) => AnimatedSize(
+                                        duration: const Duration(milliseconds: 200),
+                                        child:
+                                            tabs.index == 2
+                                                ? const SizedBox(width: double.infinity)
+                                                : PeriodFilter(state: state, bloc: bloc),
+                                      ),
+                                );
+                              },
+                            ),
+                          ),
 
-                // 2. Pinned TabBar (stays at the top when scrolling)
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: TabBarHeaderDelegate(
-                    // Primary tabs: the three main views of the reports.
-                    TabBar(
-                      tabs: [
-                        Tab(
-                          icon: const Icon(Icons.insights_outlined),
-                          text: i18n.tabDeviations(data.criticalTrendsCount),
-                        ),
-                        Tab(icon: const Icon(Icons.analytics_outlined), text: i18n.tabMeasurements),
-                        Tab(icon: const Icon(Icons.history), text: i18n.tabHistory),
+                          // 2. Pinned TabBar (stays at the top when scrolling)
+                          SliverPersistentHeader(
+                            pinned: true,
+                            delegate: TabBarHeaderDelegate(
+                              // Primary tabs: the three main views of the reports.
+                              TabBar(
+                                tabs: [
+                                  Tab(
+                                    icon: const Icon(Icons.insights_outlined),
+                                    // No "(0)": the count shows only when there is something to see.
+                                    text:
+                                        data.criticalTrendsCount > 0
+                                            ? i18n.tabDeviations(data.criticalTrendsCount)
+                                            : i18n.tabDeviationsPlain,
+                                  ),
+                                  Tab(icon: const Icon(Icons.analytics_outlined), text: i18n.tabMeasurements),
+                                  Tab(icon: const Icon(Icons.history), text: i18n.tabHistory),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+
+                    // 3. The content for each tab
+                    body: TabBarView(
+                      children: [
+                        DeviationsTab(data: data, onReload: reload, onSeeLast31Days: seeLast31Days),
+                        MeasurementsTab(data: data, onReload: reload, onSeeLast31Days: seeLast31Days),
+                        HistoryTab(data: data, onReload: reload),
                       ],
                     ),
                   ),
                 ),
-              ],
-
-              // 3. The content for each tab
-              body: TabBarView(
-                children: [
-                  DeviationsTab(
-                    data: data,
-                    onReload: reload,
-                    onSeeLast31Days: () => bloc.add(const ReportsPeriodChanged(ReportPeriod.last31Days)),
-                  ),
-                  MeasurementsTab(
-                    data: data,
-                    onReload: reload,
-                    onSeeLast31Days: () => bloc.add(const ReportsPeriodChanged(ReportPeriod.last31Days)),
-                  ),
-                  HistoryTab(data: data, onReload: reload),
-                ],
-              ),
-            ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
