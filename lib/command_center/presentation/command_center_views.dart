@@ -12,8 +12,6 @@ class CommandCenterViews {
   const CommandCenterViews({
     required this.notificationBell,
     required this.profileButton,
-    required this.profileChanges,
-    required this.displayName,
     required this.roleLabel,
     required this.alertCard,
     required this.batchStatusBadge,
@@ -22,9 +20,6 @@ class CommandCenterViews {
   final Widget notificationBell;
   final Widget profileButton;
 
-  /// Notifies when [displayName] may have changed.
-  final Listenable profileChanges;
-  final String? Function() displayName;
   final String Function(UserRole role, AppLocalizations i18n) roleLabel;
   final Widget Function(DeviationAlert alert, {String? deviceName, String? environmentName, VoidCallback? onTap})
   alertCard;

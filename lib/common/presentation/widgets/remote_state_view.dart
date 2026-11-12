@@ -20,6 +20,7 @@ class RemoteStateView<T> extends StatelessWidget {
     this.emptyMessage,
     this.emptyIcon = Icons.inbox_outlined,
     this.onRefresh,
+    this.loading,
   });
 
   final RemoteState<T> state;
@@ -34,12 +35,16 @@ class RemoteStateView<T> extends StatelessWidget {
   final String? emptyMessage;
   final IconData emptyIcon;
 
+  /// Shown while loading instead of the spinner, e.g. a skeleton with the
+  /// shape of the content.
+  final Widget? loading;
+
   @override
   Widget build(BuildContext context) {
     switch (state.status) {
       case ViewStatus.initial:
       case ViewStatus.loading:
-        return const LoadingView();
+        return loading ?? const LoadingView();
       case ViewStatus.failure:
         return ErrorView(failure: state.failure ?? const UnexpectedFailure(), onRetry: onRetry);
       case ViewStatus.empty:

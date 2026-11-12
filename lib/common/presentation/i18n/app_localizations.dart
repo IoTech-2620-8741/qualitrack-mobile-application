@@ -79,6 +79,13 @@ class AppLocalizations {
       .replaceAll('{count}', '$count');
   String timeHoursAgo(int count) => _t('timeHoursAgo')
       .replaceAll('{count}', '$count');
+  String get updatedJustNow => _t('updatedJustNow');
+  String updatedMinutesAgo(int count) => _t('updatedMinutesAgo')
+      .replaceAll('{count}', '$count');
+  String updatedHoursAgo(int count) => _t('updatedHoursAgo')
+      .replaceAll('{count}', '$count');
+  String updatedOn(String date) => _t('updatedOn')
+      .replaceAll('{date}', date);
   String get errorTitle => _t('errorTitle');
   String get errorTitleNetwork => _t('errorTitleNetwork');
   String get errorTitleTimeout => _t('errorTitleTimeout');
@@ -142,8 +149,6 @@ class AppLocalizations {
   String get phone => _t('phone');
   String get address => _t('address');
   String get regulations => _t('regulations');
-  String welcomeUser(String name) => _t('welcomeUser')
-      .replaceAll('{name}', name);
   String get openAlerts => _t('openAlerts');
   String criticalCount(int count) => _t('criticalCount')
       .replaceAll('{count}', '$count');
@@ -557,6 +562,13 @@ class AppLocalizations {
   String get tabGeneral => _t('tabGeneral');
   String get noOpenAlertsShort => _t('noOpenAlertsShort');
   String get latestAlerts => _t('latestAlerts');
+  String unattendedCount(int count) => _t('unattendedCount')
+      .replaceAll('{count}', '$count');
+  String get allDevicesOnline => _t('allDevicesOnline');
+  String ofTotalBatches(int total) => _t('ofTotalBatches')
+      .replaceAll('{total}', '$total');
+  String ofTotalMaterials(int total) => _t('ofTotalMaterials')
+      .replaceAll('{total}', '$total');
   String get viewAll => _t('viewAll');
   String get filterAlerts => _t('filterAlerts');
   String showingFilter(String filter) => _t('showingFilter')
@@ -586,7 +598,6 @@ class AppLocalizations {
       .replaceAll('{count}', '$count');
   String get iotDevicesOnline => _t('iotDevicesOnline');
   String get noIotDevices => _t('noIotDevices');
-  String get stockAboveMinimum => _t('stockAboveMinimum');
   String get filterMaterials => _t('filterMaterials');
   String get batchCycle => _t('batchCycle');
   String get qaDecision => _t('qaDecision');
@@ -631,6 +642,10 @@ const Map<String, String> _en = {
   'timeJustNow': 'Just now',
   'timeMinutesAgo': '{count} min ago',
   'timeHoursAgo': '{count} h ago',
+  'updatedJustNow': 'Updated just now',
+  'updatedMinutesAgo': 'Updated {count} min ago',
+  'updatedHoursAgo': 'Updated {count} h ago',
+  'updatedOn': 'Updated {date}',
   'errorTitle': 'The information could not be loaded',
   'errorTitleNetwork': 'No connection',
   'errorTitleTimeout': 'No response',
@@ -693,7 +708,6 @@ const Map<String, String> _en = {
   'phone': 'Phone',
   'address': 'Address',
   'regulations': 'Applicable regulations',
-  'welcomeUser': 'Hello, {name}',
   'openAlerts': 'Open alerts',
   'criticalCount': '{count} critical',
   'liveTelemetryHint': 'Readings of the last 24 hours',
@@ -1041,6 +1055,10 @@ const Map<String, String> _en = {
   'tabGeneral': 'General',
   'noOpenAlertsShort': 'No open alerts',
   'latestAlerts': 'Latest alerts',
+  'unattendedCount': '{count} unattended',
+  'allDevicesOnline': 'All devices online',
+  'ofTotalBatches': 'of {total} batches',
+  'ofTotalMaterials': 'of {total} materials',
   'viewAll': 'View all',
   'filterAlerts': 'Filter alerts',
   'showingFilter': 'Showing: {filter}',
@@ -1067,7 +1085,6 @@ const Map<String, String> _en = {
   'attentionCount': '{count} need attention',
   'iotDevicesOnline': 'devices online',
   'noIotDevices': 'No IoT devices',
-  'stockAboveMinimum': 'All materials above the minimum stock',
   'filterMaterials': 'Filter materials',
   'batchCycle': 'Batch cycle',
   'qaDecision': 'QA decision',
@@ -1112,6 +1129,10 @@ const Map<String, String> _es = {
   'timeJustNow': 'Hace un momento',
   'timeMinutesAgo': 'Hace {count} min',
   'timeHoursAgo': 'Hace {count} h',
+  'updatedJustNow': 'Actualizado hace un momento',
+  'updatedMinutesAgo': 'Actualizado hace {count} min',
+  'updatedHoursAgo': 'Actualizado hace {count} h',
+  'updatedOn': 'Actualizado el {date}',
   'errorTitle': 'No se pudo cargar la información',
   'errorTitleNetwork': 'Sin conexión',
   'errorTitleTimeout': 'Sin respuesta',
@@ -1174,7 +1195,6 @@ const Map<String, String> _es = {
   'phone': 'Teléfono',
   'address': 'Dirección',
   'regulations': 'Normativas aplicables',
-  'welcomeUser': 'Hola, {name}',
   'openAlerts': 'Alertas abiertas',
   'criticalCount': '{count} críticas',
   'liveTelemetryHint': 'Lecturas de las últimas 24 horas',
@@ -1522,6 +1542,10 @@ const Map<String, String> _es = {
   'tabGeneral': 'General',
   'noOpenAlertsShort': 'Sin alertas abiertas',
   'latestAlerts': 'Últimas alertas',
+  'unattendedCount': '{count} sin atender',
+  'allDevicesOnline': 'Todos en línea',
+  'ofTotalBatches': 'de {total} lotes',
+  'ofTotalMaterials': 'de {total} materiales',
   'viewAll': 'Ver todas',
   'filterAlerts': 'Filtrar alertas',
   'showingFilter': 'Mostrando: {filter}',
@@ -1548,7 +1572,6 @@ const Map<String, String> _es = {
   'attentionCount': '{count} requieren atención',
   'iotDevicesOnline': 'dispositivos en línea',
   'noIotDevices': 'Sin dispositivos IoT',
-  'stockAboveMinimum': 'Todos los materiales sobre el stock mínimo',
   'filterMaterials': 'Filtrar materiales',
   'batchCycle': 'Ciclo del lote',
   'qaDecision': 'Decisión QA',

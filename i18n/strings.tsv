@@ -35,6 +35,10 @@ updatedAt	Updated at {time}	Actualizado a las {time}	time:String
 timeJustNow	Just now	Hace un momento
 timeMinutesAgo	{count} min ago	Hace {count} min	count:int
 timeHoursAgo	{count} h ago	Hace {count} h	count:int
+updatedJustNow	Updated just now	Actualizado hace un momento
+updatedMinutesAgo	Updated {count} min ago	Actualizado hace {count} min	count:int
+updatedHoursAgo	Updated {count} h ago	Actualizado hace {count} h	count:int
+updatedOn	Updated {date}	Actualizado el {date}	date:String
 errorTitle	The information could not be loaded	No se pudo cargar la información
 errorTitleNetwork	No connection	Sin conexión
 errorTitleTimeout	No response	Sin respuesta
@@ -97,7 +101,6 @@ ruc	RUC	RUC
 phone	Phone	Teléfono
 address	Address	Dirección
 regulations	Applicable regulations	Normativas aplicables
-welcomeUser	Hello, {name}	Hola, {name}	name:String
 openAlerts	Open alerts	Alertas abiertas
 criticalCount	{count} critical	{count} críticas	count:int
 liveTelemetryHint	Readings of the last 24 hours	Lecturas de las últimas 24 horas
@@ -445,6 +448,10 @@ tabUsedIn	Used in	Usado en
 tabGeneral	General	General
 noOpenAlertsShort	No open alerts	Sin alertas abiertas
 latestAlerts	Latest alerts	Últimas alertas
+unattendedCount	{count} unattended	{count} sin atender	count:int
+allDevicesOnline	All devices online	Todos en línea
+ofTotalBatches	of {total} batches	de {total} lotes	total:int
+ofTotalMaterials	of {total} materials	de {total} materiales	total:int
 viewAll	View all	Ver todas
 filterAlerts	Filter alerts	Filtrar alertas
 showingFilter	Showing: {filter}	Mostrando: {filter}	filter:String
@@ -471,7 +478,6 @@ navEquipment	Equipment	Equipos
 attentionCount	{count} need attention	{count} requieren atención	count:int
 iotDevicesOnline	devices online	dispositivos en línea
 noIotDevices	No IoT devices	Sin dispositivos IoT
-stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
 filterMaterials	Filter materials	Filtrar materiales
 batchCycle	Batch cycle	Ciclo del lote
 qaDecision	QA decision	Decisión QA
