@@ -15,6 +15,9 @@ import 'package:qualitrack_mobile/compliance/presentation/screens/notifications_
 import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
+import 'package:qualitrack_mobile/inventory/presentation/widgets/inventory_labels.dart';
+import 'package:qualitrack_mobile/common/presentation/labels.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/screens/change_password_screen.dart';
@@ -184,6 +187,29 @@ void main() {
         'normal ≥ 2 °C',
       );
     });
+  });
+
+  testWidgets('backend codes read in the language of the app, never raw', (tester) async {
+    late BuildContext context;
+    await tester.pumpLocalized(
+      Builder(
+        builder: (c) {
+          context = c;
+          return const SizedBox();
+        },
+      ),
+      locale: const Locale('es'),
+    );
+    final i18n = context.i18n;
+    expect(codeLabel(i18n, 'ACTIVE'), 'Activo');
+    expect(codeLabel(i18n, 'MONTHLY'), 'Mensual');
+    expect(codeLabel(i18n, 'PENDING_PAYMENT'), 'Pago pendiente');
+    expect(codeLabel(i18n, 'PREVENTIVE'), 'Preventivo');
+    // An unknown code is humanized, not shown as it arrives.
+    expect(codeLabel(i18n, 'SOME_NEW_CODE'), 'Some new code');
+    expect(regulationLabel('BPM_DIGEMID'), 'BPM DIGEMID');
+    // Below the minimum is a warning (amber), as on the Home.
+    expect(materialFixture().stockTone, BadgeTone.warning);
   });
 
   group('State views', () {
