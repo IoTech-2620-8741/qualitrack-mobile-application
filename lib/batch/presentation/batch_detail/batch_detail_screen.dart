@@ -232,7 +232,8 @@ class _GeneralTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.lg),
-        InfoCard(title: i18n.bpmNotes, child: Text(batch.notes?.isNotEmpty == true ? batch.notes! : '—')),
+        // Shown only when there are notes: no empty "—" card.
+        if (batch.notes?.isNotEmpty == true) InfoCard(title: i18n.bpmNotes, child: Text(batch.notes!)),
         if (release != null) ...[
           const SizedBox(height: AppSpacing.md),
           InfoCard(

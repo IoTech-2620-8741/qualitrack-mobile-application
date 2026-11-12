@@ -7,6 +7,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
@@ -147,7 +148,10 @@ class _NotificationTile extends StatelessWidget {
           runSpacing: AppSpacing.xs,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text(Formatters.dateTime(n.occurredAt, locale), style: theme.textTheme.bodySmall),
+            Tooltip(
+              message: Formatters.dateTime(n.occurredAt, locale),
+              child: Text(relativeTime(context, n.occurredAt), style: theme.textTheme.bodySmall),
+            ),
             if (!n.isRead) StatusBadge(label: i18n.unread, tone: BadgeTone.info, icon: Icons.fiber_manual_record),
           ],
         ),

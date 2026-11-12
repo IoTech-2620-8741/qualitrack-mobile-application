@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_typography.dart';
 
@@ -72,6 +73,7 @@ class InventoryMaterialCard extends StatelessWidget {
                     ),
                   ),
                   StatusBadge(label: material.stockLabel(i18n), tone: material.stockTone),
+                  const Icon(Icons.chevron_right, color: AppColors.textMuted),
                 ],
               ),
 
