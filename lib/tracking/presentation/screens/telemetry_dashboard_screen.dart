@@ -10,12 +10,14 @@ import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_typography.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/view_status.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
+import '../../../equipment/api/index.dart';
 import '../../domain/entities/actuation_event.dart';
 import '../../domain/entities/environmental_state.dart';
 import '../../domain/entities/measurement.dart';
@@ -108,8 +110,13 @@ class _DeviceSelector extends StatelessWidget {
   final DeviceCatalog catalog;
   final int? selectedId;
 
+  /// Up to this many devices are shown as chips, all at sight with their
+  /// status; with more, the dropdown keeps the screen short.
+  static const int maxChips = 6;
+
   @override
   Widget build(BuildContext context) {
+    if (catalog.devices.length <= maxChips) return _DeviceChips(catalog: catalog, selectedId: selectedId);
     final i18n = context.i18n;
     return DropdownButtonFormField<int>(
       key: ValueKey(selectedId),
@@ -129,6 +136,83 @@ class _DeviceSelector extends StatelessWidget {
       onChanged: (id) {
         if (id != null) context.read<TelemetryDashboardBloc>().add(TelemetryDeviceSelected(id));
       },
+    );
+  }
+}
+
+/// The devices as chips in one scrollable row, each with a dot of its
+/// equipment status, so the one that needs attention is spotted without
+/// opening a menu (content-based navigation). The environment of the
+/// selected device is shown below.
+class _DeviceChips extends StatelessWidget {
+  const _DeviceChips({required this.catalog, required this.selectedId});
+
+  final DeviceCatalog catalog;
+  final int? selectedId;
+
+  static BadgeTone _tone(EquipmentStatus status) => switch (status) {
+    EquipmentStatus.operational => BadgeTone.success,
+    EquipmentStatus.maintenance => BadgeTone.warning,
+    EquipmentStatus.outOfService => BadgeTone.critical,
+    EquipmentStatus.inactive || EquipmentStatus.unknown => BadgeTone.neutral,
+  };
+
+  static String? _status(AppLocalizations i18n, EquipmentStatus status) => switch (status) {
+    EquipmentStatus.operational => i18n.equipmentOperational,
+    EquipmentStatus.maintenance => i18n.equipmentMaintenance,
+    EquipmentStatus.outOfService => i18n.equipmentOutOfService,
+    _ => null,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final i18n = context.i18n;
+    final text = Theme.of(context).textTheme;
+    final selected = catalog.devices.where((d) => d.id == selectedId).firstOrNull;
+    final environment = selected == null ? null : catalog.environmentOf(selected)?.name;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(i18n.selectDevice, style: text.titleSmall?.copyWith(color: AppColors.navy)),
+        const SizedBox(height: AppSpacing.xs),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final device in catalog.devices) ...[
+                Semantics(
+                  label: [device.name, _status(i18n, device.status)].whereType<String>().join(', '),
+                  excludeSemantics: true,
+                  selected: device.id == selectedId,
+                  button: true,
+                  child: ChoiceChip(
+                    key: ValueKey('telemetry.device.${device.id}'),
+                    selected: device.id == selectedId,
+                    showCheckmark: false,
+                    avatar: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: _tone(device.status) == BadgeTone.neutral
+                            ? AppColors.textMuted
+                            : _tone(device.status).foreground,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    label: Text(device.name),
+                    onSelected: (_) => context.read<TelemetryDashboardBloc>().add(TelemetryDeviceSelected(device.id)),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+              ],
+            ],
+          ),
+        ),
+        if (environment != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text('${i18n.environment}: $environment', style: text.bodySmall),
+        ],
+      ],
     );
   }
 }
@@ -224,7 +308,7 @@ class _StatusRow extends StatelessWidget {
     final deviations = snapshot.deviations.length;
     final lastCommunication = connection.lastCommunicationAt == null
         ? i18n.neverCommunicated
-        : Formatters.dateTime(connection.lastCommunicationAt, context.localeName);
+        : relativeTime(context, connection.lastCommunicationAt);
     final tone = connection.isConnected ? BadgeTone.success : BadgeTone.warning;
     return ResponsiveGrid(
       minItemWidth: 150,
@@ -410,9 +494,15 @@ class _ReadingCard extends StatelessWidget {
     final m = reading.latest;
     final range = rangeText(context, threshold);
     final name = m.metric.label(i18n, raw: m.rawMetric);
+    // A reading out of range stands out at a glance: the card takes the tint
+    // of its state and the figure its text tone (contrast by colour + value).
+    final outOfRange = m.state.isDeviation;
+    final tone = m.state.tone;
     return Semantics(
-      label: '$name: ${readingText(context, m)}',
+      label: [name, readingText(context, m), if (m.state != EnvironmentalState.unknown) m.state.label(i18n)].join(': '),
       child: InfoCard(
+        color: outOfRange ? tone.background : null,
+        borderColor: outOfRange ? tone.foreground.withValues(alpha: 0.3) : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -429,7 +519,10 @@ class _ReadingCard extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text(readingText(context, m), style: AppTypography.metric),
+              child: Text(
+                readingText(context, m),
+                style: AppTypography.metric.copyWith(color: outOfRange ? tone.foreground : null),
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             if (m.state != EnvironmentalState.unknown) StateBadge(state: m.state),
@@ -438,7 +531,10 @@ class _ReadingCard extends StatelessWidget {
               Text(range, style: theme.textTheme.bodySmall),
             ],
             const SizedBox(height: AppSpacing.xs),
-            Text(Formatters.dateTime(m.measuredAt, context.localeName), style: theme.textTheme.bodySmall),
+            Tooltip(
+              message: Formatters.dateTime(m.measuredAt, context.localeName),
+              child: Text(relativeTime(context, m.measuredAt), style: theme.textTheme.bodySmall),
+            ),
           ],
         ),
       ),
@@ -484,7 +580,7 @@ class _DeviationTile extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 readingText(context, m),
-                style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 16),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color, fontWeight: FontWeight.w700),
               ),
             ],
           ),
