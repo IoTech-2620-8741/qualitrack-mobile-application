@@ -135,6 +135,16 @@ void main() {
       expect(alerts.map((a) => a.id), [4, 3, 2, 1]);
     });
 
+    test('priority: unattended before acknowledged at the same severity', () {
+      final alerts = [
+        alertFixture(id: 1, status: AlertStatus.acknowledged, timestamp: DateTime.utc(2026, 9, 3)),
+        alertFixture(id: 2, timestamp: DateTime.utc(2026, 9, 1)),
+        alertFixture(id: 3, severity: AlertSeverity.warning, timestamp: DateTime.utc(2026, 9, 4)),
+        alertFixture(id: 4, severity: AlertSeverity.warning, status: AlertStatus.acknowledged, timestamp: DateTime.utc(2026, 9, 5)),
+      ]..sort(DeviationAlert.compareByPriority);
+      expect(alerts.map((a) => a.id), [2, 1, 3, 4]);
+    });
+
     test('summary counts statuses and open critical alerts', () {
       final summary = AlertSummary.of([
         alertFixture(id: 1),

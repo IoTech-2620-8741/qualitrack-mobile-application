@@ -64,8 +64,8 @@ final class AlertOverview extends Equatable {
   final AlertSummary summary;
   final List<DeviationAlert> open;
 
-  /// The open alerts in the order to look at them: critical first, then the
-  /// most recent.
+  /// The open alerts in the order to look at them: critical first, the
+  /// unattended before the acknowledged ones, then the most recent.
   List<DeviationAlert> get byPriority => [...open]..sort(DeviationAlert.compareByPriority);
 
   @override
