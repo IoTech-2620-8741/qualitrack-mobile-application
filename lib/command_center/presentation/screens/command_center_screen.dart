@@ -489,8 +489,8 @@ class _InventoryRow extends StatelessWidget {
 // Loading
 // ---------------------------------------------------------------------------
 
-/// Gray placeholders with the shape of the four cards, pulsing softly while
-/// the panel loads.
+/// Gray placeholders with the shape of the strip, the four rows and the most
+/// urgent alerts, pulsing softly while the panel loads.
 class _PanelSkeleton extends StatefulWidget {
   const _PanelSkeleton();
 
@@ -518,37 +518,28 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
       height: height,
       decoration: const BoxDecoration(color: AppColors.neutralContainer, borderRadius: AppRadius.smAll),
     );
-    Widget card() => DecoratedBox(
-      decoration: const BoxDecoration(color: AppColors.surface, borderRadius: AppRadius.xlAll),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(color: AppColors.neutralContainer, shape: BoxShape.circle),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                bone(64, 12),
-              ],
+    // One row of the panel: icon, figure, label and detail, as _AttentionRow.
+    Widget row() => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(color: AppColors.neutralContainer, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          bone(44, 24),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [bone(120, 12), const SizedBox(height: AppSpacing.xs), bone(88, 10)],
             ),
-            const SizedBox(height: AppSpacing.md),
-            bone(48, 28),
-            const SizedBox(height: AppSpacing.xs),
-            bone(96, 10),
-            const SizedBox(height: AppSpacing.md),
-            bone(double.infinity, 6),
-            const SizedBox(height: AppSpacing.xs),
-            bone(72, 10),
-          ],
-        ),
+          ),
+        ],
       ),
     );
-    Widget row() => Row(children: [Expanded(child: card()), _gap, Expanded(child: card())]);
     return Semantics(
       label: context.i18n.loading,
       child: ExcludeSemantics(
@@ -557,7 +548,36 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
           child: ListView(
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(AppSpacing.lg),
-            children: [row(), _gap, row()],
+            children: [
+              // The status strip.
+              Container(
+                height: AppSpacing.minTouchTarget,
+                decoration: const BoxDecoration(color: AppColors.neutralContainer, borderRadius: AppRadius.lgAll),
+              ),
+              _gap,
+              // The four rows.
+              DecoratedBox(
+                decoration: const BoxDecoration(color: AppColors.surface, borderRadius: AppRadius.xlAll),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < 4; i++) ...[
+                      if (i > 0) const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                      row(),
+                    ],
+                  ],
+                ),
+              ),
+              _gap,
+              // The most urgent alerts: their title and two cards.
+              bone(96, 12),
+              for (var i = 0; i < 2; i++) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  height: 88,
+                  decoration: const BoxDecoration(color: AppColors.surface, borderRadius: AppRadius.lgAll),
+                ),
+              ],
+            ],
           ),
         ),
       ),

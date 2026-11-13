@@ -217,7 +217,7 @@ void main() {
     }
   });
 
-  testWidgets('while loading, Home shows the shape of its cards instead of a spinner', (tester) async {
+  testWidgets('while loading, Home shows the shape of its rows instead of a spinner', (tester) async {
     whenListen(
       bloc,
       const Stream<RemoteState<CommandCenterSummary>>.empty(),
