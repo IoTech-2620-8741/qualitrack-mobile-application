@@ -1,7 +1,7 @@
 /// This file contains the Modern Card widget.
 ///
 /// It is a reusable container with the same look as every other card in the
-/// app (white surface, 1px border, 12px corners, no shadow) and the Material
+/// app (white surface, 16dp corners, no border or shadow) and the Material
 /// ripple when tapped.
 library;
 
@@ -29,10 +29,7 @@ class ModernCard extends StatelessWidget {
       child: Material(
         color: AppColors.surface,
         clipBehavior: Clip.antiAlias,
-        shape: const RoundedRectangleBorder(
-          borderRadius: AppRadius.lgAll,
-          side: BorderSide(color: AppColors.border),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
         child: InkWell(
           onTap: onTap,
           child: Padding(

@@ -12,7 +12,6 @@ import '../../application/reporting_facade_service.dart';
 import '../widgets/trend_row.dart';
 import '../widgets/empty_states.dart';
 import '../widgets/see_more_button.dart';
-import '../widgets/swipe_hint.dart';
 import '../screens/all_deviations_screen.dart';
 
 /// Tab that displays the deviation trends.
@@ -31,7 +30,9 @@ class DeviationsTab extends StatelessWidget {
   final VoidCallback onReload;
 
   /// Callback to change the period to 31 days when the list is empty.
-  final VoidCallback onSeeLast31Days;
+  /// Null when the period is already the last 31 days: the empty state then
+  /// offers no action that would change nothing.
+  final VoidCallback? onSeeLast31Days;
 
   /// Maximum number of trends visible before showing the "See more" button.
   static const _maxVisible = 5;
@@ -73,9 +74,6 @@ class DeviationsTab extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: AppSpacing.md),
-
-            // 4. Swipe hint for the user (to indicate they can change tabs)
-            const SwipeHint(),
           ],
         ],
       ),

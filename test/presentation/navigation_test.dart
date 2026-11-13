@@ -15,12 +15,12 @@ import 'package:qualitrack_mobile/profile/presentation/bloc/current_profile_cont
 
 import '../helpers/mocks.dart';
 
-/// Tabs of the Report (Mobile Style Guidelines): Home, Telemetry, Alerts,
-/// Batches and More; equipment and inventory open from More.
-const _expectedTabs = [AppRoutes.home, AppRoutes.telemetry, AppRoutes.alerts, AppRoutes.batches, AppRoutes.more];
+/// Tabs by importance: Home, Alerts, Telemetry, Batches and More; equipment
+/// and inventory open from More.
+const _expectedTabs = [AppRoutes.home, AppRoutes.alerts, AppRoutes.telemetry, AppRoutes.batches, AppRoutes.more];
 
 void main() {
-  test('the app router has the tabs of the Report, in its order', () {
+  test('the app router has the tabs by importance, alerts right after Home', () {
     final router = createRouter(
       SessionController(iamService: IamFacadeService(repository: MockIamRepository())),
       notifications: UnreadNotificationsController(complianceService: complianceFacade(MockComplianceRepository())),
@@ -85,6 +85,68 @@ void main() {
       expect(router.routerDelegate.currentConfiguration.uri.path, path);
       expect(find.descendant(of: bar, matching: find.byIcon(selectedIcon)), findsOneWidget, reason: 'icon of "$label"');
     }
+  });
+
+  testWidgets('content tabs keep where they were left; More always opens on its menu', (tester) async {
+    Widget screen(String name) => Center(child: Text('screen $name'));
+    final router = GoRouter(
+      initialLocation: AppRoutes.home,
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) => MainShell(shell: shell),
+          branches: [
+            for (final path in _expectedTabs)
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: path,
+                    builder: (context, state) => screen(path),
+                    routes: [GoRoute(path: 'detail', builder: (context, state) => screen('$path/detail'))],
+                  ),
+                  // Sections of More are routes of their own in its branch.
+                  if (path == AppRoutes.more)
+                    GoRoute(path: AppRoutes.inventory, builder: (context, state) => screen(AppRoutes.inventory)),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: AppTheme.light(),
+        routerConfig: router,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    final bar = find.byType(NavigationBar);
+    Future<void> tapTab(String label) async {
+      await tester.tap(find.descendant(of: bar, matching: find.text(label)));
+      await tester.pumpAndSettle();
+    }
+
+    // An alert left open is still there when coming back to Alerts.
+    router.go('${AppRoutes.alerts}/detail');
+    await tester.pumpAndSettle();
+    await tapTab('Home');
+    await tapTab('Alerts');
+    expect(find.text('screen ${AppRoutes.alerts}/detail'), findsOneWidget);
+
+    // A section of More is not: More opens on its menu.
+    router.go(AppRoutes.inventory);
+    await tester.pumpAndSettle();
+    await tapTab('Home');
+    await tapTab('More');
+    expect(find.text('screen ${AppRoutes.more}'), findsOneWidget);
+    expect(router.routerDelegate.currentConfiguration.uri.path, AppRoutes.more);
   });
 
   testWidgets('the tab labels grow with the text up to 115%, so no word breaks', (tester) async {

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/entities/equipment.dart';
@@ -28,7 +30,15 @@ extension EquipmentLabel on Equipment {
 
   /// IoT devices are named by their role, as in QualiTrack Web: the backend
   /// stores the role code (`CONTAINER_MONITOR`) as their type.
-  String? typeLabel(AppLocalizations i18n) => deviceType?.label(i18n) ?? type;
+  /// An Edge Gateway is named "Edge Gateway" instead of its type code.
+  String? typeLabel(AppLocalizations i18n) =>
+      deviceType?.label(i18n) ?? (isEdgeGateway ? i18n.edgeGateway : type);
+}
+
+/// Icon of the kind of equipment, the same in the list and the detail.
+extension EquipmentKindIcon on Equipment {
+  IconData get kindIcon =>
+      isIotDevice ? Icons.sensors : (isEdgeGateway ? Icons.router_outlined : Icons.precision_manufacturing_outlined);
 }
 
 extension IotDeviceTypePresentation on IotDeviceType {

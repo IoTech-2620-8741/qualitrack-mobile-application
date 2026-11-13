@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../common/presentation/labels.dart';
+
 import '../../../common/domain/failure.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
@@ -80,7 +82,8 @@ class _TimelineEntry extends StatelessWidget {
     final (icon, color) = _look(entry.kind);
     final detail = _detail(entry, i18n, locale) ?? entry.description;
     final when = entry.at != null ? Formatters.dateTime(entry.at, locale) : (entry.rawAt ?? '—');
-    final meta = [if (entry.actorUserId != null) person(entry.actorUserId!), when].join(' · ');
+    final actor = entry.actorUserId == null ? null : person(entry.actorUserId!);
+    final meta = [if (actor != null) actor, when].join(' · ');
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,7 +116,9 @@ class _TimelineEntry extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  if (detail != null && detail.isNotEmpty)
+                  // The detail is left out when it only repeats who did it
+                  // (staff who registered themselves).
+                  if (detail != null && detail.isNotEmpty && detail != actor)
                     Text(
                       detail,
                       maxLines: 3,
@@ -162,7 +167,7 @@ class _TimelineEntry extends StatelessWidget {
     BatchHistoryKind.rejected => i18n.historyBatchRejected,
     BatchHistoryKind.stored => i18n.historyBatchStored,
     BatchHistoryKind.blocked => i18n.historyBatchBlocked,
-    BatchHistoryKind.compliance || BatchHistoryKind.other => entry.label,
+    BatchHistoryKind.compliance || BatchHistoryKind.other => codeLabel(i18n, entry.label),
   };
 
   /// The key value of the event; null when it has none, so the description is shown instead.

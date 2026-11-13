@@ -143,7 +143,8 @@ For a new read or command in a context (the order of the guide):
 ## Key flows
 
 **Navigation.** The bottom bar has the tabs of the Report (Mobile Style
-Guidelines), in its order: Home, Telemetry, Alerts, Batches and More. Each tab
+Guidelines), ordered by importance: Home, Alerts, Telemetry, Batches and More
+(alerts right after Home, as what a QA user acts on first). Each tab
 is a branch of a `StatefulShellRoute`; `MainShell` builds the bar from the
 branches, so the order is defined once, in `app/router/app_router.dart`. More
 holds the rest: products, equipment, inventory, reports, subscription (quality
@@ -153,9 +154,10 @@ the notifications). A Home card opens its tab with `go`, or pushes inventory,
 which is not a tab; links to a detail use `push`, which keeps the current tab and
 adds a back arrow.
 
-**Home.** It reads state, then priority, then action. A strip says what the
-laboratory needs now (critical alerts, items to review or all in order) and
-when the data was read. Below it, four rows read by importance top to bottom:
+**Home.** The laboratory is the app bar title, with the user's role and how
+long ago the data was read below it. The body reads state, then priority, then
+action. A strip says what the laboratory needs now (critical alerts, items to
+review or all in order). Below it, four rows read by importance top to bottom:
 open alerts (the critical ones as a badge, unresolved and acknowledged as the
 detail), IoT devices online, batches awaiting the QA decision, and materials
 below the minimum stock. Each row has its figure, a short detail and a chevron

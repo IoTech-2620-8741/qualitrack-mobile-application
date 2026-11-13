@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../iam/domain/entities/user_session.dart';
+import '../../iam/presentation/widgets/qualitrack_logo.dart';
 import '../../iam/presentation/widgets/role_labels.dart';
 import '../../profile/presentation/bloc/current_profile_controller.dart';
 import '../../profile/presentation/widgets/profile_avatar.dart';
@@ -230,11 +231,12 @@ class AboutScreen extends StatelessWidget {
     final i18n = context.i18n;
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.about)),
+      appBar: AppBar(title: AppBarTitle(title: i18n.about)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         children: [
-          const Icon(Icons.verified_user_rounded, size: 64, color: AppColors.primary),
+          // The same logo as the sign-in and splash screens.
+          const Center(child: QualiTrackLogo(size: 96)),
           const SizedBox(height: AppSpacing.md),
           Text('QualiTrack Mobile', textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
           Text(i18n.versionLabel(version), textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
@@ -243,7 +245,7 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(i18n.aboutWebScope, style: theme.textTheme.bodyMedium),
           const SizedBox(height: AppSpacing.lg),
-          Text('© IoTech · ClosedSource', textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
+          Text(i18n.copyright, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),
         ],
       ),
     );

@@ -8,13 +8,11 @@ library;
 
 import 'package:flutter/material.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../application/reporting_facade_service.dart';
 import '../widgets/history_row.dart';
 import '../widgets/empty_states.dart';
 import '../widgets/see_more_button.dart';
-import '../widgets/swipe_hint.dart';
 import '../widgets/info_banner.dart';
 import '../screens/all_reports_screen.dart';
 
@@ -34,7 +32,6 @@ class HistoryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final theme = Theme.of(context);
 
     // Get the list of reports from the data object
     final reports = data.reports.items;
@@ -46,13 +43,6 @@ class HistoryTab extends StatelessWidget {
         children: [
           // 1. Information banner explaining that reports are generated on the Web
           InfoBanner(text: i18n.reportHistoryBanner),
-          const SizedBox(height: AppSpacing.md),
-
-          // 2. Note indicating that the history is independent of the selected period
-          Text(
-            i18n.historyIndependentOfPeriod,
-            style: theme.textTheme.labelSmall?.copyWith(color: AppColors.textMuted),
-          ),
           const SizedBox(height: AppSpacing.md),
 
           // 3. List of reports (or empty state)
@@ -74,9 +64,6 @@ class HistoryTab extends StatelessWidget {
               ),
 
             const SizedBox(height: AppSpacing.md),
-
-            // 4. Swipe hint for the user
-            const SwipeHint(),
           ],
         ],
       ),

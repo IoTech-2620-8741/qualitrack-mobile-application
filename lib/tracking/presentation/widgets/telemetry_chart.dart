@@ -63,7 +63,10 @@ class TelemetryChart extends StatelessWidget {
             titlesData: FlTitlesData(
               topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              // The unit names the axis (e.g. °C), so every value reads with it.
               leftTitles: AxisTitles(
+                axisNameSize: unit == null || unit!.isEmpty ? 0 : 18,
+                axisNameWidget: unit == null || unit!.isEmpty ? null : Text(unit!, style: _axisStyle),
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 44,
@@ -71,7 +74,7 @@ class TelemetryChart extends StatelessWidget {
                       ? const SizedBox.shrink()
                       : Text(
                           NumberFormat.compact(locale: locale).format(value),
-                          style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                          style: _axisStyle,
                         ),
                 ),
               ),
@@ -86,17 +89,27 @@ class TelemetryChart extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             timeFormat.format(DateTime.fromMillisecondsSinceEpoch(value.toInt())),
-                            style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                            style: _axisStyle,
                           ),
                         ),
                 ),
               ),
             ),
-            extraLinesData: ExtraLinesData(
-              horizontalLines: [
-                for (final value in normal) _rangeLine(value, AppColors.chartNormalRange),
-                for (final value in critical) _rangeLine(value, AppColors.chartCritical),
+            // The normal range is a shaded band: whether a reading is good
+            // or bad shows at a glance (in or out of the band). The critical
+            // limits stay as dashed lines.
+            rangeAnnotations: RangeAnnotations(
+              horizontalRangeAnnotations: [
+                if (normal.isNotEmpty)
+                  HorizontalRangeAnnotation(
+                    y1: threshold?.normalMin ?? minY,
+                    y2: threshold?.normalMax ?? maxY,
+                    color: normalBand,
+                  ),
               ],
+            ),
+            extraLinesData: ExtraLinesData(
+              horizontalLines: [for (final value in critical) _rangeLine(value, AppColors.chartCritical)],
             ),
             lineTouchData: LineTouchData(
               touchTooltipData: LineTouchTooltipData(
@@ -152,6 +165,12 @@ class TelemetryChart extends StatelessWidget {
         : (meta.max / meta.appliedInterval).floor() * meta.appliedInterval;
     return step != value && (step - value).abs() < gap;
   }
+
+  /// Axis labels at 12sp, the smallest readable size.
+  static const TextStyle _axisStyle = TextStyle(fontSize: 12, color: AppColors.textMuted);
+
+  /// Fill of the normal range band; the legend uses the same colour.
+  static final Color normalBand = AppColors.chartNormalRange.withValues(alpha: 0.16);
 
   HorizontalLine _rangeLine(double y, Color color) =>
       HorizontalLine(y: y, color: color, strokeWidth: 1.5, dashArray: const [6, 4]);

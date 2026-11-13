@@ -6,7 +6,9 @@ import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/section_card.dart';
+import '../../../common/presentation/labels.dart';
 import '../../domain/entities/inventory_movement.dart';
+import '../../domain/entities/receipt_status.dart';
 import 'inventory_labels.dart';
 
 /// Displays an inventory movement with its stock changes,
@@ -44,8 +46,7 @@ class InventoryMovementItem extends StatelessWidget {
 
       if (movement.statusBefore != null ||
           movement.statusAfter != null)
-        '${Formatters.humanize(movement.statusBefore)} → '
-        '${Formatters.humanize(movement.statusAfter)}',
+        '${_status(i18n, movement.statusBefore)} → ${_status(i18n, movement.statusAfter)}',
 
       if (movement.reason != null &&
           movement.reason!.isNotEmpty)
@@ -77,4 +78,11 @@ class InventoryMovementItem extends StatelessWidget {
       ),
     );
   }
+}
+
+
+/// A lot status of a movement in words; an unknown or missing one as a code label.
+String _status(AppLocalizations i18n, String? code) {
+  final status = ReceiptStatus.fromCode(code);
+  return status == ReceiptStatus.unknown ? codeLabel(i18n, code) : status.label(i18n);
 }

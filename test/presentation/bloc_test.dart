@@ -493,5 +493,67 @@ void main() {
       await bloc.close();
       bell.dispose();
     });
+
+    group('mark all as read', () {
+      const unread = AppNotification(id: 1, type: NotificationType.alertOpened, subjectType: 'ALERT', subjectId: 9);
+      late MockComplianceRepository repo;
+      late int refreshes;
+
+      Future<NotificationsBloc> loaded() async {
+        final bloc = NotificationsBloc(complianceService: complianceFacade(repo), onReadChanged: () async => refreshes++)
+          ..add(const NotificationsRequested());
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        return bloc;
+      }
+
+      setUp(() {
+        repo = MockComplianceRepository();
+        refreshes = 0;
+        when(() => repo.getNotifications(limit: 50)).thenAnswer((_) async => [unread]);
+        when(() => repo.markAllRead()).thenAnswer((_) async {});
+      });
+
+      test('shows them read at once and can be undone without reaching the server', () async {
+        final bloc = await loaded();
+
+        bloc.add(const NotificationsAllRead());
+        await Future<void>.delayed(Duration.zero);
+        expect(bloc.state.unread, 0);
+        expect(bloc.state.pendingAllRead, isTrue);
+
+        bloc.add(const NotificationsAllReadUndone());
+        await Future<void>.delayed(Duration.zero);
+        expect(bloc.state.unread, 1);
+        expect(bloc.state.pendingAllRead, isFalse);
+
+        await bloc.close();
+        verifyNever(() => repo.markAllRead());
+      });
+
+      test('saves on the server when the undo window ends', () async {
+        final bloc = await loaded();
+
+        bloc
+          ..add(const NotificationsAllRead())
+          ..add(const NotificationsAllReadConfirmed());
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+
+        verify(() => repo.markAllRead()).called(1);
+        expect(bloc.state.pendingAllRead, isFalse);
+        expect(refreshes, 1);
+        await bloc.close();
+      });
+
+      test('leaving the screen inside the undo window still saves it', () async {
+        final bloc = await loaded();
+
+        bloc.add(const NotificationsAllRead());
+        await Future<void>.delayed(Duration.zero);
+        await bloc.close();
+
+        verify(() => repo.markAllRead()).called(1);
+        expect(refreshes, 1);
+      });
+    });
   });
 }

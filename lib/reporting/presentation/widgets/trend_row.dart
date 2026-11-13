@@ -39,9 +39,9 @@ class TrendRow extends StatelessWidget {
     // Get the visual tone (color) based on the severity
     final tone = timeInRangeToneFromSeverity(trend.severity);
 
-    // Icon color from the palette's state text tones (they keep contrast on
-    // their tinted circle); `danger` uses the critical red.
-    final iconColor = tone == BadgeTone.danger ? AppColors.critical : tone.foreground;
+    // The arrow only says the direction (neutral): whether that is good or
+    // bad is the badge, in the colour of its severity.
+    const iconColor = AppColors.textMuted;
 
     return ModernCard(
       child: Row(
@@ -49,8 +49,8 @@ class TrendRow extends StatelessWidget {
           // 1. Circular container with the direction icon
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
+            decoration: const BoxDecoration(
+              color: AppColors.neutralContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(trend.direction.icon, color: iconColor, size: 22),

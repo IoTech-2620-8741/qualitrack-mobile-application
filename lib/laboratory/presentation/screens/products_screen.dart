@@ -87,8 +87,15 @@ class _ProductTile extends StatelessWidget {
       child: ListTile(
         onTap: () => context.push('/products/${product.id}'),
         title: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis),
-        subtitle: Text(
-          environment?.displayName ?? product.description ?? '',
+        // Always the same: the code and the environment (the description
+        // belongs to the detail).
+        subtitle: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: product.code, style: const TextStyle(fontFamily: AppTypography.monospace)),
+              if (environment != null) TextSpan(text: ' · ${environment!.displayName}'),
+            ],
+          ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
@@ -96,13 +103,11 @@ class _ProductTile extends StatelessWidget {
           backgroundColor: AppColors.primaryContainer,
           child: Icon(Icons.medication_outlined, color: AppColors.primary),
         ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(product.code, style: const TextStyle(fontFamily: AppTypography.monospace)),
-            if (!product.active)
-              StatusBadge(label: i18n.inactive, tone: BadgeTone.neutral),
+            if (!product.active) StatusBadge(label: i18n.inactive, tone: BadgeTone.neutral),
+            const Icon(Icons.chevron_right, color: AppColors.textMuted),
           ],
         ),
       ),
@@ -156,18 +161,15 @@ class ProductDetailScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                InfoCard(
-                  title: i18n.description,
-                  child: Text(product.description?.isNotEmpty == true ? product.description! : '—'),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                InfoCard(
-                  title: i18n.bpmSpecifications,
-                  child: Text(
-                    product.specifications?.isNotEmpty == true ? product.specifications! : '—',
-                  ),
-                ),
+                // Description and specifications only when they have text.
+                if (product.description?.isNotEmpty == true) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  InfoCard(title: i18n.description, child: Text(product.description!)),
+                ],
+                if (product.specifications?.isNotEmpty == true) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  InfoCard(title: i18n.bpmSpecifications, child: Text(product.specifications!)),
+                ],
               ],
             );
           },

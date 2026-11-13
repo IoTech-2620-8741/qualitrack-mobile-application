@@ -148,35 +148,8 @@ GoRouter createRouter(
               ),
             ],
           ),
-          // Tabs in the order of the Report: Home, Telemetry, Alerts, Batches, More.
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoutes.telemetry,
-                builder: (context, state) {
-                  final id = _intParam(state.uri.queryParameters['deviceId']);
-                  return BlocProvider(
-                    key: ValueKey('telemetry-$id'),
-                    create: (_) => sl<TelemetryDashboardBloc>()..add(TelemetryStarted(deviceId: id)),
-                    child: const TelemetryDashboardScreen(),
-                  );
-                },
-                routes: [
-                  GoRoute(
-                    path: 'history',
-                    builder: (context, state) {
-                      final id = _intParam(state.uri.queryParameters['deviceId']);
-                      return BlocProvider(
-                        create: (_) => sl<TelemetryHistoryBloc>()..add(TelemetryHistoryStarted(deviceId: id)),
-                        // The only screen that may turn to landscape: its chart.
-                        child: const LandscapeAllowed(child: TelemetryHistoryScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
+          // Tabs by importance: Home, Alerts, Telemetry, Batches, More. Alerts
+          // come right after Home because they are what a QA user acts on first.
           // Compliance alerts and their detail.
           StatefulShellBranch(
             routes: [
@@ -198,6 +171,35 @@ GoRouter createRouter(
                           canAttend: session.session?.canAttendAlerts ?? false,
                           currentUserId: currentUserId(),
                         ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Telemetry of the environments and containers.
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.telemetry,
+                builder: (context, state) {
+                  final id = _intParam(state.uri.queryParameters['deviceId']);
+                  return BlocProvider(
+                    key: ValueKey('telemetry-$id'),
+                    create: (_) => sl<TelemetryDashboardBloc>()..add(TelemetryStarted(deviceId: id)),
+                    child: const TelemetryDashboardScreen(),
+                  );
+                },
+                routes: [
+                  GoRoute(
+                    path: 'history',
+                    builder: (context, state) {
+                      final id = _intParam(state.uri.queryParameters['deviceId']);
+                      return BlocProvider(
+                        create: (_) => sl<TelemetryHistoryBloc>()..add(TelemetryHistoryStarted(deviceId: id)),
+                        // The only screen that may turn to landscape: its chart.
+                        child: const LandscapeAllowed(child: TelemetryHistoryScreen()),
                       );
                     },
                   ),

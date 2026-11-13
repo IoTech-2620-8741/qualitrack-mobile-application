@@ -69,12 +69,50 @@ class AppLocalizations {
   String get parameter => _t('parameter');
   String get active => _t('active');
   String get inactive => _t('inactive');
+  String get codePending => _t('codePending');
+  String get codePendingPayment => _t('codePendingPayment');
+  String get codeSuspended => _t('codeSuspended');
+  String get codeCancelled => _t('codeCancelled');
+  String get codeExpired => _t('codeExpired');
+  String get codePaid => _t('codePaid');
+  String get codeFailed => _t('codeFailed');
+  String get codeRefunded => _t('codeRefunded');
+  String get codeMonthly => _t('codeMonthly');
+  String get codeQuarterly => _t('codeQuarterly');
+  String get codeAnnual => _t('codeAnnual');
+  String get codePreventive => _t('codePreventive');
+  String get codeCorrective => _t('codeCorrective');
+  String get codeCalibration => _t('codeCalibration');
+  String get codeInspection => _t('codeInspection');
+  String get codeCleaning => _t('codeCleaning');
+  String get codeBatchReleased => _t('codeBatchReleased');
+  String get codeBatchRejected => _t('codeBatchRejected');
+  String get codeBatchBlocked => _t('codeBatchBlocked');
+  String get codeCreated => _t('codeCreated');
+  String get codeUpdated => _t('codeUpdated');
+  String get codeDeleted => _t('codeDeleted');
+  String get changePhotoMenu => _t('changePhotoMenu');
   String get startDate => _t('startDate');
   String get endDate => _t('endDate');
   String get generalInformation => _t('generalInformation');
-  String updatedAt(String time) => _t('updatedAt')
-      .replaceAll('{time}', time);
+  String get timeJustNow => _t('timeJustNow');
+  String timeMinutesAgo(int count) => _t('timeMinutesAgo')
+      .replaceAll('{count}', '$count');
+  String timeHoursAgo(int count) => _t('timeHoursAgo')
+      .replaceAll('{count}', '$count');
+  String get updatedJustNow => _t('updatedJustNow');
+  String updatedMinutesAgo(int count) => _t('updatedMinutesAgo')
+      .replaceAll('{count}', '$count');
+  String updatedHoursAgo(int count) => _t('updatedHoursAgo')
+      .replaceAll('{count}', '$count');
+  String updatedOn(String date) => _t('updatedOn')
+      .replaceAll('{date}', date);
   String get errorTitle => _t('errorTitle');
+  String get errorTitleNetwork => _t('errorTitleNetwork');
+  String get errorTitleTimeout => _t('errorTitleTimeout');
+  String get errorTitleAccess => _t('errorTitleAccess');
+  String get errorTitleNotFound => _t('errorTitleNotFound');
+  String get errorTitleServer => _t('errorTitleServer');
   String get errorNetwork => _t('errorNetwork');
   String get errorTimeout => _t('errorTimeout');
   String get errorBadRequest => _t('errorBadRequest');
@@ -127,13 +165,12 @@ class AppLocalizations {
       .replaceAll('{version}', version);
   String get aboutDescription => _t('aboutDescription');
   String get aboutWebScope => _t('aboutWebScope');
+  String get copyright => _t('copyright');
   String get laboratory => _t('laboratory');
   String get ruc => _t('ruc');
   String get phone => _t('phone');
   String get address => _t('address');
   String get regulations => _t('regulations');
-  String welcomeUser(String name) => _t('welcomeUser')
-      .replaceAll('{name}', name);
   String get openAlerts => _t('openAlerts');
   String criticalCount(int count) => _t('criticalCount')
       .replaceAll('{count}', '$count');
@@ -160,6 +197,13 @@ class AppLocalizations {
   String get auditLog => _t('auditLog');
   String get telemetryTitle => _t('telemetryTitle');
   String get telemetrySubtitle => _t('telemetrySubtitle');
+  String get telemetryHelp => _t('telemetryHelp');
+  String get telemetryHelpNormal => _t('telemetryHelpNormal');
+  String get telemetryHelpWarning => _t('telemetryHelpWarning');
+  String get telemetryHelpCritical => _t('telemetryHelpCritical');
+  String get telemetryHelpRange => _t('telemetryHelpRange');
+  String get telemetryHelpReview => _t('telemetryHelpReview');
+  String get telemetryHelpLog => _t('telemetryHelpLog');
   String get telemetryUnavailable => _t('telemetryUnavailable');
   String get connectionStatus => _t('connectionStatus');
   String eventsCount(int count) => _t('eventsCount')
@@ -365,6 +409,8 @@ class AppLocalizations {
   String get inAppNotifications => _t('inAppNotifications');
   String get inAppNotificationsHint => _t('inAppNotificationsHint');
   String get iotDevices => _t('iotDevices');
+  String get edgeGateway => _t('edgeGateway');
+  String get edgeGateways => _t('edgeGateways');
   String get iotRole => _t('iotRole');
   String get lastCommunication => _t('lastCommunication');
   String get location => _t('location');
@@ -374,6 +420,8 @@ class AppLocalizations {
   String get lotNearExpiry => _t('lotNearExpiry');
   String get lotNotYetReceived => _t('lotNotYetReceived');
   String get markAllRead => _t('markAllRead');
+  String get allMarkedRead => _t('allMarkedRead');
+  String get undo => _t('undo');
   String get materialLots => _t('materialLots');
   String get metricAirQuality => _t('metricAirQuality');
   String get metricHumidity => _t('metricHumidity');
@@ -462,8 +510,6 @@ class AppLocalizations {
   String get photoUpdated => _t('photoUpdated');
   String get preferencesSaved => _t('preferencesSaved');
   String get profileSaved => _t('profileSaved');
-  String profileVersion(String version) => _t('profileVersion')
-      .replaceAll('{version}', version);
   String get removePhoto => _t('removePhoto');
   String get removePhotoConfirm => _t('removePhotoConfirm');
   String renewalCancelled(String date) => _t('renewalCancelled')
@@ -498,6 +544,7 @@ class AppLocalizations {
   String get healthCritical => _t('healthCritical');
   String tabDeviations(int count) => _t('tabDeviations')
       .replaceAll('{count}', '$count');
+  String get tabDeviationsPlain => _t('tabDeviationsPlain');
   String get tabMeasurements => _t('tabMeasurements');
   String get tabHistory => _t('tabHistory');
   String get noData => _t('noData');
@@ -509,9 +556,7 @@ class AppLocalizations {
   String eventCountPlural(int count) => _t('eventCountPlural')
       .replaceAll('{count}', '$count');
   String get seeLast31Days => _t('seeLast31Days');
-  String get historyIndependentOfPeriod => _t('historyIndependentOfPeriod');
   String get reportHistoryBanner => _t('reportHistoryBanner');
-  String get swipeHint => _t('swipeHint');
   String seeMoreCount(int count) => _t('seeMoreCount')
       .replaceAll('{count}', '$count');
   String get historyBatchCreated => _t('historyBatchCreated');
@@ -573,8 +618,6 @@ class AppLocalizations {
       .replaceAll('{count}', '$count');
   String get homeStatusPending => _t('homeStatusPending');
   String get homeStatusAllClear => _t('homeStatusAllClear');
-  String homeUpdatedAt(String time) => _t('homeUpdatedAt')
-      .replaceAll('{time}', time);
   String homeAlertsDetail(int unresolved, int acknowledged) => _t('homeAlertsDetail')
       .replaceAll('{unresolved}', '$unresolved')
       .replaceAll('{acknowledged}', '$acknowledged');
@@ -626,11 +669,45 @@ const Map<String, String> _en = {
   'parameter': 'Parameter',
   'active': 'Active',
   'inactive': 'Inactive',
+  'codePending': 'Pending',
+  'codePendingPayment': 'Pending payment',
+  'codeSuspended': 'Suspended',
+  'codeCancelled': 'Cancelled',
+  'codeExpired': 'Expired',
+  'codePaid': 'Paid',
+  'codeFailed': 'Failed',
+  'codeRefunded': 'Refunded',
+  'codeMonthly': 'Monthly',
+  'codeQuarterly': 'Quarterly',
+  'codeAnnual': 'Annual',
+  'codePreventive': 'Preventive',
+  'codeCorrective': 'Corrective',
+  'codeCalibration': 'Calibration',
+  'codeInspection': 'Inspection',
+  'codeCleaning': 'Cleaning',
+  'codeBatchReleased': 'Batch released',
+  'codeBatchRejected': 'Batch rejected',
+  'codeBatchBlocked': 'Batch blocked',
+  'codeCreated': 'Created',
+  'codeUpdated': 'Updated',
+  'codeDeleted': 'Deleted',
+  'changePhotoMenu': 'Profile photo',
   'startDate': 'Start date',
   'endDate': 'End date',
   'generalInformation': 'General information',
-  'updatedAt': 'Updated at {time}',
-  'errorTitle': 'Something went wrong',
+  'timeJustNow': 'Just now',
+  'timeMinutesAgo': '{count} min ago',
+  'timeHoursAgo': '{count} h ago',
+  'updatedJustNow': 'Updated just now',
+  'updatedMinutesAgo': 'Updated {count} min ago',
+  'updatedHoursAgo': 'Updated {count} h ago',
+  'updatedOn': 'Updated {date}',
+  'errorTitle': 'The information could not be loaded',
+  'errorTitleNetwork': 'No connection',
+  'errorTitleTimeout': 'No response',
+  'errorTitleAccess': 'Access restricted',
+  'errorTitleNotFound': 'Not found',
+  'errorTitleServer': 'Service unavailable',
   'errorNetwork': 'No connection to QualiTrack. Check your internet connection or the API address.',
   'errorTimeout': 'The server took too long to respond. Try again.',
   'errorBadRequest': 'The request was rejected by QualiTrack.',
@@ -657,7 +734,7 @@ const Map<String, String> _en = {
   'hidePassword': 'Hide password',
   'signIn': 'Sign In',
   'signingIn': 'Signing in',
-  'invalidCredentials': 'Invalid username or password.',
+  'invalidCredentials': 'Invalid username or password. Check them and try again.',
   'sessionExpired': 'Your session has expired. Please sign in again.',
   'accountsManagedOnWeb': 'Accounts are created and managed in QualiTrack Web.',
   'signOut': 'Sign out',
@@ -682,12 +759,12 @@ const Map<String, String> _en = {
   'versionLabel': 'Version {version}',
   'aboutDescription': 'QualiTrack Mobile is the monitoring and review companion of the QualiTrack pharmaceutical quality management platform: telemetry, deviation alerts, production batches, inventory and billing at a glance.',
   'aboutWebScope': 'Configuration and data registration (laboratories, products, materials, equipment, sensors, limits, batches, users and subscriptions) are performed in QualiTrack Web.',
+  'copyright': '© 2026 IoTech. All rights reserved.',
   'laboratory': 'Laboratory',
   'ruc': 'RUC',
   'phone': 'Phone',
   'address': 'Address',
   'regulations': 'Applicable regulations',
-  'welcomeUser': 'Hello, {name}',
   'openAlerts': 'Open alerts',
   'criticalCount': '{count} critical',
   'liveTelemetryHint': 'Readings of the last 24 hours',
@@ -709,7 +786,14 @@ const Map<String, String> _en = {
   'complianceEvents': 'Compliance events',
   'auditLog': 'Audit log',
   'telemetryTitle': 'Telemetry Dashboard',
-  'telemetrySubtitle': 'Real-time sensory data and parameter monitoring',
+  'telemetrySubtitle': 'Conditions of environments and containers',
+  'telemetryHelp': 'How to read telemetry',
+  'telemetryHelpNormal': 'Within the normal range set for the variable.',
+  'telemetryHelpWarning': 'Out of the normal range, but not yet critical.',
+  'telemetryHelpCritical': 'Beyond the critical limits: needs attention now.',
+  'telemetryHelpRange': 'In the chart, the green band is the normal range and the dashed red lines are the critical limits.',
+  'telemetryHelpReview': 'The device has not communicated within its expected period: check that it is on and connected.',
+  'telemetryHelpLog': 'The raw data log lists every reading, to look up a past period.',
   'telemetryUnavailable': 'Telemetry unavailable',
   'connectionStatus': 'Connection status',
   'eventsCount': '{count} events',
@@ -893,6 +977,8 @@ const Map<String, String> _en = {
   'inAppNotifications': 'In the app',
   'inAppNotificationsHint': 'Show notices in the bell',
   'iotDevices': 'IoT devices',
+  'edgeGateway': 'Edge Gateway',
+  'edgeGateways': 'Edge Gateways',
   'iotRole': 'IoT role',
   'lastCommunication': 'Last communication',
   'location': 'Location',
@@ -902,6 +988,8 @@ const Map<String, String> _en = {
   'lotNearExpiry': 'Near expiry',
   'lotNotYetReceived': 'Not received yet',
   'markAllRead': 'Mark all as read',
+  'allMarkedRead': 'All notices marked as read',
+  'undo': 'Undo',
   'materialLots': 'Lots',
   'metricAirQuality': 'Air quality',
   'metricHumidity': 'Humidity',
@@ -965,7 +1053,6 @@ const Map<String, String> _en = {
   'photoUpdated': 'Your photo was updated.',
   'preferencesSaved': 'Preferences saved.',
   'profileSaved': 'Your data was saved.',
-  'profileVersion': 'Profile version {version}',
   'removePhoto': 'Remove photo',
   'removePhotoConfirm': 'Your initials will be shown instead of the photo.',
   'renewalCancelled': 'Renewal cancelled: access until {date}',
@@ -995,6 +1082,7 @@ const Map<String, String> _en = {
   'healthAtRisk': 'at risk',
   'healthCritical': 'critical',
   'tabDeviations': 'Deviations ({count})',
+  'tabDeviationsPlain': 'Deviations',
   'tabMeasurements': 'Measurements',
   'tabHistory': 'History',
   'noData': 'No data',
@@ -1003,9 +1091,7 @@ const Map<String, String> _en = {
   'eventCount': '{count} event',
   'eventCountPlural': '{count} events',
   'seeLast31Days': 'See last 31 days',
-  'historyIndependentOfPeriod': 'Independent of the selected period',
   'reportHistoryBanner': 'Reports are generated and downloaded in QualiTrack Web.',
-  'swipeHint': 'Swipe sideways to change section',
   'seeMoreCount': 'See {count} more',
   'historyBatchCreated': 'Batch registered',
   'historyBatchStarted': 'Manufacturing started',
@@ -1060,7 +1146,6 @@ const Map<String, String> _en = {
   'homeStatusCritical': 'Needs attention: {count} critical alerts',
   'homeStatusPending': 'There are items to review',
   'homeStatusAllClear': 'All in order',
-  'homeUpdatedAt': 'Updated {time}',
   'homeAlertsDetail': '{unresolved} unresolved · {acknowledged} acknowledged',
   'homeDevicesToReview': '{count} to review',
   'homeDevicesNoData': '{count} without data',
@@ -1105,11 +1190,45 @@ const Map<String, String> _es = {
   'parameter': 'Parámetro',
   'active': 'Activo',
   'inactive': 'Inactivo',
+  'codePending': 'Pendiente',
+  'codePendingPayment': 'Pago pendiente',
+  'codeSuspended': 'Suspendido',
+  'codeCancelled': 'Cancelado',
+  'codeExpired': 'Vencido',
+  'codePaid': 'Pagado',
+  'codeFailed': 'Fallido',
+  'codeRefunded': 'Reembolsado',
+  'codeMonthly': 'Mensual',
+  'codeQuarterly': 'Trimestral',
+  'codeAnnual': 'Anual',
+  'codePreventive': 'Preventivo',
+  'codeCorrective': 'Correctivo',
+  'codeCalibration': 'Calibración',
+  'codeInspection': 'Inspección',
+  'codeCleaning': 'Limpieza',
+  'codeBatchReleased': 'Lote liberado',
+  'codeBatchRejected': 'Lote rechazado',
+  'codeBatchBlocked': 'Lote bloqueado',
+  'codeCreated': 'Creado',
+  'codeUpdated': 'Actualizado',
+  'codeDeleted': 'Eliminado',
+  'changePhotoMenu': 'Foto de perfil',
   'startDate': 'Fecha de inicio',
   'endDate': 'Fecha de fin',
   'generalInformation': 'Información general',
-  'updatedAt': 'Actualizado a las {time}',
-  'errorTitle': 'Algo salió mal',
+  'timeJustNow': 'Hace un momento',
+  'timeMinutesAgo': 'Hace {count} min',
+  'timeHoursAgo': 'Hace {count} h',
+  'updatedJustNow': 'Actualizado hace un momento',
+  'updatedMinutesAgo': 'Actualizado hace {count} min',
+  'updatedHoursAgo': 'Actualizado hace {count} h',
+  'updatedOn': 'Actualizado el {date}',
+  'errorTitle': 'No se pudo cargar la información',
+  'errorTitleNetwork': 'Sin conexión',
+  'errorTitleTimeout': 'Sin respuesta',
+  'errorTitleAccess': 'Acceso restringido',
+  'errorTitleNotFound': 'No encontrado',
+  'errorTitleServer': 'Servicio no disponible',
   'errorNetwork': 'Sin conexión con QualiTrack. Verifica tu conexión a internet o la dirección de la API.',
   'errorTimeout': 'El servidor tardó demasiado en responder. Inténtalo de nuevo.',
   'errorBadRequest': 'QualiTrack rechazó la solicitud.',
@@ -1136,7 +1255,7 @@ const Map<String, String> _es = {
   'hidePassword': 'Ocultar contraseña',
   'signIn': 'Iniciar sesión',
   'signingIn': 'Iniciando sesión',
-  'invalidCredentials': 'Usuario o contraseña incorrectos.',
+  'invalidCredentials': 'Usuario o contraseña incorrectos. Revísalos e inténtalo de nuevo.',
   'sessionExpired': 'Tu sesión expiró. Inicia sesión nuevamente.',
   'accountsManagedOnWeb': 'Las cuentas se crean y administran en QualiTrack Web.',
   'signOut': 'Cerrar sesión',
@@ -1161,12 +1280,12 @@ const Map<String, String> _es = {
   'versionLabel': 'Versión {version}',
   'aboutDescription': 'QualiTrack Mobile es la app de monitoreo y revisión de la plataforma de gestión de calidad farmacéutica QualiTrack: telemetría, alertas de desviación, lotes de producción, inventario y facturación de un vistazo.',
   'aboutWebScope': 'La configuración y el registro de datos (laboratorios, productos, materiales, equipos, sensores, límites, lotes, usuarios y suscripciones) se realizan en QualiTrack Web.',
+  'copyright': '© 2026 IoTech. Todos los derechos reservados.',
   'laboratory': 'Laboratorio',
   'ruc': 'RUC',
   'phone': 'Teléfono',
   'address': 'Dirección',
   'regulations': 'Normativas aplicables',
-  'welcomeUser': 'Hola, {name}',
   'openAlerts': 'Alertas abiertas',
   'criticalCount': '{count} críticas',
   'liveTelemetryHint': 'Lecturas de las últimas 24 horas',
@@ -1188,7 +1307,14 @@ const Map<String, String> _es = {
   'complianceEvents': 'Eventos de cumplimiento',
   'auditLog': 'Registro de auditoría',
   'telemetryTitle': 'Panel de Telemetría',
-  'telemetrySubtitle': 'Datos sensoriales y monitoreo de parámetros en tiempo real',
+  'telemetrySubtitle': 'Condiciones de ambientes y contenedores',
+  'telemetryHelp': 'Cómo leer la telemetría',
+  'telemetryHelpNormal': 'Dentro del rango normal configurado para la variable.',
+  'telemetryHelpWarning': 'Fuera del rango normal, sin llegar al crítico.',
+  'telemetryHelpCritical': 'Más allá de los límites críticos: requiere atención inmediata.',
+  'telemetryHelpRange': 'En el gráfico, la franja verde es el rango normal y las líneas rojas punteadas son los límites críticos.',
+  'telemetryHelpReview': 'El dispositivo no se comunicó en el período esperado: revisa que esté encendido y conectado.',
+  'telemetryHelpLog': 'El registro de datos lista cada lectura, para consultar un período pasado.',
   'telemetryUnavailable': 'Telemetría no disponible',
   'connectionStatus': 'Estado de conexión',
   'eventsCount': '{count} eventos',
@@ -1372,6 +1498,8 @@ const Map<String, String> _es = {
   'inAppNotifications': 'En la aplicación',
   'inAppNotificationsHint': 'Mostrar los avisos en la campanita',
   'iotDevices': 'Dispositivos IoT',
+  'edgeGateway': 'Edge Gateway',
+  'edgeGateways': 'Edge Gateways',
   'iotRole': 'Rol IoT',
   'lastCommunication': 'Última comunicación',
   'location': 'Ubicación',
@@ -1381,6 +1509,8 @@ const Map<String, String> _es = {
   'lotNearExpiry': 'Próximo a vencer',
   'lotNotYetReceived': 'Aún no recibido',
   'markAllRead': 'Marcar todas como leídas',
+  'allMarkedRead': 'Todas las notificaciones se marcaron como leídas',
+  'undo': 'Deshacer',
   'materialLots': 'Lotes',
   'metricAirQuality': 'Calidad del aire',
   'metricHumidity': 'Humedad',
@@ -1444,7 +1574,6 @@ const Map<String, String> _es = {
   'photoUpdated': 'Se actualizó tu foto.',
   'preferencesSaved': 'Preferencias guardadas.',
   'profileSaved': 'Se guardaron tus datos.',
-  'profileVersion': 'Perfil versión {version}',
   'removePhoto': 'Quitar foto',
   'removePhotoConfirm': 'Se mostrarán tus iniciales en lugar de la foto.',
   'renewalCancelled': 'Renovación cancelada: acceso hasta el {date}',
@@ -1474,6 +1603,7 @@ const Map<String, String> _es = {
   'healthAtRisk': 'en riesgo',
   'healthCritical': 'crítico',
   'tabDeviations': 'Desviaciones ({count})',
+  'tabDeviationsPlain': 'Desviaciones',
   'tabMeasurements': 'Mediciones',
   'tabHistory': 'Historial',
   'noData': 'Sin datos',
@@ -1482,9 +1612,7 @@ const Map<String, String> _es = {
   'eventCount': '{count} evento',
   'eventCountPlural': '{count} eventos',
   'seeLast31Days': 'Ver últimos 31 días',
-  'historyIndependentOfPeriod': 'No depende del período seleccionado',
   'reportHistoryBanner': 'Los reportes se generan y descargan en QualiTrack Web.',
-  'swipeHint': 'Desliza a los lados para cambiar de sección',
   'seeMoreCount': 'Ver {count} más',
   'historyBatchCreated': 'Lote registrado',
   'historyBatchStarted': 'Fabricación iniciada',
@@ -1539,7 +1667,6 @@ const Map<String, String> _es = {
   'homeStatusCritical': 'Requiere atención: {count} alertas críticas',
   'homeStatusPending': 'Hay pendientes por revisar',
   'homeStatusAllClear': 'Todo en orden',
-  'homeUpdatedAt': 'Actualizado {time}',
   'homeAlertsDetail': '{unresolved} sin resolver · {acknowledged} reconocidas',
   'homeDevicesToReview': '{count} por revisar',
   'homeDevicesNoData': '{count} sin datos',

@@ -11,7 +11,8 @@ import '../../domain/entities/production_batch.dart';
 import 'batch_labels.dart';
 
 /// A batch as a mobile list item: status icon, batch number and status on
-/// the first line, the product below, then quantity · start date.
+/// the first line, the product below, then quantity · start date. The status
+/// badge says whether it awaits the QA decision, so no extra line repeats it.
 class BatchCard extends StatelessWidget {
   const BatchCard({super.key, required this.batch, this.onTap});
 
@@ -85,24 +86,14 @@ class BatchCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (batch.isAwaitingReview) ...[
-                      const SizedBox(height: AppSpacing.sm),
-                      Row(
-                        children: [
-                          const Icon(Icons.pending_actions_outlined, size: 16, color: AppColors.warning),
-                          const SizedBox(width: AppSpacing.xs),
-                          Expanded(
-                            child: Text(
-                              i18n.awaitingQaRelease,
-                              style: text.bodySmall?.copyWith(color: AppColors.warning, fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
               ),
+              if (onTap != null)
+                const Padding(
+                  padding: EdgeInsets.only(left: AppSpacing.xs, top: AppSpacing.sm),
+                  child: Icon(Icons.chevron_right, color: AppColors.textMuted),
+                ),
             ],
           ),
         ),

@@ -15,7 +15,6 @@ import '../screens/all_measurements_screen.dart';
 import '../widgets/measurement_row.dart';
 import '../widgets/empty_states.dart';
 import '../widgets/see_more_button.dart';
-import '../widgets/swipe_hint.dart';
 
 /// Tab that displays the measurement summaries.
 class MeasurementsTab extends StatelessWidget {
@@ -33,7 +32,9 @@ class MeasurementsTab extends StatelessWidget {
   final VoidCallback onReload;
 
   /// Callback to change the period to 31 days when the list is empty.
-  final VoidCallback onSeeLast31Days;
+  /// Null when the period is already the last 31 days: the empty state then
+  /// offers no action that would change nothing.
+  final VoidCallback? onSeeLast31Days;
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +99,6 @@ class MeasurementsTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-
-            // 5. Swipe hint for the user
-            const SwipeHint(),
           ],
         ],
       ),

@@ -12,8 +12,8 @@ typedef _Tab = (IconData icon, IconData selectedIcon, String Function(AppLocaliz
 /// the app (More, lists, notices, batch history) uses `report_problem`.
 final Map<String, _Tab> _tabs = {
   AppRoutes.home: (Icons.space_dashboard_outlined, Icons.space_dashboard, (i) => i.navHome),
-  AppRoutes.telemetry: (Icons.monitor_heart_outlined, Icons.monitor_heart, (i) => i.navTelemetry),
   AppRoutes.alerts: (Icons.report_problem_outlined, Icons.report_problem, (i) => i.navAlerts),
+  AppRoutes.telemetry: (Icons.monitor_heart_outlined, Icons.monitor_heart, (i) => i.navTelemetry),
   AppRoutes.batches: (Icons.inventory_2_outlined, Icons.inventory_2, (i) => i.navBatches),
   AppRoutes.more: (Icons.menu, Icons.menu_open, (i) => i.navMore),
 };
@@ -22,7 +22,7 @@ final Map<String, _Tab> _tabs = {
 ///
 /// The tabs are built from the branches of the StatefulShellRoute itself
 /// (app_router.dart), in their order, so a tab always opens its own branch:
-/// the order of the Report (Home → Telemetry → Alerts → Batches → More) is
+/// the order by importance (Home → Alerts → Telemetry → Batches → More) is
 /// defined once, in the router.
 class MainShell extends StatelessWidget {
   const MainShell({super.key, required this.shell});
@@ -44,7 +44,16 @@ class MainShell extends StatelessWidget {
         maxScaleFactor: maxLabelScale,
         child: NavigationBar(
           selectedIndex: shell.currentIndex,
-          onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+          // A tab opens where it was left, and tapping it again goes back to
+          // its start. More is the exception: it is a menu of unrelated
+          // sections, so it always opens on the menu instead of the section
+          // seen last (the tab would say "More" over, say, Billing).
+          onDestinationSelected:
+              (index) => shell.goBranch(
+                index,
+                initialLocation:
+                    index == shell.currentIndex || shell.route.branches[index].defaultRoute?.path == AppRoutes.more,
+              ),
           destinations: [
             for (final branch in shell.route.branches)
               () {

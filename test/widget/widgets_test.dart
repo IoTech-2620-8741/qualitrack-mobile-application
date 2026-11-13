@@ -15,6 +15,9 @@ import 'package:qualitrack_mobile/compliance/presentation/screens/notifications_
 import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
+import 'package:qualitrack_mobile/inventory/presentation/widgets/inventory_labels.dart';
+import 'package:qualitrack_mobile/common/presentation/labels.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/screens/change_password_screen.dart';
@@ -23,6 +26,7 @@ import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
+import 'package:qualitrack_mobile/common/presentation/formatting/relative_time.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
 import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
@@ -185,6 +189,50 @@ void main() {
     });
   });
 
+  testWidgets('backend codes read in the language of the app, never raw', (tester) async {
+    late BuildContext context;
+    await tester.pumpLocalized(
+      Builder(
+        builder: (c) {
+          context = c;
+          return const SizedBox();
+        },
+      ),
+      locale: const Locale('es'),
+    );
+    final i18n = context.i18n;
+    expect(codeLabel(i18n, 'ACTIVE'), 'Activo');
+    expect(codeLabel(i18n, 'MONTHLY'), 'Mensual');
+    expect(codeLabel(i18n, 'PENDING_PAYMENT'), 'Pago pendiente');
+    expect(codeLabel(i18n, 'PREVENTIVE'), 'Preventivo');
+    // An unknown code is humanized, not shown as it arrives.
+    expect(codeLabel(i18n, 'SOME_NEW_CODE'), 'Some new code');
+    expect(regulationLabel('BPM_DIGEMID'), 'BPM DIGEMID');
+    // Below the minimum is a warning (amber), as on the Home.
+    expect(materialFixture().stockTone, BadgeTone.warning);
+  });
+
+  testWidgets('the telemetry help explains the states, the chart and the connection', (tester) async {
+    await tester.pumpLocalized(
+      Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(onPressed: () => showTelemetryHelp(context), child: const Text('help')),
+        ),
+      ),
+      locale: const Locale('es'),
+      // A tall phone shows the whole sheet; a short one scrolls it.
+      size: const Size(412, 915),
+    );
+    await tester.tap(find.text('help'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cómo leer la telemetría'), findsOneWidget);
+    for (final state in ['Normal', 'Advertencia', 'Crítico', 'Requiere revisión']) {
+      expect(find.text(state), findsOneWidget, reason: state);
+    }
+    expect(find.textContaining('franja verde'), findsOneWidget);
+  });
+
   group('State views', () {
     testWidgets('empty state shows the default message', (tester) async {
       await tester.pumpLocalized(const Scaffold(body: EmptyView()));
@@ -200,6 +248,40 @@ void main() {
       expect(find.textContaining('took too long'), findsOneWidget);
       await tester.tap(find.text('Retry'));
       expect(retried, isTrue);
+    });
+
+    testWidgets('the error title names the cause', (tester) async {
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: NetworkFailure())), locale: const Locale('es'));
+      expect(find.text('Sin conexión'), findsOneWidget);
+      expect(find.text('Algo salió mal'), findsNothing);
+
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: ForbiddenFailure())));
+      expect(find.text('Access restricted'), findsOneWidget);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: ParsingFailure())));
+      expect(find.text('The information could not be loaded'), findsOneWidget);
+    });
+
+    testWidgets('recent times read as elapsed time, older ones as a date', (tester) async {
+      late BuildContext context;
+      await tester.pumpLocalized(
+        Builder(
+          builder: (c) {
+            context = c;
+            return const SizedBox();
+          },
+        ),
+        locale: const Locale('es'),
+      );
+      final now = DateTime(2026, 11, 12, 10);
+      expect(relativeTime(context, now.subtract(const Duration(seconds: 20)), now: now), 'Hace un momento');
+      // A device clock ahead of the phone is still "just now".
+      expect(relativeTime(context, now.add(const Duration(seconds: 30)), now: now), 'Hace un momento');
+      expect(relativeTime(context, now.subtract(const Duration(minutes: 5)), now: now), 'Hace 5 min');
+      expect(relativeTime(context, now.subtract(const Duration(hours: 3)), now: now), 'Hace 3 h');
+      expect(relativeTime(context, now.subtract(const Duration(days: 2)), now: now), isNot(startsWith('Hace')));
+      expect(relativeTime(context, null, now: now), '—');
     });
   });
 

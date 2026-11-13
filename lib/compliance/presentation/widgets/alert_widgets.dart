@@ -5,6 +5,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/entities/alert_severity.dart';
@@ -75,7 +76,9 @@ class AlertCard extends StatelessWidget {
       deviceName ?? i18n.equipmentNumber(alert.equipmentId),
       environmentName,
     ].whereType<String>().join(' · ');
-    final when = Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale);
+    final at = alert.lastDetectedAt ?? alert.timestamp;
+    // Elapsed time on the card ("5 min ago"); the exact moment in a tooltip.
+    final when = relativeTime(context, at);
     // One label for screen readers, in the order the card is read visually.
     final semanticLabel = [
       alert.severity.label(i18n),
@@ -159,11 +162,15 @@ class AlertCard extends StatelessWidget {
                               ],
                             ],
                           ),
-                          Text(when, style: text.bodySmall),
+                          Tooltip(message: Formatters.dateTime(at, locale), child: Text(when, style: text.bodySmall)),
                         ],
                       ),
                     ],
                   ),
+                ),
+                if (onTap != null) const Padding(
+                  padding: EdgeInsets.only(left: AppSpacing.xs, top: AppSpacing.sm),
+                  child: Icon(Icons.chevron_right, color: AppColors.textMuted),
                 ),
               ],
             ),

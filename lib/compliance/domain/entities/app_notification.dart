@@ -41,6 +41,26 @@ class AppNotification extends Equatable {
   final DateTime? readAt;
 
   bool get isRead => readAt != null;
+
+  /// This notice read at [at] (unchanged if it was already read).
+  AppNotification readNow(DateTime at) => isRead
+      ? this
+      : AppNotification(
+          id: id,
+          type: type,
+          subjectType: subjectType,
+          subjectId: subjectId,
+          severity: severity,
+          environmentName: environmentName,
+          subjectName: subjectName,
+          parameterName: parameterName,
+          recordedValue: recordedValue,
+          unit: unit,
+          actorName: actorName,
+          note: note,
+          occurredAt: occurredAt,
+          readAt: at,
+        );
   bool get isAboutAlert => subjectType == 'ALERT';
   bool get isAboutBatch => subjectType == 'BATCH';
 

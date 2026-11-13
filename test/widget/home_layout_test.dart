@@ -18,7 +18,7 @@ import '../helpers/pump_app.dart';
 class _MockHomeBloc extends MockBloc<CommandCenterRequested, RemoteState<CommandCenterSummary>>
     implements CommandCenterBloc {}
 
-CommandCenterSummary _summary() {
+CommandCenterSummary _summary({bool openAlerts = true}) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
   return CommandCenterSummary(
@@ -38,31 +38,38 @@ CommandCenterSummary _summary() {
         recent: [batchFixture(id: 9, batchNumber: 'LOT-2026-0009')],
       ),
     ),
-    alerts: Part.ok(
-      AlertOverview(
-        summary: const AlertSummary(total: 4, unresolved: 3, acknowledged: 1, resolved: 0, critical: 2),
-        open: [
-          alertFixture(id: 1, equipmentId: 1, timestamp: now.subtract(const Duration(hours: 2))),
-          alertFixture(id: 2, equipmentId: 2, timestamp: now.subtract(const Duration(days: 2))),
-          alertFixture(
-            id: 3,
-            equipmentId: 3,
-            severity: AlertSeverity.warning,
-            timestamp: now.subtract(const Duration(days: 4)),
-          ),
-        ],
-      ),
-    ),
+    alerts:
+        !openAlerts
+            ? const Part.ok(
+              AlertOverview(
+                summary: AlertSummary(total: 2, unresolved: 0, acknowledged: 0, resolved: 2, critical: 0),
+                open: [],
+              ),
+            )
+            : Part.ok(
+              AlertOverview(
+                summary: const AlertSummary(total: 4, unresolved: 3, acknowledged: 1, resolved: 0, critical: 2),
+                open: [
+                  alertFixture(id: 1, equipmentId: 1, timestamp: now.subtract(const Duration(hours: 2))),
+                  alertFixture(id: 2, equipmentId: 2, timestamp: now.subtract(const Duration(days: 2))),
+                  alertFixture(
+                    id: 3,
+                    equipmentId: 3,
+                    severity: AlertSeverity.warning,
+                    timestamp: now.subtract(const Duration(days: 4)),
+                  ),
+                ],
+              ),
+            ),
     materials: Part.ok([materialFixture(), materialFixture(id: 2, usable: 9, stockStatus: 'OK')]),
     subscription: null,
+    fetchedAt: now.subtract(const Duration(minutes: 5)),
   );
 }
 
 CommandCenterViews _views() => CommandCenterViews(
   notificationBell: const SizedBox.square(dimension: 48),
   profileButton: const SizedBox.square(dimension: 48),
-  profileChanges: ChangeNotifier(),
-  displayName: () => 'Ana Torres',
   roleLabel: (role, i18n) => 'QA Manager',
   // An alert card of a fixed height, named after its alert and its device.
   alertCard: (alert, {deviceName, environmentName, onTap}) =>
@@ -128,8 +135,9 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(scrollExtent(tester), 0);
-      // The first name greets; the full name stays in the profile.
-      expect(find.text('Hello, Ana'), findsOneWidget);
+      // A sober header: the laboratory, the role and how current the figures are.
+      expect(find.text('QualiLab Lima'), findsOneWidget);
+      expect(find.text('QA Manager · Updated 5 min ago'), findsOneWidget);
       expect(find.text('Needs attention: 2 critical alerts'), findsOneWidget);
       final alerts = tester.getTopLeft(find.text('Open alerts'));
       final telemetry = tester.getTopLeft(find.text('Devices online'));
@@ -182,6 +190,20 @@ void main() {
     }
   });
 
+  testWidgets('without open alerts the latest alerts are left out, not repeated', (tester) async {
+    whenListen(
+      bloc,
+      const Stream<RemoteState<CommandCenterSummary>>.empty(),
+      initialState: const RemoteState<CommandCenterSummary>().success(_summary(openAlerts: false)),
+    );
+    await pumpHome(tester, const Size(412, 915));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('No open alerts'), findsOneWidget);
+    expect(find.text('Most urgent'), findsNothing);
+    expect(find.text('View all'), findsNothing);
+  });
+
   testWidgets('a short screen shows fewer latest alerts, never half a card', (tester) async {
     await pumpHome(tester, const Size(360, 640));
 
@@ -195,14 +217,29 @@ void main() {
     }
   });
 
+  testWidgets('while loading, Home shows the shape of its cards instead of a spinner', (tester) async {
+    whenListen(
+      bloc,
+      const Stream<RemoteState<CommandCenterSummary>>.empty(),
+      initialState: const RemoteState<CommandCenterSummary>().loading(),
+    );
+    await pumpHome(tester, const Size(360, 800));
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.bySemanticsLabel('Loading…'), findsOneWidget);
+    // Without the figures yet, the title falls back to the section name.
+    expect(find.text('Home'), findsWidgets);
+  });
+
   testWidgets('Home keeps the text size the user chose', (tester) async {
     await pumpHome(tester, const Size(360, 800));
-    final normal = tester.getRect(find.text('Hello, Ana')).height;
+    final normal = tester.getRect(find.text('3 unresolved · 1 acknowledged')).height;
 
     await pumpHome(tester, const Size(360, 800), textScale: 1.3);
 
     expect(tester.takeException(), isNull);
-    expect(tester.getRect(find.text('Hello, Ana')).height / normal, closeTo(1.3, 0.05));
+    expect(tester.getRect(find.text('3 unresolved · 1 acknowledged')).height / normal, closeTo(1.3, 0.05));
     // The rows fit 130% text (the Report supports up to sp × 1.3).
     expect(scrollExtent(tester), 0);
   });

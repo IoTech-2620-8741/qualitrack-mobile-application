@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../common/domain/failure.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/theme/app_colors.dart';
@@ -22,10 +25,11 @@ import '../command_center_views.dart';
 /// Home panel shown after signing in (US: consult the control panel of the
 /// laboratory).
 ///
-/// The greeting and the user's role · laboratory are the app bar title. The
-/// body reads state, then priority, then action:
+/// The laboratory is the app bar title, with the user's role and how long ago
+/// the figures were loaded below it. The body reads state, then priority, then
+/// action:
 /// - a strip with what the laboratory needs now (critical alerts, items to
-///   review or all in order) and when the data was read;
+///   review or all in order);
 /// - four rows in order of importance (Report, Mobile Style Guidelines), each
 ///   with its figure, a short detail and a chevron to the screen that acts on
 ///   it: compliance alerts, IoT devices online, batches awaiting the QA
@@ -52,14 +56,8 @@ class CommandCenterScreen extends StatelessWidget {
     void reload() => context.read<CommandCenterBloc>().add(const CommandCenterRequested(refresh: true));
     return Scaffold(
       appBar: AppBar(
-        title: ListenableBuilder(
-          listenable: views.profileChanges,
-          builder:
-              (context, _) => BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
-                builder:
-                    (context, state) =>
-                        _GreetingTitle(session: session, views: views, laboratory: state.data?.laboratory.value?.name),
-              ),
+        title: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
+          builder: (context, state) => _PanelTitle(session: session, views: views, summary: state.data),
         ),
         actions: [views.notificationBell, views.profileButton],
       ),
@@ -68,6 +66,9 @@ class CommandCenterScreen extends StatelessWidget {
             (context, state) => RemoteStateView<CommandCenterSummary>(
               state: state,
               onRetry: reload,
+              // The shape of the panel while it loads, so nothing jumps when
+              // the figures arrive.
+              loading: const _PanelSkeleton(),
               builder:
                   (context, summary) => LayoutBuilder(
                     builder: (context, constraints) {
@@ -91,10 +92,14 @@ class CommandCenterScreen extends StatelessWidget {
                                 // does not change while pulling to refresh.
                                 final rest = sliver.viewportMainAxisExtent - sliver.precedingScrollExtent;
                                 final fits = rest >= MediaQuery.textScalerOf(context).scale(_LatestAlerts.minHeight);
+                                // With no open alerts (or none loaded) the
+                                // alerts row already says so: the section is
+                                // left out instead of repeating it.
+                                final hasOpen = summary.alerts.value?.open.isNotEmpty ?? false;
                                 return SliverToBoxAdapter(
                                   child: SizedBox(
                                     height: rest > 0 ? rest : 0,
-                                    child: fits ? _LatestAlerts(summary: summary, views: views) : null,
+                                    child: fits && hasOpen ? _LatestAlerts(summary: summary, views: views) : null,
                                   ),
                                 );
                               },
@@ -115,28 +120,48 @@ String _error(BuildContext context, Failure? failure) =>
 
 const _gap = SizedBox.square(dimension: AppSpacing.md);
 
-/// The first word of a full name, or null if there is none.
-String? _firstName(String? fullName) {
-  final words = fullName?.trim().split(RegExp(r'\s+')) ?? const <String>[];
-  return words.isEmpty || words.first.isEmpty ? null : words.first;
-}
-
-/// "Hello, {first name}" with "role · laboratory" below it, as the app bar
-/// title; the full name stays in the profile.
-class _GreetingTitle extends StatelessWidget {
-  const _GreetingTitle({required this.session, required this.views, required this.laboratory});
+/// The laboratory as the title and "role · updated 2 min ago" below it: a
+/// sober header for a compliance panel, which says how current the figures
+/// are. The user is the avatar of the profile button.
+class _PanelTitle extends StatefulWidget {
+  const _PanelTitle({required this.session, required this.views, required this.summary});
 
   final UserSession session;
   final CommandCenterViews views;
-  final String? laboratory;
+  final CommandCenterSummary? summary;
+
+  @override
+  State<_PanelTitle> createState() => _PanelTitleState();
+}
+
+class _PanelTitleState extends State<_PanelTitle> {
+  /// Rebuilds every minute so "updated 2 min ago" keeps counting between
+  /// refreshes.
+  late final Timer _clock;
+
+  @override
+  void initState() {
+    super.initState();
+    _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _clock.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final role = session.primaryRole;
-    final subtitle = [role == null ? null : views.roleLabel(role, i18n), laboratory].whereType<String>().join(' · ');
+    final role = widget.session.primaryRole;
+    final fetchedAt = widget.summary?.fetchedAt;
+    final subtitle = [
+      if (role != null) widget.views.roleLabel(role, i18n),
+      if (fetchedAt != null) updatedText(context, fetchedAt),
+    ].join(' · ');
     return AppBarTitle(
-      title: i18n.welcomeUser(_firstName(views.displayName()) ?? session.username),
+      title: widget.summary?.laboratory.value?.name ?? i18n.navHome,
       subtitle: subtitle.isEmpty ? null : subtitle,
     );
   }
@@ -181,7 +206,7 @@ class _Panel extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 /// What the laboratory needs now, read from the data (not a score): critical
-/// alerts, anything else to review, or all in order; and when it was read.
+/// alerts, anything else to review, or all in order.
 class _StatusStrip extends StatelessWidget {
   const _StatusStrip({required this.summary});
 
@@ -207,7 +232,6 @@ class _StatusStrip extends StatelessWidget {
             : pending
             ? (BadgeTone.warning, i18n.homeStatusPending)
             : (BadgeTone.success, i18n.homeStatusAllClear);
-    final loadedAt = summary.loadedAt;
     return Semantics(
       container: true,
       child: Container(
@@ -226,13 +250,6 @@ class _StatusStrip extends StatelessWidget {
                 style: text.bodyMedium?.copyWith(color: tone.foreground, fontWeight: FontWeight.w600),
               ),
             ),
-            if (loadedAt != null) ...[
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                i18n.homeUpdatedAt(TimeOfDay.fromDateTime(loadedAt).format(context)),
-                style: text.bodySmall?.copyWith(color: tone.foreground),
-              ),
-            ],
           ],
         ),
       ),
@@ -469,11 +486,91 @@ class _InventoryRow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Loading
+// ---------------------------------------------------------------------------
+
+/// Gray placeholders with the shape of the four cards, pulsing softly while
+/// the panel loads.
+class _PanelSkeleton extends StatefulWidget {
+  const _PanelSkeleton();
+
+  @override
+  State<_PanelSkeleton> createState() => _PanelSkeletonState();
+}
+
+class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+    lowerBound: 0.5,
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bone(double width, double height) => Container(
+      width: width,
+      height: height,
+      decoration: const BoxDecoration(color: AppColors.neutralContainer, borderRadius: AppRadius.smAll),
+    );
+    Widget card() => DecoratedBox(
+      decoration: const BoxDecoration(color: AppColors.surface, borderRadius: AppRadius.xlAll),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(color: AppColors.neutralContainer, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                bone(64, 12),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            bone(48, 28),
+            const SizedBox(height: AppSpacing.xs),
+            bone(96, 10),
+            const SizedBox(height: AppSpacing.md),
+            bone(double.infinity, 6),
+            const SizedBox(height: AppSpacing.xs),
+            bone(72, 10),
+          ],
+        ),
+      ),
+    );
+    Widget row() => Row(children: [Expanded(child: card()), _gap, Expanded(child: card())]);
+    return Semantics(
+      label: context.i18n.loading,
+      child: ExcludeSemantics(
+        child: FadeTransition(
+          opacity: _pulse,
+          child: ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            children: [row(), _gap, row()],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Most urgent alerts, in the rest of the screen
 // ---------------------------------------------------------------------------
 
 /// The open alerts, most urgent first, as many as fit whole in the height the
-/// cards leave (the same cards as the Alerts tab).
+/// rows leave (the same cards as the Alerts tab).
 class _LatestAlerts extends StatelessWidget {
   const _LatestAlerts({required this.summary, required this.views});
 
@@ -491,9 +588,7 @@ class _LatestAlerts extends StatelessWidget {
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     final text = Theme.of(context).textTheme;
-    final part = summary.alerts;
-    final open = part.value?.byPriority ?? const [];
-    final empty = part.isOk ? i18n.noOpenAlertsShort : _error(context, part.failure);
+    final open = summary.alerts.value?.byPriority ?? const [];
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
       child: Column(
@@ -509,26 +604,23 @@ class _LatestAlerts extends StatelessWidget {
                   style: text.titleSmall?.copyWith(color: AppColors.navy),
                 ),
               ),
-              if (open.isNotEmpty) TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
+              TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
           Expanded(
-            child:
-                open.isEmpty
-                    ? Text(empty, style: text.bodyMedium?.copyWith(color: AppColors.textMuted))
-                    : _FitColumn(
-                      spacing: AppSpacing.sm,
-                      children: [
-                        for (final alert in open.take(_limit))
-                          views.alertCard(
-                            alert,
-                            deviceName: summary.equipmentNames[alert.equipmentId],
-                            environmentName: summary.environmentNames[alert.environmentId],
-                            onTap: () => context.push('/alerts/${alert.id}'),
-                          ),
-                      ],
-                    ),
+            child: _FitColumn(
+              spacing: AppSpacing.sm,
+              children: [
+                for (final alert in open.take(_limit))
+                  views.alertCard(
+                    alert,
+                    deviceName: summary.equipmentNames[alert.equipmentId],
+                    environmentName: summary.environmentNames[alert.environmentId],
+                    onTap: () => context.push('/alerts/${alert.id}'),
+                  ),
+              ],
+            ),
           ),
         ],
       ),

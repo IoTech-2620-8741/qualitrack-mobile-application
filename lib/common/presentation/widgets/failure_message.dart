@@ -3,6 +3,22 @@ import 'package:flutter/widgets.dart';
 import '../../domain/failure.dart';
 import '../i18n/app_localizations.dart';
 
+/// Short title that names what happened ("No connection", "Access
+/// restricted"…) instead of a generic "Something went wrong": the user reads
+/// the cause first and the message below says what to do.
+String failureTitle(BuildContext context, Failure failure) {
+  final i18n = context.i18n;
+  return switch (failure) {
+    NetworkFailure() => i18n.errorTitleNetwork,
+    TimeoutFailure() => i18n.errorTitleTimeout,
+    UnauthorizedFailure() || ForbiddenFailure() || OnboardingRequiredFailure() || MissingLaboratoryFailure() =>
+      i18n.errorTitleAccess,
+    NotFoundFailure() => i18n.errorTitleNotFound,
+    ServerFailure() => i18n.errorTitleServer,
+    _ => i18n.errorTitle,
+  };
+}
+
 /// Human readable, localized message for a [Failure]. Backend messages are
 /// appended for validation/conflict errors because they explain the rule.
 String failureMessage(BuildContext context, Failure failure) {

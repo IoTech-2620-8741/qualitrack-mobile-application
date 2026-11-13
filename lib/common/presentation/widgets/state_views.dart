@@ -66,11 +66,16 @@ class ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _CenteredMessage(
-      icon: failure is NetworkFailure || failure is TimeoutFailure
-          ? Icons.wifi_off_rounded
-          : Icons.error_outline_rounded,
+      icon: switch (failure) {
+        NetworkFailure() || TimeoutFailure() => Icons.wifi_off_rounded,
+        UnauthorizedFailure() || ForbiddenFailure() || OnboardingRequiredFailure() || MissingLaboratoryFailure() =>
+          Icons.lock_outline_rounded,
+        NotFoundFailure() => Icons.search_off_rounded,
+        ServerFailure() => Icons.cloud_off_rounded,
+        _ => Icons.error_outline_rounded,
+      },
       iconColor: AppColors.critical,
-      title: context.i18n.errorTitle,
+      title: failureTitle(context, failure),
       message: failureMessage(context, failure),
       action: onRetry == null
           ? null

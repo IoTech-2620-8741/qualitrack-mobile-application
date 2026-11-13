@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../iam/api/index.dart';
-import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/confirm_dialog.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
@@ -19,6 +18,7 @@ import '../../domain/entities/user_profile.dart';
 import '../../domain/logic/personal_data_rules.dart';
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_avatar.dart';
+import '../../../common/presentation/labels.dart';
 
 /// Profile of the signed-in user: photo, personal data, account and access to
 /// the password change and the notification preferences.
@@ -54,7 +54,7 @@ class ProfileScreen extends StatelessWidget {
     final i18n = context.i18n;
     final bloc = context.read<ProfileBloc>();
     return Scaffold(
-      appBar: AppBar(title: Text(i18n.profile)),
+      appBar: AppBar(title: AppBarTitle(title: i18n.profile)),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listenWhen: (a, b) => a.actionStatus != b.actionStatus,
         listener: (context, state) {
@@ -86,37 +86,32 @@ class ProfileScreen extends StatelessWidget {
             return ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
-                Center(child: ProfileAvatar(initials: profile.initials, photo: data.photo, radius: 44)),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: AppSpacing.sm,
-                  children: [
-                    TextButton.icon(
-                      onPressed: busy ? null : () => _pickPhoto(context),
-                      icon: const Icon(Icons.photo_camera_outlined),
-                      label: Text(profile.hasPhoto ? i18n.changePhoto : i18n.addPhoto),
-                    ),
-                    if (profile.hasPhoto)
-                      TextButton.icon(
-                        style: TextButton.styleFrom(foregroundColor: AppColors.critical),
-                        onPressed: busy
-                            ? null
-                            : () async {
-                                final ok = await showConfirmDialog(
-                                  context,
-                                  title: i18n.removePhoto,
-                                  message: i18n.removePhotoConfirm,
-                                  confirmLabel: i18n.removePhoto,
-                                  destructive: true,
-                                );
-                                if (ok) bloc.add(const ProfilePhotoRemoved());
-                              },
-                        icon: const Icon(Icons.delete_outline),
-                        label: Text(i18n.removePhoto),
+                // The photo is changed from a camera button on the avatar
+                // itself, so the name stays right under the photo.
+                Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      ProfileAvatar(initials: profile.initials, photo: data.photo, radius: 44),
+                      Positioned(
+                        right: -4,
+                        bottom: -4,
+                        child: IconButton.filled(
+                          key: const Key('profile.photo'),
+                          tooltip: profile.hasPhoto ? i18n.changePhoto : i18n.addPhoto,
+                          onPressed: busy ? null : () => _photoOptions(context, hasPhoto: profile.hasPhoto),
+                          style: IconButton.styleFrom(
+                            backgroundColor: AppColors.primaryDark,
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: AppColors.surface, width: 2),
+                          ),
+                          icon: const Icon(Icons.photo_camera_outlined, size: 20),
+                        ),
                       ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(height: AppSpacing.md),
                 Text(profile.displayName, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge),
                 if (profile.position != null)
                   Text(profile.position!, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
@@ -136,7 +131,10 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       DetailList(
                         children: [
-                          DetailRow(label: i18n.fullName, value: profile.fullName ?? '—'),
+                          // The full name is the heading above; the row only
+                          // says it is missing.
+                          if (profile.fullName?.trim().isNotEmpty != true)
+                            DetailRow(label: i18n.fullName, value: '—'),
                           DetailRow(label: i18n.dni, value: profile.dni ?? '—'),
                           DetailRow(label: i18n.phone, value: profile.phoneNumber ?? '—'),
                           DetailRow(label: i18n.location, value: profile.location ?? '—'),
@@ -174,9 +172,9 @@ class ProfileScreen extends StatelessWidget {
                         DetailRow(label: i18n.ruc, value: lab.ruc ?? '—'),
                         DetailRow(label: i18n.phone, value: lab.phone ?? '—'),
                         DetailRow(label: i18n.address, value: lab.address ?? '—'),
-                        DetailRow(label: i18n.status, value: Formatters.humanize(lab.status)),
+                        DetailRow(label: i18n.status, value: codeLabel(i18n, lab.status)),
                         if (lab.applicableRegulations.isNotEmpty)
-                          DetailRow(label: i18n.regulations, value: lab.applicableRegulations.join(', ')),
+                          DetailRow(label: i18n.regulations, value: lab.applicableRegulations.map(regulationLabel).join(', ')),
                       ],
                     ),
                   ),
@@ -204,7 +202,8 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(foregroundColor: AppColors.critical),
-                  onPressed: onSignOut,
+                  // Confirmed first, as from More.
+                  onPressed: () => _confirmSignOut(context),
                   icon: const Icon(Icons.logout),
                   label: Text(i18n.signOut),
                 ),
@@ -214,6 +213,60 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final i18n = context.i18n;
+    final ok = await showConfirmDialog(
+      context,
+      title: i18n.signOut,
+      message: i18n.signOutConfirm,
+      confirmLabel: i18n.signOut,
+      destructive: true,
+    );
+    if (ok) await onSignOut();
+  }
+
+  /// Without a photo the camera button picks one; with a photo it offers to
+  /// change or remove it.
+  Future<void> _photoOptions(BuildContext context, {required bool hasPhoto}) async {
+    if (!hasPhoto) return _pickPhoto(context);
+    final i18n = context.i18n;
+    final bloc = context.read<ProfileBloc>();
+    final choice = await showModalBottomSheet<bool>(
+      context: context,
+      useSafeArea: true,
+      builder:
+          (sheet) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text(i18n.changePhotoMenu, style: Theme.of(sheet).textTheme.titleSmall),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(i18n.changePhoto),
+                onTap: () => Navigator.pop(sheet, true),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: AppColors.critical),
+                title: Text(i18n.removePhoto, style: const TextStyle(color: AppColors.critical)),
+                onTap: () => Navigator.pop(sheet, false),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          ),
+    );
+    if (!context.mounted || choice == null) return;
+    if (choice) return _pickPhoto(context);
+    final ok = await showConfirmDialog(
+      context,
+      title: i18n.removePhoto,
+      message: i18n.removePhotoConfirm,
+      confirmLabel: i18n.removePhoto,
+      destructive: true,
+    );
+    if (ok) bloc.add(const ProfilePhotoRemoved());
   }
 
   Future<void> _editPersonalData(BuildContext context, UserProfile profile) async {
