@@ -101,7 +101,7 @@ class _SignInFormState extends State<SignInForm> {
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 if (widget.sessionExpired && state.status == SignInStatus.idle)
-                  _Banner(message: i18n.sessionExpired, tone: AppColors.warning),
+                  _Banner(message: i18n.sessionExpired, tone: AppColors.warning, icon: Icons.lock_clock_outlined),
                 if (state.status == SignInStatus.failure && state.failure != null)
                   _Banner(
                     message: state.failure is UnauthorizedFailure
@@ -179,10 +179,11 @@ class _SignInFormState extends State<SignInForm> {
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner({required this.message, required this.tone});
+  const _Banner({required this.message, required this.tone, this.icon = Icons.error_outline});
 
   final String message;
   final Color tone;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +200,7 @@ class _Banner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(Icons.error_outline, color: tone),
+              Icon(icon, color: tone),
               const SizedBox(width: AppSpacing.sm),
               Expanded(child: Text(message, style: TextStyle(color: tone))),
             ],

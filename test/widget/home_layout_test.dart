@@ -18,7 +18,7 @@ import '../helpers/pump_app.dart';
 class _MockHomeBloc extends MockBloc<CommandCenterRequested, RemoteState<CommandCenterSummary>>
     implements CommandCenterBloc {}
 
-CommandCenterSummary _summary() {
+CommandCenterSummary _summary({bool openAlerts = true}) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
   return CommandCenterSummary(
@@ -38,31 +38,38 @@ CommandCenterSummary _summary() {
         recent: [batchFixture(id: 9, batchNumber: 'LOT-2026-0009')],
       ),
     ),
-    alerts: Part.ok(
-      AlertOverview(
-        summary: const AlertSummary(total: 4, unresolved: 3, acknowledged: 1, resolved: 0, critical: 2),
-        open: [
-          alertFixture(id: 1, equipmentId: 1, timestamp: now.subtract(const Duration(hours: 2))),
-          alertFixture(id: 2, equipmentId: 2, timestamp: now.subtract(const Duration(days: 2))),
-          alertFixture(
-            id: 3,
-            equipmentId: 3,
-            severity: AlertSeverity.warning,
-            timestamp: now.subtract(const Duration(days: 4)),
-          ),
-        ],
-      ),
-    ),
+    alerts:
+        !openAlerts
+            ? const Part.ok(
+              AlertOverview(
+                summary: AlertSummary(total: 2, unresolved: 0, acknowledged: 0, resolved: 2, critical: 0),
+                open: [],
+              ),
+            )
+            : Part.ok(
+              AlertOverview(
+                summary: const AlertSummary(total: 4, unresolved: 3, acknowledged: 1, resolved: 0, critical: 2),
+                open: [
+                  alertFixture(id: 1, equipmentId: 1, timestamp: now.subtract(const Duration(hours: 2))),
+                  alertFixture(id: 2, equipmentId: 2, timestamp: now.subtract(const Duration(days: 2))),
+                  alertFixture(
+                    id: 3,
+                    equipmentId: 3,
+                    severity: AlertSeverity.warning,
+                    timestamp: now.subtract(const Duration(days: 4)),
+                  ),
+                ],
+              ),
+            ),
     materials: Part.ok([materialFixture(), materialFixture(id: 2, usable: 9, stockStatus: 'OK')]),
     subscription: null,
+    fetchedAt: now.subtract(const Duration(minutes: 5)),
   );
 }
 
 CommandCenterViews _views() => CommandCenterViews(
   notificationBell: const SizedBox.square(dimension: 48),
   profileButton: const SizedBox.square(dimension: 48),
-  profileChanges: ChangeNotifier(),
-  displayName: () => 'Ana Torres',
   roleLabel: (role, i18n) => 'QA Manager',
   // An alert card of a fixed height, named after its alert and its device.
   alertCard: (alert, {deviceName, environmentName, onTap}) =>
@@ -128,7 +135,11 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(scrollExtent(tester), 0);
-      expect(find.text('Hello, Ana Torres'), findsOneWidget);
+      // A sober header: the laboratory, the role and how current the figures are.
+      expect(find.text('QualiLab Lima'), findsOneWidget);
+      expect(find.text('QA Manager · Updated 5 min ago'), findsOneWidget);
+      // Every card says it opens a screen.
+      expect(find.byIcon(Icons.chevron_right), findsNWidgets(4));
       final alerts = tester.getTopLeft(find.text('Alerts'));
       final telemetry = tester.getTopLeft(find.text('Telemetry'));
       final batches = tester.getTopLeft(find.text('Batches'));
@@ -144,8 +155,11 @@ void main() {
       expect(find.text('Awaiting QA release'), findsOneWidget);
       expect(find.text('Below minimum'), findsOneWidget);
       // A short screen leaves the detail out instead of shrinking the cards.
-      expect(find.text('Released 4'), full ? findsOneWidget : findsNothing);
-      expect(find.text('Stock OK 1'), full ? findsOneWidget : findsNothing);
+      expect(find.text('of 9 batches'), full ? findsOneWidget : findsNothing);
+      expect(find.text('of 2 materials'), full ? findsOneWidget : findsNothing);
+      // One line of context instead of a full legend.
+      expect(find.text('3 unattended'), full ? findsOneWidget : findsNothing);
+      expect(find.textContaining('Acknowledged'), findsNothing);
       // Touch targets of at least 48 dp (Report: operators with gloves).
       for (final title in ['Alerts', 'Telemetry', 'Batches', 'Inventory']) {
         final card = find.ancestor(of: find.text(title), matching: find.byType(InkWell)).first;
@@ -180,6 +194,20 @@ void main() {
     }
   });
 
+  testWidgets('without open alerts the latest alerts are left out, not repeated', (tester) async {
+    whenListen(
+      bloc,
+      const Stream<RemoteState<CommandCenterSummary>>.empty(),
+      initialState: const RemoteState<CommandCenterSummary>().success(_summary(openAlerts: false)),
+    );
+    await pumpHome(tester, const Size(412, 915));
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('No open alerts'), findsOneWidget);
+    expect(find.text('Latest alerts'), findsNothing);
+    expect(find.text('View all'), findsNothing);
+  });
+
   testWidgets('a short screen shows fewer latest alerts, never half a card', (tester) async {
     await pumpHome(tester, const Size(360, 640));
 
@@ -191,6 +219,21 @@ void main() {
       if (card.hitTestable().evaluate().isEmpty) continue;
       expect(tester.getRect(find.ancestor(of: card, matching: find.byType(SizedBox)).first).bottom, lessThanOrEqualTo(barTop));
     }
+  });
+
+  testWidgets('while loading, Home shows the shape of its cards instead of a spinner', (tester) async {
+    whenListen(
+      bloc,
+      const Stream<RemoteState<CommandCenterSummary>>.empty(),
+      initialState: const RemoteState<CommandCenterSummary>().loading(),
+    );
+    await pumpHome(tester, const Size(360, 800));
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.bySemanticsLabel('Loading…'), findsOneWidget);
+    // Without the figures yet, the title falls back to the section name.
+    expect(find.text('Home'), findsWidgets);
   });
 
   testWidgets('Home keeps the text size the user chose', (tester) async {

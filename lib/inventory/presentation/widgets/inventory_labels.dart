@@ -22,7 +22,9 @@ extension ReceiptStatusPresentation on ReceiptStatus {
 }
 
 extension InventoryMaterialPresentation on InventoryMaterial {
-  BadgeTone get stockTone => isBelowMinimum ? BadgeTone.critical : BadgeTone.success;
+  /// Below the minimum is a warning (restock), not critical: the same amber as
+  /// the Home.
+  BadgeTone get stockTone => isBelowMinimum ? BadgeTone.warning : BadgeTone.success;
 
   String stockLabel(AppLocalizations i18n) => isBelowMinimum ? i18n.belowMinimum : i18n.stockOk;
 }

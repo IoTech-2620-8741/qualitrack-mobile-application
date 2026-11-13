@@ -220,13 +220,7 @@ class EquipmentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (e.serialNumber != null) ...[
-                const SizedBox(height: AppSpacing.xs),
-                Padding(
-                  padding: const EdgeInsets.only(left: 40 + AppSpacing.md),
-                  child: Text('${i18n.serialNumber}: ${e.serialNumber}', style: theme.textTheme.bodySmall),
-                ),
-              ],
+              // The serial number is in the detail: rarely looked up in a list.
             ],
           ),
         ),

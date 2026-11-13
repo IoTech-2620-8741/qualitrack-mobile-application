@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../common/domain/failure.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/remote_state.dart';
 import '../../../common/presentation/theme/app_colors.dart';
@@ -23,8 +26,8 @@ import '../command_center_views.dart';
 /// Home panel shown after signing in (US: consult the control panel of the
 /// laboratory).
 ///
-/// The greeting and the user's role · laboratory are the app bar title. The
-/// body shows four cards, two per row, in order of importance read top to
+/// The laboratory is the app bar title, with the user's role and how long ago
+/// the figures were loaded below it. The body shows four cards, two per row, in order of importance read top to
 /// bottom and left to right (Report, Mobile Style Guidelines):
 /// 1. Compliance alerts: open alerts, the critical ones and the most urgent.
 /// 2. Telemetry: IoT devices connected, to review and without data.
@@ -51,14 +54,8 @@ class CommandCenterScreen extends StatelessWidget {
     void reload() => context.read<CommandCenterBloc>().add(const CommandCenterRequested(refresh: true));
     return Scaffold(
       appBar: AppBar(
-        title: ListenableBuilder(
-          listenable: views.profileChanges,
-          builder:
-              (context, _) => BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
-                builder:
-                    (context, state) =>
-                        _GreetingTitle(session: session, views: views, laboratory: state.data?.laboratory.value?.name),
-              ),
+        title: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
+          builder: (context, state) => _PanelTitle(session: session, views: views, summary: state.data),
         ),
         actions: [views.notificationBell, views.profileButton],
       ),
@@ -67,6 +64,9 @@ class CommandCenterScreen extends StatelessWidget {
             (context, state) => RemoteStateView<CommandCenterSummary>(
               state: state,
               onRetry: reload,
+              // The shape of the panel while it loads, so nothing jumps when
+              // the figures arrive.
+              loading: const _PanelSkeleton(),
               builder:
                   (context, summary) => LayoutBuilder(
                     builder: (context, constraints) {
@@ -90,10 +90,14 @@ class CommandCenterScreen extends StatelessWidget {
                                 // does not change while pulling to refresh.
                                 final rest = sliver.viewportMainAxisExtent - sliver.precedingScrollExtent;
                                 final fits = rest >= MediaQuery.textScalerOf(context).scale(_LatestAlerts.minHeight);
+                                // With no open alerts (or none loaded) the
+                                // alerts card already says so: the section is
+                                // left out instead of repeating it.
+                                final hasOpen = summary.alerts.value?.open.isNotEmpty ?? false;
                                 return SliverToBoxAdapter(
                                   child: SizedBox(
                                     height: rest > 0 ? rest : 0,
-                                    child: fits ? _LatestAlerts(summary: summary, views: views) : null,
+                                    child: fits && hasOpen ? _LatestAlerts(summary: summary, views: views) : null,
                                   ),
                                 );
                               },
@@ -114,21 +118,48 @@ String _error(BuildContext context, Failure? failure) =>
 
 const _gap = SizedBox.square(dimension: AppSpacing.md);
 
-/// "Hello, {name}" with "role · laboratory" below it, as the app bar title.
-class _GreetingTitle extends StatelessWidget {
-  const _GreetingTitle({required this.session, required this.views, required this.laboratory});
+/// The laboratory as the title and "role · updated 2 min ago" below it: a
+/// sober header for a compliance panel, which says how current the figures
+/// are. The user is the avatar of the profile button.
+class _PanelTitle extends StatefulWidget {
+  const _PanelTitle({required this.session, required this.views, required this.summary});
 
   final UserSession session;
   final CommandCenterViews views;
-  final String? laboratory;
+  final CommandCenterSummary? summary;
+
+  @override
+  State<_PanelTitle> createState() => _PanelTitleState();
+}
+
+class _PanelTitleState extends State<_PanelTitle> {
+  /// Rebuilds every minute so "updated 2 min ago" keeps counting between
+  /// refreshes.
+  late final Timer _clock;
+
+  @override
+  void initState() {
+    super.initState();
+    _clock = Timer.periodic(const Duration(minutes: 1), (_) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _clock.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final role = session.primaryRole;
-    final subtitle = [role == null ? null : views.roleLabel(role, i18n), laboratory].whereType<String>().join(' · ');
+    final role = widget.session.primaryRole;
+    final fetchedAt = widget.summary?.fetchedAt;
+    final subtitle = [
+      if (role != null) widget.views.roleLabel(role, i18n),
+      if (fetchedAt != null) updatedText(context, fetchedAt),
+    ].join(' · ');
     return AppBarTitle(
-      title: i18n.welcomeUser(views.displayName() ?? session.username),
+      title: widget.summary?.laboratory.value?.name ?? i18n.navHome,
       subtitle: subtitle.isEmpty ? null : subtitle,
     );
   }
@@ -165,26 +196,26 @@ class _Panel extends StatelessWidget {
 // Building blocks
 // ---------------------------------------------------------------------------
 
-/// Home card: 16dp corners, white or tinted, ripple + press scale.
+/// Home card: white with 16dp corners, ripple + press scale. Every card has
+/// the same surface; the state shows in its icon, figure and context line.
 class _HomeCard extends StatelessWidget {
-  const _HomeCard({required this.child, required this.onTap, required this.semanticLabel, this.color});
+  const _HomeCard({required this.child, required this.onTap, required this.semanticLabel});
 
   final Widget child;
   final VoidCallback onTap;
   final String semanticLabel;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) => PressableCard(
     onTap: onTap,
-    color: color ?? AppColors.surface,
+    color: AppColors.surface,
     borderRadius: AppRadius.xlAll,
     semanticLabel: semanticLabel,
     child: Padding(padding: const EdgeInsets.all(AppSpacing.md), child: child),
   );
 }
 
-/// Tonal round icon + title.
+/// Tonal round icon + title, and a chevron that says the card opens a screen.
 class _CardHeader extends StatelessWidget {
   const _CardHeader({required this.title, required this.icon, required this.tone});
 
@@ -215,32 +246,14 @@ class _CardHeader extends StatelessWidget {
             style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.navy),
           ),
         ),
+        const Icon(Icons.chevron_right, size: 20, color: AppColors.textMuted),
       ],
     );
   }
 }
 
-/// A colored dot and a short label, for chart legends.
-class _Legend extends StatelessWidget {
-  const _Legend({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(width: 8, height: 8, decoration: BoxDecoration(color: color, borderRadius: AppRadius.smAll)),
-      const SizedBox(width: AppSpacing.xs),
-      // A half-width card may be narrower than a long label: it wraps.
-      Flexible(child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall)),
-    ],
-  );
-}
-
 /// The figure that matters in a card: a big number and, below it, what it
-/// counts.
+/// counts. The figure is neutral unless it needs attention ([color]).
 class _Figure extends StatelessWidget {
   const _Figure({required this.value, required this.label, this.color = AppColors.textPrimary});
 
@@ -298,7 +311,7 @@ class _StatusBar extends StatelessWidget {
       child: ClipRRect(
         borderRadius: AppRadius.pillAll,
         child: SizedBox(
-          height: 8,
+          height: 6,
           child:
               total == 0
                   ? const ColoredBox(color: AppColors.neutralContainer)
@@ -315,16 +328,34 @@ class _StatusBar extends StatelessWidget {
   }
 }
 
-/// The bar of [segments] and its legend.
-List<Widget> _breakdown(List<(int, Color, String)> segments) => [
-  _StatusBar(segments: [for (final (count, color, _) in segments) (count, color)]),
-  const SizedBox(height: AppSpacing.sm),
-  Wrap(
-    spacing: AppSpacing.md,
-    runSpacing: AppSpacing.xxs,
-    children: [for (final (count, color, label) in segments) _Legend(color: color, label: '$label $count')],
-  ),
-];
+/// The detail of a card: the bar of [segments] and one line of context
+/// instead of a full legend, which the screen the card opens already gives.
+/// [attention] marks the line as needing attention (warning tone and icon).
+List<Widget> _detail(BuildContext context, List<(int, Color)> segments, String? line, {bool attention = false}) {
+  final text = Theme.of(context).textTheme.bodySmall;
+  return [
+    if (segments.isNotEmpty) _StatusBar(segments: segments),
+    if (line != null) ...[
+      const SizedBox(height: AppSpacing.xs),
+      Row(
+        children: [
+          if (attention) ...[
+            Icon(BadgeTone.warning.icon, size: 14, color: BadgeTone.warning.foreground),
+            const SizedBox(width: AppSpacing.xs),
+          ],
+          Expanded(
+            child: Text(
+              line,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: attention ? text?.copyWith(color: BadgeTone.warning.foreground, fontWeight: FontWeight.w600) : text,
+            ),
+          ),
+        ],
+      ),
+    ],
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // 1 · Compliance alerts
@@ -345,6 +376,7 @@ class _AlertCard extends StatelessWidget {
     final overview = part.value;
     final open = overview?.summary.open;
     final critical = overview?.summary.critical ?? 0;
+    final unresolved = overview?.summary.unresolved ?? 0;
     final tone =
         overview == null
             ? BadgeTone.neutral
@@ -352,25 +384,24 @@ class _AlertCard extends StatelessWidget {
     final label =
         overview == null ? _error(context, part.failure) : (open == 0 ? i18n.noOpenAlertsShort : i18n.openAlerts);
     final highlighted = tone == BadgeTone.critical || tone == BadgeTone.warning;
-    final segments =
-        overview == null
-            ? const <(int, Color, String)>[]
-            : [
-              (overview.summary.unresolved, AppColors.criticalBase, i18n.alertUnresolved),
-              (overview.summary.acknowledged, AppColors.info, i18n.alertAcknowledged),
-            ];
+    final line = unresolved > 0 ? i18n.unattendedCount(unresolved) : null;
     return _HomeCard(
       onTap: () => context.go('/alerts'),
-      color: critical > 0 ? tone.background : null,
       semanticLabel: [
         i18n.navAlerts,
         if (open != null) '$open $label' else label,
         if (critical > 0) i18n.criticalCount(critical),
-        for (final (count, _, name) in segments) '$name: $count',
+        if (line != null) line,
       ].join(', '),
       child: _CardBody(
         compact: compact,
-        detail: (open ?? 0) > 0 ? _breakdown(segments) : const [],
+        detail:
+            (open ?? 0) > 0
+                ? _detail(context, [
+                  (unresolved, AppColors.criticalBase),
+                  (overview!.summary.acknowledged, AppColors.neutralContainer),
+                ], line)
+                : const [],
         header: _CardHeader(title: i18n.navAlerts, icon: Icons.report_problem_outlined, tone: tone),
         figure: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,7 +427,7 @@ class _AlertCard extends StatelessWidget {
 // 2 · Telemetry: equipment and IoT devices
 // ---------------------------------------------------------------------------
 
-/// IoT devices connected, to review and without recent data.
+/// IoT devices connected, and how many need attention.
 class _TelemetryCard extends StatelessWidget {
   const _TelemetryCard({required this.summary, required this.compact});
 
@@ -406,53 +437,53 @@ class _TelemetryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
-    final text = Theme.of(context).textTheme;
     final part = summary.equipment;
     final eq = part.value;
-    final attention = eq == null ? 0 : eq.total - eq.operational;
-    final segments =
-        eq == null
-            ? const <(int, Color, String)>[]
-            : [
-              (eq.connected, AppColors.successBase, i18n.connected),
-              (eq.requiresReview, AppColors.warningBase, i18n.requiresReview),
-              (eq.offline, AppColors.textMuted, i18n.noData),
-            ];
-    final label =
-        eq == null ? _error(context, part.failure) : (eq.devices == 0 ? i18n.noIotDevices : i18n.iotDevicesOnline);
-    final equipmentLine = '${i18n.navEquipment}: ${i18n.attentionCount(attention)}';
+    final hasDevices = eq != null && eq.devices > 0;
+    // Devices to review or without recent data; failing that, equipment out
+    // of operation.
+    final devicesAttention = eq == null ? 0 : eq.requiresReview + eq.offline;
+    final equipmentAttention = eq == null ? 0 : eq.total - eq.operational;
+    final tone = !hasDevices ? BadgeTone.neutral : (devicesAttention > 0 ? BadgeTone.warning : BadgeTone.success);
+    final label = eq == null ? _error(context, part.failure) : (hasDevices ? i18n.iotDevicesOnline : i18n.noIotDevices);
+    final String? line;
+    if (devicesAttention > 0) {
+      line = i18n.attentionCount(devicesAttention);
+    } else if (equipmentAttention > 0) {
+      line = '${i18n.navEquipment}: ${i18n.attentionCount(equipmentAttention)}';
+    } else {
+      line = hasDevices ? i18n.allDevicesOnline : null;
+    }
     return _HomeCard(
       onTap: () => context.go('/telemetry'),
       semanticLabel: [
         i18n.navTelemetry,
-        if (eq != null && eq.devices > 0) i18n.iotOnline(eq.connected, eq.devices) else label,
-        for (final (count, _, name) in segments.skip(1)) '$name: $count',
-        if (attention > 0) equipmentLine,
+        if (hasDevices) i18n.iotOnline(eq.connected, eq.devices) else label,
+        if (line != null) line,
       ].join(', '),
       child: _CardBody(
         compact: compact,
-        header: _CardHeader(title: i18n.navTelemetry, icon: Icons.monitor_heart_outlined, tone: BadgeTone.neutral),
-        figure: _Figure(value: eq == null || eq.devices == 0 ? '—' : '${eq.connected}/${eq.devices}', label: label),
-        detail: [
-          if (eq != null && eq.devices > 0) ..._breakdown(segments),
-          if (attention > 0) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Row(
-              children: [
-                Icon(BadgeTone.warning.icon, size: 14, color: BadgeTone.warning.foreground),
-                const SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: Text(
-                    equipmentLine,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: text.bodySmall?.copyWith(color: BadgeTone.warning.foreground, fontWeight: FontWeight.w600),
-                  ),
+        header: _CardHeader(title: i18n.navTelemetry, icon: Icons.monitor_heart_outlined, tone: tone),
+        figure: _Figure(
+          value: hasDevices ? '${eq.connected}/${eq.devices}' : '—',
+          label: label,
+          color: tone == BadgeTone.warning ? tone.foreground : AppColors.textPrimary,
+        ),
+        detail:
+            eq == null
+                ? const []
+                : _detail(
+                  context,
+                  hasDevices
+                      ? [
+                        (eq.connected, AppColors.successBase),
+                        (eq.requiresReview, AppColors.warningBase),
+                        (eq.offline, AppColors.neutralContainer),
+                      ]
+                      : const [],
+                  line,
+                  attention: devicesAttention > 0 || equipmentAttention > 0,
                 ),
-              ],
-            ),
-          ],
-        ],
       ),
     );
   }
@@ -462,7 +493,7 @@ class _TelemetryCard extends StatelessWidget {
 // 3 · Production batches
 // ---------------------------------------------------------------------------
 
-/// Batches awaiting the QA decision, and every batch by status.
+/// Batches awaiting the QA decision, out of every batch.
 class _BatchesCard extends StatelessWidget {
   const _BatchesCard({required this.summary, required this.compact});
 
@@ -475,28 +506,23 @@ class _BatchesCard extends StatelessWidget {
     final part = summary.batches;
     final s = part.value?.summary;
     final awaiting = s == null ? null : s.pending + s.inProgress;
-    final segments =
-        s == null
-            ? const <(int, Color, String)>[]
-            : [
-              (s.pending, AppColors.warningBase, i18n.batchPending),
-              (s.inProgress, AppColors.info, i18n.batchInProgress),
-              (s.released, AppColors.successBase, i18n.batchReleased),
-              (s.rejected, AppColors.criticalBase, i18n.batchRejected),
-            ];
     final label = s == null ? _error(context, part.failure) : i18n.awaitingQaRelease;
+    final line = s == null ? null : i18n.ofTotalBatches(s.total);
     return _HomeCard(
       onTap: () => context.go('/batches'),
-      semanticLabel: [
-        i18n.navBatches,
-        if (awaiting != null) '$awaiting $label' else label,
-        for (final (count, _, name) in segments) '$name: $count',
-      ].join(', '),
+      semanticLabel: [i18n.navBatches, if (awaiting != null) '$awaiting $label' else label, if (line != null) line].join(', '),
       child: _CardBody(
         compact: compact,
         header: _CardHeader(title: i18n.navBatches, icon: Icons.inventory_2_outlined, tone: BadgeTone.neutral),
-        figure: _Figure(value: awaiting == null ? '—' : '$awaiting', label: label, color: AppColors.primaryDark),
-        detail: s == null ? const [] : _breakdown(segments),
+        // Batches awaiting QA are work to do, not an alarm: a neutral figure.
+        figure: _Figure(value: awaiting == null ? '—' : '$awaiting', label: label),
+        detail:
+            s == null
+                ? const []
+                : _detail(context, [
+                  (awaiting!, AppColors.primary),
+                  (s.total - awaiting, AppColors.neutralContainer),
+                ], line),
       ),
     );
   }
@@ -521,19 +547,11 @@ class _InventoryCard extends StatelessWidget {
     final low = materials?.where((m) => m.isBelowMinimum).length;
     final tone = low == null ? BadgeTone.neutral : (low > 0 ? BadgeTone.warning : BadgeTone.success);
     final label = low == null ? _error(context, part.failure) : i18n.belowMinimum;
-    // With materials below the minimum the bar and its legend tell the rest.
-    final detail = low == 0 ? i18n.stockAboveMinimum : null;
-    final segments =
-        materials == null || low == null || low == 0
-            ? const <(int, Color, String)>[]
-            : [
-              (low, AppColors.warningBase, i18n.belowMinimum),
-              (materials.length - low, AppColors.successBase, i18n.stockOk),
-            ];
+    final line = materials == null ? null : i18n.ofTotalMaterials(materials.length);
     return _HomeCard(
       // Inventory is not a tab: it opens over Home, with its back arrow.
       onTap: () => context.push('/inventory'),
-      semanticLabel: [i18n.moreInventory, if (low != null) '$low $label' else label, if (detail != null) detail].join(', '),
+      semanticLabel: [i18n.moreInventory, if (low != null) '$low $label' else label, if (line != null) line].join(', '),
       child: _CardBody(
         compact: compact,
         header: _CardHeader(title: i18n.moreInventory, icon: Icons.science_outlined, tone: tone),
@@ -542,11 +560,93 @@ class _InventoryCard extends StatelessWidget {
           label: label,
           color: tone == BadgeTone.warning ? tone.foreground : AppColors.textPrimary,
         ),
-        detail: [
-          if (detail != null)
-            Text(detail, maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall),
-          if (segments.isNotEmpty) ...[const SizedBox(height: AppSpacing.sm), ..._breakdown(segments)],
-        ],
+        detail:
+            materials == null || low == null
+                ? const []
+                : _detail(context, [
+                  (low, AppColors.warningBase),
+                  (materials.length - low, AppColors.successBase),
+                ], line),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Loading
+// ---------------------------------------------------------------------------
+
+/// Gray placeholders with the shape of the four cards, pulsing softly while
+/// the panel loads.
+class _PanelSkeleton extends StatefulWidget {
+  const _PanelSkeleton();
+
+  @override
+  State<_PanelSkeleton> createState() => _PanelSkeletonState();
+}
+
+class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+    lowerBound: 0.5,
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bone(double width, double height) => Container(
+      width: width,
+      height: height,
+      decoration: const BoxDecoration(color: AppColors.neutralContainer, borderRadius: AppRadius.smAll),
+    );
+    Widget card() => DecoratedBox(
+      decoration: const BoxDecoration(color: AppColors.surface, borderRadius: AppRadius.xlAll),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(color: AppColors.neutralContainer, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                bone(64, 12),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            bone(48, 28),
+            const SizedBox(height: AppSpacing.xs),
+            bone(96, 10),
+            const SizedBox(height: AppSpacing.md),
+            bone(double.infinity, 6),
+            const SizedBox(height: AppSpacing.xs),
+            bone(72, 10),
+          ],
+        ),
+      ),
+    );
+    Widget row() => Row(children: [Expanded(child: card()), _gap, Expanded(child: card())]);
+    return Semantics(
+      label: context.i18n.loading,
+      child: ExcludeSemantics(
+        child: FadeTransition(
+          opacity: _pulse,
+          child: ListView(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            children: [row(), _gap, row()],
+          ),
+        ),
       ),
     );
   }
@@ -575,9 +675,7 @@ class _LatestAlerts extends StatelessWidget {
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     final text = Theme.of(context).textTheme;
-    final part = summary.alerts;
-    final open = part.value?.byPriority ?? const [];
-    final empty = part.isOk ? i18n.noOpenAlertsShort : _error(context, part.failure);
+    final open = summary.alerts.value?.byPriority ?? const [];
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
       child: Column(
@@ -593,26 +691,23 @@ class _LatestAlerts extends StatelessWidget {
                   style: text.titleSmall?.copyWith(color: AppColors.navy),
                 ),
               ),
-              if (open.isNotEmpty) TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
+              TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
           Expanded(
-            child:
-                open.isEmpty
-                    ? Text(empty, style: text.bodyMedium?.copyWith(color: AppColors.textMuted))
-                    : _FitColumn(
-                      spacing: AppSpacing.sm,
-                      children: [
-                        for (final alert in open.take(_limit))
-                          views.alertCard(
-                            alert,
-                            deviceName: summary.equipmentNames[alert.equipmentId],
-                            environmentName: summary.environmentNames[alert.environmentId],
-                            onTap: () => context.push('/alerts/${alert.id}'),
-                          ),
-                      ],
-                    ),
+            child: _FitColumn(
+              spacing: AppSpacing.sm,
+              children: [
+                for (final alert in open.take(_limit))
+                  views.alertCard(
+                    alert,
+                    deviceName: summary.equipmentNames[alert.equipmentId],
+                    environmentName: summary.environmentNames[alert.environmentId],
+                    onTap: () => context.push('/alerts/${alert.id}'),
+                  ),
+              ],
+            ),
           ),
         ],
       ),

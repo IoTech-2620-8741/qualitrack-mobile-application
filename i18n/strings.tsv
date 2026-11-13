@@ -28,11 +28,45 @@ timestamp	Timestamp	Fecha y hora
 parameter	Parameter	Parámetro
 active	Active	Activo
 inactive	Inactive	Inactivo
+codePending	Pending	Pendiente
+codePendingPayment	Pending payment	Pago pendiente
+codeSuspended	Suspended	Suspendido
+codeCancelled	Cancelled	Cancelado
+codeExpired	Expired	Vencido
+codePaid	Paid	Pagado
+codeFailed	Failed	Fallido
+codeRefunded	Refunded	Reembolsado
+codeMonthly	Monthly	Mensual
+codeQuarterly	Quarterly	Trimestral
+codeAnnual	Annual	Anual
+codePreventive	Preventive	Preventivo
+codeCorrective	Corrective	Correctivo
+codeCalibration	Calibration	Calibración
+codeInspection	Inspection	Inspección
+codeCleaning	Cleaning	Limpieza
+codeBatchReleased	Batch released	Lote liberado
+codeBatchRejected	Batch rejected	Lote rechazado
+codeBatchBlocked	Batch blocked	Lote bloqueado
+codeCreated	Created	Creado
+codeUpdated	Updated	Actualizado
+codeDeleted	Deleted	Eliminado
+changePhotoMenu	Profile photo	Foto de perfil
 startDate	Start date	Fecha de inicio
 endDate	End date	Fecha de fin
 generalInformation	General information	Información general
-updatedAt	Updated at {time}	Actualizado a las {time}	time:String
-errorTitle	Something went wrong	Algo salió mal
+timeJustNow	Just now	Hace un momento
+timeMinutesAgo	{count} min ago	Hace {count} min	count:int
+timeHoursAgo	{count} h ago	Hace {count} h	count:int
+updatedJustNow	Updated just now	Actualizado hace un momento
+updatedMinutesAgo	Updated {count} min ago	Actualizado hace {count} min	count:int
+updatedHoursAgo	Updated {count} h ago	Actualizado hace {count} h	count:int
+updatedOn	Updated {date}	Actualizado el {date}	date:String
+errorTitle	The information could not be loaded	No se pudo cargar la información
+errorTitleNetwork	No connection	Sin conexión
+errorTitleTimeout	No response	Sin respuesta
+errorTitleAccess	Access restricted	Acceso restringido
+errorTitleNotFound	Not found	No encontrado
+errorTitleServer	Service unavailable	Servicio no disponible
 errorNetwork	No connection to QualiTrack. Check your internet connection or the API address.	Sin conexión con QualiTrack. Verifica tu conexión a internet o la dirección de la API.
 errorTimeout	The server took too long to respond. Try again.	El servidor tardó demasiado en responder. Inténtalo de nuevo.
 errorBadRequest	The request was rejected by QualiTrack.	QualiTrack rechazó la solicitud.
@@ -59,7 +93,7 @@ showPassword	Show password	Mostrar contraseña
 hidePassword	Hide password	Ocultar contraseña
 signIn	Sign In	Iniciar sesión
 signingIn	Signing in	Iniciando sesión
-invalidCredentials	Invalid username or password.	Usuario o contraseña incorrectos.
+invalidCredentials	Invalid username or password. Check them and try again.	Usuario o contraseña incorrectos. Revísalos e inténtalo de nuevo.
 sessionExpired	Your session has expired. Please sign in again.	Tu sesión expiró. Inicia sesión nuevamente.
 accountsManagedOnWeb	Accounts are created and managed in QualiTrack Web.	Las cuentas se crean y administran en QualiTrack Web.
 signOut	Sign out	Cerrar sesión
@@ -84,12 +118,12 @@ about	About	Acerca de
 versionLabel	Version {version}	Versión {version}	version:String
 aboutDescription	QualiTrack Mobile is the monitoring and review companion of the QualiTrack pharmaceutical quality management platform: telemetry, deviation alerts, production batches, inventory and billing at a glance.	QualiTrack Mobile es la app de monitoreo y revisión de la plataforma de gestión de calidad farmacéutica QualiTrack: telemetría, alertas de desviación, lotes de producción, inventario y facturación de un vistazo.
 aboutWebScope	Configuration and data registration (laboratories, products, materials, equipment, sensors, limits, batches, users and subscriptions) are performed in QualiTrack Web.	La configuración y el registro de datos (laboratorios, productos, materiales, equipos, sensores, límites, lotes, usuarios y suscripciones) se realizan en QualiTrack Web.
+copyright	© 2026 IoTech. All rights reserved.	© 2026 IoTech. Todos los derechos reservados.
 laboratory	Laboratory	Laboratorio
 ruc	RUC	RUC
 phone	Phone	Teléfono
 address	Address	Dirección
 regulations	Applicable regulations	Normativas aplicables
-welcomeUser	Hello, {name}	Hola, {name}	name:String
 openAlerts	Open alerts	Alertas abiertas
 criticalCount	{count} critical	{count} críticas	count:int
 liveTelemetryHint	Readings of the last 24 hours	Lecturas de las últimas 24 horas
@@ -111,7 +145,14 @@ maintenanceEmpty	No maintenance records.	Sin registros de mantenimiento.
 complianceEvents	Compliance events	Eventos de cumplimiento
 auditLog	Audit log	Registro de auditoría
 telemetryTitle	Telemetry Dashboard	Panel de Telemetría
-telemetrySubtitle	Real-time sensory data and parameter monitoring	Datos sensoriales y monitoreo de parámetros en tiempo real
+telemetrySubtitle	Conditions of environments and containers	Condiciones de ambientes y contenedores
+telemetryHelp	How to read telemetry	Cómo leer la telemetría
+telemetryHelpNormal	Within the normal range set for the variable.	Dentro del rango normal configurado para la variable.
+telemetryHelpWarning	Out of the normal range, but not yet critical.	Fuera del rango normal, sin llegar al crítico.
+telemetryHelpCritical	Beyond the critical limits: needs attention now.	Más allá de los límites críticos: requiere atención inmediata.
+telemetryHelpRange	In the chart, the green band is the normal range and the dashed red lines are the critical limits.	En el gráfico, la franja verde es el rango normal y las líneas rojas punteadas son los límites críticos.
+telemetryHelpReview	The device has not communicated within its expected period: check that it is on and connected.	El dispositivo no se comunicó en el período esperado: revisa que esté encendido y conectado.
+telemetryHelpLog	The raw data log lists every reading, to look up a past period.	El registro de datos lista cada lectura, para consultar un período pasado.
 telemetryUnavailable	Telemetry unavailable	Telemetría no disponible
 connectionStatus	Connection status	Estado de conexión
 eventsCount	{count} events	{count} eventos	count:int
@@ -306,6 +347,8 @@ lotExpired	Expired	Vencido
 lotNearExpiry	Near expiry	Próximo a vencer
 lotNotYetReceived	Not received yet	Aún no recibido
 markAllRead	Mark all as read	Marcar todas como leídas
+allMarkedRead	All notices marked as read	Todas las notificaciones se marcaron como leídas
+undo	Undo	Deshacer
 materialLots	Lots	Lotes
 metricAirQuality	Air quality	Calidad del aire
 metricHumidity	Humidity	Humedad
@@ -369,7 +412,6 @@ photoTypeNotAllowed	Choose a JPG, PNG or WebP image.	Elige una imagen JPG, PNG o
 photoUpdated	Your photo was updated.	Se actualizó tu foto.
 preferencesSaved	Preferences saved.	Preferencias guardadas.
 profileSaved	Your data was saved.	Se guardaron tus datos.
-profileVersion	Profile version {version}	Perfil versión {version}	version:String
 removePhoto	Remove photo	Quitar foto
 removePhotoConfirm	Your initials will be shown instead of the photo.	Se mostrarán tus iniciales en lugar de la foto.
 renewalCancelled	Renewal cancelled: access until {date}	Renovación cancelada: acceso hasta el {date}	date:String
@@ -399,6 +441,7 @@ healthOnTrack	on target	en meta
 healthAtRisk	at risk	en riesgo
 healthCritical	critical	crítico
 tabDeviations	Deviations ({count})	Desviaciones ({count})	count:int
+tabDeviationsPlain	Deviations	Desviaciones
 tabMeasurements	Measurements	Mediciones
 tabHistory	History	Historial
 noData	No data	Sin datos
@@ -407,9 +450,7 @@ totalReadings	{count} readings per variable	{count} lecturas por variable	count:
 eventCount	{count} event	{count} evento	count:int
 eventCountPlural	{count} events	{count} eventos	count:int
 seeLast31Days	See last 31 days	Ver últimos 31 días
-historyIndependentOfPeriod	Independent of the selected period	No depende del período seleccionado
 reportHistoryBanner	Reports are generated and downloaded in QualiTrack Web.	Los reportes se generan y descargan en QualiTrack Web.
-swipeHint	Swipe sideways to change section	Desliza a los lados para cambiar de sección
 seeMoreCount	See {count} more	Ver {count} más	count:int
 historyBatchCreated	Batch registered	Lote registrado
 historyBatchStarted	Manufacturing started	Fabricación iniciada
@@ -437,6 +478,10 @@ tabUsedIn	Used in	Usado en
 tabGeneral	General	General
 noOpenAlertsShort	No open alerts	Sin alertas abiertas
 latestAlerts	Latest alerts	Últimas alertas
+unattendedCount	{count} unattended	{count} sin atender	count:int
+allDevicesOnline	All devices online	Todos en línea
+ofTotalBatches	of {total} batches	de {total} lotes	total:int
+ofTotalMaterials	of {total} materials	de {total} materiales	total:int
 viewAll	View all	Ver todas
 filterAlerts	Filter alerts	Filtrar alertas
 showingFilter	Showing: {filter}	Mostrando: {filter}	filter:String
@@ -463,7 +508,6 @@ navEquipment	Equipment	Equipos
 attentionCount	{count} need attention	{count} requieren atención	count:int
 iotDevicesOnline	devices online	dispositivos en línea
 noIotDevices	No IoT devices	Sin dispositivos IoT
-stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
 filterMaterials	Filter materials	Filtrar materiales
 batchCycle	Batch cycle	Ciclo del lote
 qaDecision	QA decision	Decisión QA

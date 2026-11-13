@@ -12,6 +12,7 @@ final class RemoteState<T> extends Equatable {
     this.data,
     this.failure,
     this.refreshing = false,
+    this.loadedAt,
   });
 
   final ViewStatus status;
@@ -19,14 +20,20 @@ final class RemoteState<T> extends Equatable {
   final Failure? failure;
   final bool refreshing;
 
-  RemoteState<T> loading() => RemoteState<T>(status: ViewStatus.loading, data: data);
+  /// When [data] was loaded, to tell how current it is ("Updated 2 min
+  /// ago"). Kept while loading, refreshing or failing, since the data shown
+  /// is still that one. Not part of equality: it is a note about the data.
+  final DateTime? loadedAt;
+
+  RemoteState<T> loading() => RemoteState<T>(status: ViewStatus.loading, data: data, loadedAt: loadedAt);
 
   RemoteState<T> refreshingState() =>
-      RemoteState<T>(status: status, data: data, failure: failure, refreshing: true);
+      RemoteState<T>(status: status, data: data, failure: failure, refreshing: true, loadedAt: loadedAt);
 
   RemoteState<T> success(T value, {bool empty = false}) => RemoteState<T>(
     status: empty ? ViewStatus.empty : ViewStatus.success,
     data: value,
+    loadedAt: DateTime.now(),
   );
 
   /// Keeps stale data visible when a refresh fails.
@@ -34,6 +41,7 @@ final class RemoteState<T> extends Equatable {
     status: data != null && status != ViewStatus.loading ? status : ViewStatus.failure,
     data: data,
     failure: error,
+    loadedAt: loadedAt,
   );
 
   bool get hasData => data != null && (status == ViewStatus.success || status == ViewStatus.empty);

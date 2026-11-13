@@ -32,8 +32,6 @@ CommandCenterViews commandCenterViews({
       ),
     ),
   ),
-  profileChanges: currentProfile,
-  displayName: () => currentProfile.profile?.displayName,
   roleLabel: (role, i18n) => role.label(i18n),
   alertCard: (alert, {deviceName, environmentName, onTap}) =>
       AlertCard(alert: alert, deviceName: deviceName, environmentName: environmentName, onTap: onTap),

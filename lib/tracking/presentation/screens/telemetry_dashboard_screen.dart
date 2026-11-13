@@ -10,12 +10,14 @@ import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/theme/app_typography.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/view_status.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
+import '../../../equipment/api/index.dart';
 import '../../domain/entities/actuation_event.dart';
 import '../../domain/entities/environmental_state.dart';
 import '../../domain/entities/measurement.dart';
@@ -72,6 +74,13 @@ class _TelemetryDashboardScreenState extends State<TelemetryDashboardScreen> wit
       appBar: AppBar(
         title: AppBarTitle(title: i18n.telemetryTitle, subtitle: i18n.telemetrySubtitle),
         actions: [
+          // Short help, where the terms are used (states, ranges, review).
+          IconButton(
+            key: const Key('telemetry.help'),
+            tooltip: i18n.telemetryHelp,
+            icon: const Icon(Icons.help_outline),
+            onPressed: () => showTelemetryHelp(context),
+          ),
           IconButton(
             tooltip: i18n.rawTelemetryLog,
             icon: const Icon(Icons.table_rows_outlined),
@@ -102,14 +111,54 @@ class _TelemetryDashboardScreenState extends State<TelemetryDashboardScreen> wit
   }
 }
 
+/// A short sheet that explains the states, the chart and the connection,
+/// focused on reading this screen.
+Future<void> showTelemetryHelp(BuildContext context) {
+  final i18n = context.i18n;
+  final text = Theme.of(context).textTheme;
+  Widget item(Widget leading, String title, String body) => ListTile(
+    contentPadding: EdgeInsets.zero,
+    leading: SizedBox(width: 96, child: Align(alignment: Alignment.centerLeft, child: leading)),
+    title: title.isEmpty ? null : Text(title, style: text.titleSmall),
+    subtitle: Text(body, style: text.bodyMedium),
+  );
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder:
+        (sheet) => ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xl),
+          children: [
+            Text(i18n.telemetryHelp, style: text.titleLarge),
+            const SizedBox(height: AppSpacing.sm),
+            item(const StateBadge(state: EnvironmentalState.normal), '', i18n.telemetryHelpNormal),
+            item(const StateBadge(state: EnvironmentalState.warning), '', i18n.telemetryHelpWarning),
+            item(const StateBadge(state: EnvironmentalState.critical), '', i18n.telemetryHelpCritical),
+            const Divider(),
+            item(const Icon(Icons.show_chart, color: AppColors.chartNormalRange), i18n.normalRange, i18n.telemetryHelpRange),
+            item(const ConnectionBadge(connected: false), '', i18n.telemetryHelpReview),
+            item(const Icon(Icons.table_rows_outlined, color: AppColors.primary), i18n.rawTelemetryLog, i18n.telemetryHelpLog),
+          ],
+        ),
+  );
+}
+
 class _DeviceSelector extends StatelessWidget {
   const _DeviceSelector({required this.catalog, required this.selectedId});
 
   final DeviceCatalog catalog;
   final int? selectedId;
 
+  /// Up to this many devices are shown as chips, all at sight with their
+  /// status; with more, the dropdown keeps the screen short.
+  static const int maxChips = 6;
+
   @override
   Widget build(BuildContext context) {
+    if (catalog.devices.length <= maxChips) return _DeviceChips(catalog: catalog, selectedId: selectedId);
     final i18n = context.i18n;
     return DropdownButtonFormField<int>(
       key: ValueKey(selectedId),
@@ -129,6 +178,82 @@ class _DeviceSelector extends StatelessWidget {
       onChanged: (id) {
         if (id != null) context.read<TelemetryDashboardBloc>().add(TelemetryDeviceSelected(id));
       },
+    );
+  }
+}
+
+/// The devices as chips in one scrollable row, each with a dot of its
+/// equipment status, so the one that needs attention is spotted without
+/// opening a menu (content-based navigation). The environment of the
+/// selected device is shown below.
+class _DeviceChips extends StatelessWidget {
+  const _DeviceChips({required this.catalog, required this.selectedId});
+
+  final DeviceCatalog catalog;
+  final int? selectedId;
+
+  static BadgeTone _tone(EquipmentStatus status) => switch (status) {
+    EquipmentStatus.operational => BadgeTone.success,
+    EquipmentStatus.maintenance => BadgeTone.warning,
+    EquipmentStatus.outOfService => BadgeTone.critical,
+    EquipmentStatus.inactive || EquipmentStatus.unknown => BadgeTone.neutral,
+  };
+
+  static String? _status(AppLocalizations i18n, EquipmentStatus status) => switch (status) {
+    EquipmentStatus.operational => i18n.equipmentOperational,
+    EquipmentStatus.maintenance => i18n.equipmentMaintenance,
+    EquipmentStatus.outOfService => i18n.equipmentOutOfService,
+    _ => null,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final i18n = context.i18n;
+    final text = Theme.of(context).textTheme;
+    final selected = catalog.devices.where((d) => d.id == selectedId).firstOrNull;
+    final environment = selected == null ? null : catalog.environmentOf(selected)?.name;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(i18n.selectDevice, style: text.titleSmall?.copyWith(color: AppColors.navy)),
+        const SizedBox(height: AppSpacing.xs),
+        // The chips wrap onto more lines instead of scrolling sideways, so
+        // every device, the selected one included, is always in sight.
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
+          children: [
+            for (final device in catalog.devices)
+              Semantics(
+                  label: [device.name, _status(i18n, device.status)].whereType<String>().join(', '),
+                  excludeSemantics: true,
+                  selected: device.id == selectedId,
+                  button: true,
+                  child: ChoiceChip(
+                    key: ValueKey('telemetry.device.${device.id}'),
+                    selected: device.id == selectedId,
+                    showCheckmark: false,
+                    avatar: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: _tone(device.status) == BadgeTone.neutral
+                            ? AppColors.textMuted
+                            : _tone(device.status).foreground,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    label: Text(device.name),
+                    onSelected: (_) => context.read<TelemetryDashboardBloc>().add(TelemetryDeviceSelected(device.id)),
+                  ),
+                ),
+          ],
+        ),
+        if (environment != null) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text('${i18n.environment}: $environment', style: text.bodySmall),
+        ],
+      ],
     );
   }
 }
@@ -160,15 +285,15 @@ class _SnapshotSection extends StatelessWidget {
         RefreshingBar(visible: remote.refreshing),
         if (remote.failure != null) StaleDataNotice(failure: remote.failure!),
         _StatusRow(snapshot: data),
-        SectionHeader(
-          title: i18n.currentReadings,
-          subtitle: profile == null
-              ? i18n.noProfileConfigured
-              : i18n.profileVersion('${profile.version}'),
-        ),
-        if (readings.isEmpty)
-          InfoCard(child: Text(i18n.noReadings24h))
-        else
+        // Without readings there is nothing to chart or evaluate: one message
+        // instead of several empty sections.
+        if (readings.isEmpty) ...[
+          SectionHeader(title: i18n.currentReadings),
+          EmptyNotice(icon: Icons.sensors_off_outlined, message: i18n.noReadings24h),
+        ] else ...[
+          // The profile version is a technical detail; only a missing profile
+          // matters to the user.
+          SectionHeader(title: i18n.currentReadings, subtitle: profile == null ? i18n.noProfileConfigured : null),
           ResponsiveGrid(
             minItemWidth: 160,
             children: [
@@ -176,19 +301,21 @@ class _SnapshotSection extends StatelessWidget {
                 _ReadingCard(reading: reading, threshold: data.thresholdFor(reading.latest.metric)),
             ],
           ),
-        if (data.chartMetrics.isNotEmpty) ...[
-          SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
-          _ChartCard(state: state, snapshot: data),
-        ],
-        SectionHeader(title: i18n.deviations24h, subtitle: i18n.deviationsHint),
-        if (deviations.isEmpty)
-          InfoCard(child: Text(i18n.noDeviations))
-        else
-          for (final measurement in deviations.take(5)) ...[
-            _DeviationTile(measurement: measurement),
-            const SizedBox(height: AppSpacing.sm),
+          if (data.chartMetrics.isNotEmpty) ...[
+            SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
+            _ChartCard(state: state, snapshot: data),
           ],
-        if (data.target.containerMonitor) ...[
+          SectionHeader(title: i18n.deviations24h, subtitle: i18n.deviationsHint),
+          if (deviations.isEmpty)
+            InfoCard(child: Text(i18n.noDeviations))
+          else
+            for (final measurement in deviations.take(5)) ...[
+              _DeviationTile(measurement: measurement),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+        ],
+        // Automatic actions show up without readings only when there are some.
+        if (data.target.containerMonitor && (readings.isNotEmpty || data.actuations.isNotEmpty)) ...[
           SectionHeader(title: i18n.automaticActions, subtitle: i18n.automaticActionsHint),
           if (data.actuationsFailure != null)
             StaleDataNotice(failure: data.actuationsFailure!)
@@ -224,7 +351,7 @@ class _StatusRow extends StatelessWidget {
     final deviations = snapshot.deviations.length;
     final lastCommunication = connection.lastCommunicationAt == null
         ? i18n.neverCommunicated
-        : Formatters.dateTime(connection.lastCommunicationAt, context.localeName);
+        : relativeTime(context, connection.lastCommunicationAt);
     final tone = connection.isConnected ? BadgeTone.success : BadgeTone.warning;
     return ResponsiveGrid(
       minItemWidth: 150,
@@ -263,7 +390,7 @@ class _StatusRow extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                i18n.updatedAt(Formatters.time(snapshot.fetchedAt, context.localeName)),
+                updatedText(context, snapshot.fetchedAt),
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -332,7 +459,7 @@ class _ChartCard extends StatelessWidget {
               _Legend(color: AppColors.chartWarning, label: i18n.stateWarning),
               _Legend(color: AppColors.chartCritical, label: i18n.stateCritical),
               if (threshold != null) ...[
-                _Legend(color: AppColors.chartNormalRange, label: i18n.normalRange, dashed: true),
+                _Legend(color: TelemetryChart.normalBand, label: i18n.normalRange),
                 _Legend(color: AppColors.chartCritical, label: i18n.criticalRange, dashed: true),
               ],
             ],
@@ -410,9 +537,15 @@ class _ReadingCard extends StatelessWidget {
     final m = reading.latest;
     final range = rangeText(context, threshold);
     final name = m.metric.label(i18n, raw: m.rawMetric);
+    // A reading out of range stands out at a glance: the card takes the tint
+    // of its state and the figure its text tone (contrast by colour + value).
+    final outOfRange = m.state.isDeviation;
+    final tone = m.state.tone;
     return Semantics(
-      label: '$name: ${readingText(context, m)}',
+      label: [name, readingText(context, m), if (m.state != EnvironmentalState.unknown) m.state.label(i18n)].join(': '),
       child: InfoCard(
+        color: outOfRange ? tone.background : null,
+        borderColor: outOfRange ? tone.foreground.withValues(alpha: 0.3) : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -429,7 +562,10 @@ class _ReadingCard extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text(readingText(context, m), style: AppTypography.metric),
+              child: Text(
+                readingText(context, m),
+                style: AppTypography.metric.copyWith(color: outOfRange ? tone.foreground : null),
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             if (m.state != EnvironmentalState.unknown) StateBadge(state: m.state),
@@ -438,7 +574,10 @@ class _ReadingCard extends StatelessWidget {
               Text(range, style: theme.textTheme.bodySmall),
             ],
             const SizedBox(height: AppSpacing.xs),
-            Text(Formatters.dateTime(m.measuredAt, context.localeName), style: theme.textTheme.bodySmall),
+            Tooltip(
+              message: Formatters.dateTime(m.measuredAt, context.localeName),
+              child: Text(relativeTime(context, m.measuredAt), style: theme.textTheme.bodySmall),
+            ),
           ],
         ),
       ),
@@ -484,7 +623,7 @@ class _DeviationTile extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 readingText(context, m),
-                style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 16),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color, fontWeight: FontWeight.w700),
               ),
             ],
           ),

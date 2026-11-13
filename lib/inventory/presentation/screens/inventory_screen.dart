@@ -118,7 +118,7 @@ final class _FilterStyle {
 
   static _FilterStyle of(InventoryFilter filter) => switch (filter) {
     InventoryFilter.all => _FilterStyle((i) => i.filterAll, Icons.list_alt, BadgeTone.neutral),
-    InventoryFilter.belowMinimum => _FilterStyle((i) => i.belowMinimum, Icons.trending_down, BadgeTone.critical),
+    InventoryFilter.belowMinimum => _FilterStyle((i) => i.belowMinimum, Icons.trending_down, BadgeTone.warning),
     InventoryFilter.blockedStock => _FilterStyle((i) => i.blockedStock, Icons.lock_outline, BadgeTone.warning),
   };
 }

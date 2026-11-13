@@ -7,6 +7,7 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
@@ -27,18 +28,43 @@ class NotificationsScreen extends StatelessWidget {
     final i18n = context.i18n;
     final bloc = context.read<NotificationsBloc>();
     return BlocConsumer<NotificationsBloc, NotificationsState>(
-      listenWhen: (a, b) => a.actionFailure != b.actionFailure && b.actionFailure != null,
-      listener: (context, state) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: AppColors.critical,
-        content: Text(failureMessage(context, state.actionFailure!)),
-      )),
+      listenWhen:
+          (a, b) =>
+              (a.actionFailure != b.actionFailure && b.actionFailure != null) ||
+              (!a.pendingAllRead && b.pendingAllRead),
+      listener: (context, state) {
+        final messenger = ScaffoldMessenger.of(context);
+        if (state.pendingAllRead) {
+          // Undo window: saved on the server only when it closes without undo.
+          messenger.hideCurrentSnackBar();
+          messenger
+              .showSnackBar(
+                SnackBar(
+                  content: Text(i18n.allMarkedRead),
+                  duration: const Duration(seconds: 5),
+                  action: SnackBarAction(label: i18n.undo, onPressed: () => bloc.add(const NotificationsAllReadUndone())),
+                ),
+              )
+              .closed
+              .then((reason) {
+                if (reason != SnackBarClosedReason.action && !bloc.isClosed) {
+                  bloc.add(const NotificationsAllReadConfirmed());
+                }
+              });
+          return;
+        }
+        messenger.showSnackBar(SnackBar(
+          backgroundColor: AppColors.critical,
+          content: Text(failureMessage(context, state.actionFailure!)),
+        ));
+      },
       builder: (context, state) => Scaffold(
         appBar: AppBar(
           title: AppBarTitle(title: i18n.notificationsTitle),
           actions: [
             IconButton(
               tooltip: i18n.markAllRead,
-              onPressed: state.unread == 0 ? null : () => bloc.add(const NotificationsAllRead()),
+              onPressed: state.unread == 0 || state.pendingAllRead ? null : () => bloc.add(const NotificationsAllRead()),
               icon: const Icon(Icons.done_all),
             ),
             IconButton(
@@ -147,7 +173,10 @@ class _NotificationTile extends StatelessWidget {
           runSpacing: AppSpacing.xs,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text(Formatters.dateTime(n.occurredAt, locale), style: theme.textTheme.bodySmall),
+            Tooltip(
+              message: Formatters.dateTime(n.occurredAt, locale),
+              child: Text(relativeTime(context, n.occurredAt), style: theme.textTheme.bodySmall),
+            ),
             if (!n.isRead) StatusBadge(label: i18n.unread, tone: BadgeTone.info, icon: Icons.fiber_manual_record),
           ],
         ),

@@ -174,12 +174,15 @@ class _AlertDetailBody extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: AppSpacing.md),
-        if (alert.status == AlertStatus.resolved || !canAttend)
+        // An open alert has no notes yet: an empty "—" card would only add
+        // noise, so the card shows up once there is something to read.
+        if (alert.status == AlertStatus.resolved || alert.resolutionNotes?.isNotEmpty == true) ...[
+          const SizedBox(height: AppSpacing.md),
           InfoCard(
             title: i18n.resolutionNotes,
             child: Text(alert.resolutionNotes?.isNotEmpty == true ? alert.resolutionNotes! : '—'),
           ),
+        ],
         if (!canAttend && alert.isOpen)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.md),
