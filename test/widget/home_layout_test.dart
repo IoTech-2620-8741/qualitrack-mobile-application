@@ -512,5 +512,13 @@ void main() {
 
     expect(find.text('Batches in progress'), findsOneWidget);
     expect(find.textContaining('Read only'), findsNothing);
+
+    await pumpHome(
+      tester,
+      const Size(360, 800),
+      session: sessionFixture(roles: [UserRole.admin, UserRole.labOperator]),
+    );
+
+    expect(find.text('Awaiting QA release'), findsOneWidget);
   });
 }
