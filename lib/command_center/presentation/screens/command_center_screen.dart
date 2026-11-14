@@ -236,6 +236,7 @@ class _Panel extends StatelessWidget {
       _gap,
       Material(
         color: AppColors.surface,
+        elevation: 1,
         borderRadius: AppRadius.xlAll,
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -698,8 +699,10 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
               ),
               _gap,
               // The four rows.
-              DecoratedBox(
-                decoration: const BoxDecoration(color: AppColors.surface, borderRadius: AppRadius.xlAll),
+              Material(
+                color: AppColors.surface,
+                elevation: 1,
+                borderRadius: AppRadius.xlAll,
                 child: Column(
                   children: [
                     for (var i = 0; i < 4; i++) ...[
@@ -714,9 +717,11 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
               bone(96, 12),
               for (var i = 0; i < 2; i++) ...[
                 const SizedBox(height: AppSpacing.sm),
-                Container(
-                  height: 88,
-                  decoration: const BoxDecoration(color: AppColors.surface, borderRadius: AppRadius.lgAll),
+                const Material(
+                  color: AppColors.surface,
+                  elevation: 1,
+                  borderRadius: AppRadius.lgAll,
+                  child: SizedBox(height: 88),
                 ),
               ],
             ],

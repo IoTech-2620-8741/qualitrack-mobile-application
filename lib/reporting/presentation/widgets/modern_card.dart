@@ -28,6 +28,7 @@ class ModernCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Material(
         color: AppColors.surface,
+        elevation: 1,
         clipBehavior: Clip.antiAlias,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
         child: InkWell(

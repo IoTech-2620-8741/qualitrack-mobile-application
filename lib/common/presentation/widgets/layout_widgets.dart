@@ -344,6 +344,8 @@ class InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final surface = bare ? child : Material(
       color: color ?? AppColors.surface,
+      // A section with a border is an outlined card, which Material 3 keeps flat.
+      elevation: borderColor == null ? 1 : 0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: AppRadius.xlAll,

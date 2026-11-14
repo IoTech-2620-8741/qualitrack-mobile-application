@@ -75,7 +75,8 @@ abstract final class AppTheme {
       cardTheme: const CardThemeData(
         color: AppColors.surface,
         surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        // The soft shadow the style guide gives mobile cards.
+        elevation: 1,
         margin: EdgeInsets.zero,
         // Mobile cards: rounded white surfaces on the gray background, no border.
         shape: RoundedRectangleBorder(borderRadius: AppRadius.xlAll),

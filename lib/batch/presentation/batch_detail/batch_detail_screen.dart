@@ -376,6 +376,7 @@ class _TraceCount extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return Material(
       color: AppColors.surface,
+      elevation: 1,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
