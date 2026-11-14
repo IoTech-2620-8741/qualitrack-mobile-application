@@ -37,21 +37,16 @@ import '../command_center_views.dart';
 /// - the most urgent open alerts, in the rest of the screen.
 /// An operator's panel keeps only the alerts and the batches in progress, and
 /// an auditor's is marked read only (style guide §7).
-/// The color of a state goes only to its icon and figure. The panel never
-/// scrolls at the normal text size: on a short screen each row leaves out its
-/// detail instead of shrinking. Only when the user's larger text does not fit
-/// even then, the panel scrolls, so the text keeps the size the user chose.
+/// The color of a state goes only to its icon and figure. When the whole panel
+/// does not fit the screen, each row leaves out its detail instead of
+/// shrinking. Only when the user's larger text does not fit even then, the
+/// panel scrolls, so the text keeps the size the user chose.
 /// Pull-to-refresh always works.
 class CommandCenterScreen extends StatelessWidget {
   const CommandCenterScreen({super.key, required this.session, required this.views});
 
   final UserSession session;
   final CommandCenterViews views;
-
-  /// Height the body needs for the strip and the full rows at 100% text size;
-  /// it grows with the user's text scale. Below it the rows are compact: they
-  /// keep their figure and leave the detail to the screen they open.
-  static const double fullHeight = 380;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +73,6 @@ class CommandCenterScreen extends StatelessWidget {
               builder:
                   (context, summary) => LayoutBuilder(
                     builder: (context, constraints) {
-                      final compact = constraints.maxHeight < MediaQuery.textScalerOf(context).scale(fullHeight);
                       return RefreshIndicator(
                         onRefresh: () async => reload(),
                         // The panel takes its own height and the most urgent
@@ -91,7 +85,12 @@ class CommandCenterScreen extends StatelessWidget {
                             SliverPadding(
                               padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
                               sliver: SliverToBoxAdapter(
-                                child: _Panel(summary: summary, compact: compact, forOperator: forOperator),
+                                child: _FittedPanel(
+                                  summary: summary,
+                                  forOperator: forOperator,
+                                  // The body under the top padding.
+                                  maxHeight: constraints.maxHeight - AppSpacing.lg,
+                                ),
                               ),
                             ),
                             SliverLayoutBuilder(
@@ -173,6 +172,47 @@ class _PanelTitleState extends State<_PanelTitle> {
       title: widget.summary?.laboratory.value?.name ?? i18n.navHome,
       subtitle: subtitle.isEmpty ? null : subtitle,
       caption: fetchedAt == null ? null : updatedText(context, fetchedAt),
+    );
+  }
+}
+
+/// The panel whole when it fits [maxHeight], or with compact rows when it does
+/// not. Whether it fits depends on the width, the language and the text size,
+/// so the whole panel is laid out offstage and measured, not assumed.
+class _FittedPanel extends StatefulWidget {
+  const _FittedPanel({required this.summary, required this.forOperator, required this.maxHeight});
+
+  final CommandCenterSummary summary;
+  final bool forOperator;
+  final double maxHeight;
+
+  @override
+  State<_FittedPanel> createState() => _FittedPanelState();
+}
+
+class _FittedPanelState extends State<_FittedPanel> {
+  final _whole = GlobalKey();
+
+  /// Height of the whole panel at the last layout; unknown before the first.
+  double? _wholeHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    // A layout cannot rebuild the tree: the height is read after the frame, and
+    // a change shows on the next one.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final height = _whole.currentContext?.size?.height;
+      if (mounted && height != null && height != _wholeHeight) setState(() => _wholeHeight = height);
+    });
+    final whole = _Panel(summary: widget.summary, compact: false, forOperator: widget.forOperator);
+    return Stack(
+      children: [
+        Offstage(child: ExcludeFocus(child: KeyedSubtree(key: _whole, child: whole))),
+        if ((_wholeHeight ?? 0) > widget.maxHeight)
+          _Panel(summary: widget.summary, compact: true, forOperator: widget.forOperator)
+        else
+          whole,
+      ],
     );
   }
 }

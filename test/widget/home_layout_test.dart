@@ -326,18 +326,30 @@ void main() {
     expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
   });
 
-  testWidgets('a body as tall as fullHeight fits the full panel without scrolling', (tester) async {
-    for (final (locale, detail) in const [(Locale('en'), 'of 2 materials'), (Locale('es'), 'de 2 materiales')]) {
-      await pumpHome(tester, const Size(360, 800), locale: locale);
-      final chrome = 800 - tester.getSize(find.byType(CustomScrollView)).height;
+  // Whether the rows fit with their detail depends on the width (which Android's
+  // display size narrows), the language and the text size: a body as tall as the
+  // whole panel shows it whole, and one dp less gets the compact rows, not a scroll.
+  for (final (width, scale) in const [(320.0, 1.0), (360.0, 1.0), (360.0, 1.3), (412.0, 1.0)]) {
+    testWidgets('the rows keep their detail just while it fits, at $width dp and text x$scale', (tester) async {
+      for (final (locale, detail) in const [(Locale('en'), 'of 2 materials'), (Locale('es'), 'de 2 materiales')]) {
+        await pumpHome(tester, Size(width, 2000), locale: locale, textScale: scale);
+        final body = tester.getRect(find.byType(CustomScrollView));
+        final lastRow = find.ancestor(of: find.text(detail), matching: find.byType(InkWell)).first;
+        final tall = (2000 - body.height + tester.getRect(lastRow).bottom - body.top).ceilToDouble();
 
-      await pumpHome(tester, Size(360, CommandCenterScreen.fullHeight + chrome), locale: locale);
+        await pumpHome(tester, Size(width, tall), locale: locale, textScale: scale);
 
-      expect(tester.takeException(), isNull);
-      expect(find.text(detail), findsOneWidget, reason: 'full rows in $locale');
-      expect(scrollExtent(tester), 0, reason: '$locale');
-    }
-  });
+        expect(tester.takeException(), isNull);
+        expect(find.text(detail), findsOneWidget, reason: 'whole in $locale');
+        expect(scrollExtent(tester), 0, reason: 'whole in $locale');
+
+        await pumpHome(tester, Size(width, tall - 1), locale: locale, textScale: scale);
+
+        expect(find.text(detail), findsNothing, reason: 'compact in $locale');
+        expect(scrollExtent(tester), 0, reason: 'compact in $locale');
+      }
+    });
+  }
 
   testWidgets('a short screen shows fewer latest alerts, never half a card', (tester) async {
     await pumpHome(tester, const Size(360, 640));
