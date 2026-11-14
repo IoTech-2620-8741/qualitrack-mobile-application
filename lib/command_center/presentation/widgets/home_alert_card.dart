@@ -34,15 +34,16 @@ String _reading(double? value, String? unit, String locale) =>
 };
 
 /// An open alert on the dashboard, as the style guide's reading card: a 4 dp
-/// edge in the color of its severity, the metric over its severity, area and
-/// time, its value, and under them its limit and how far past it the value is.
+/// edge in the color of its severity, the metric and its value over the device
+/// and the time, and under them its limit and how far past it the value is.
+/// The icon and the color give the severity, and TalkBack reads it.
 /// With the normal range of the device's profile, the card draws the range and
 /// the value on a bar and measures the value against the range instead.
 class HomeAlertCard extends StatelessWidget {
-  const HomeAlertCard({super.key, required this.alert, this.environmentName, this.threshold, required this.onTap});
+  const HomeAlertCard({super.key, required this.alert, this.deviceName, this.threshold, required this.onTap});
 
   final DeviationAlert alert;
-  final String? environmentName;
+  final String? deviceName;
 
   /// The range of the alert's metric in its device's profile, when it was read.
   final MetricThreshold? threshold;
@@ -55,6 +56,7 @@ class HomeAlertCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final (tone, edge, severity) = _severity(alert.severity, i18n);
     final variable = alertVariable(i18n, alert.parameterName);
+    final device = deviceName ?? i18n.equipmentNumber(alert.equipmentId);
     final unit = alert.unit ?? threshold?.unit;
     final value = _reading(alert.recordedValue, unit, locale);
     final normalMin = threshold?.normalMin;
@@ -86,7 +88,7 @@ class HomeAlertCard extends StatelessWidget {
         value,
         if (limit != null) limit,
         if (distance != null) distance,
-        if (environmentName != null) environmentName,
+        device,
         status,
         when,
       ].join(', '),
@@ -103,6 +105,7 @@ class HomeAlertCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
                         width: 36,
@@ -113,30 +116,48 @@ class HomeAlertCard extends StatelessWidget {
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
-                              variable,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: text.titleMedium?.copyWith(color: AppColors.navy, fontWeight: FontWeight.w600),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    variable,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: text.titleMedium?.copyWith(
+                                      color: AppColors.navy,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Text(
+                                  value,
+                                  style: text.titleMedium?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: tone.foreground,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              [severity, if (environmentName != null) environmentName, when].join(' · '),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: text.bodySmall?.copyWith(color: AppColors.textMuted),
+                            // The device on the left and the time under the value;
+                            // a long name takes two lines and moves the time under it.
+                            Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              spacing: AppSpacing.sm,
+                              children: [
+                                Text(
+                                  device,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: text.bodySmall?.copyWith(color: AppColors.textMuted),
+                                ),
+                                Text(when, style: text.bodySmall?.copyWith(color: AppColors.textMuted)),
+                              ],
                             ),
                           ],
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        value,
-                        style: text.titleMedium?.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: tone.foreground,
                         ),
                       ),
                     ],

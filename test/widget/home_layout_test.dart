@@ -50,11 +50,11 @@ CommandCenterSummary _summary({
   int pending = 2,
   int inProgress = 3,
   List<InventoryMaterial>? materials,
-  Map<int, String> environmentNames = const {},
+  String deviceName = 'Device',
   Map<int, MetricThreshold> thresholds = const {},
 }) {
   final now = DateTime.now();
-  final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
+  final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: '$deviceName $i')];
   return CommandCenterSummary(
     laboratory: const Part.ok(Laboratory(id: 7, name: 'QualiLab Lima')),
     equipment: Part.ok(
@@ -105,7 +105,6 @@ CommandCenterSummary _summary({
             ),
     materials: Part.ok(materials ?? [materialFixture(), materialFixture(id: 2, usable: 9, stockStatus: 'OK')]),
     subscription: null,
-    environmentNames: environmentNames,
     fetchedAt: now.subtract(const Duration(minutes: 5)),
   );
 }
@@ -206,6 +205,12 @@ void main() {
     final paragraph = tester.renderObject<RenderParagraph>(find.descendant(of: text, matching: find.byType(RichText)));
     final whole = TextSelection(baseOffset: 0, extentOffset: paragraph.text.toPlainText().length);
     return paragraph.getBoxesForSelection(whole).map((box) => box.top).toSet().length;
+  }
+
+  /// Whether [text] is cut short, with an ellipsis.
+  bool isCut(WidgetTester tester, Finder text) {
+    final paragraph = tester.renderObject<RenderParagraph>(find.descendant(of: text, matching: find.byType(RichText)));
+    return paragraph.didExceedMaxLines;
   }
 
   /// Whether [part] of [text] starts a line under its first one.
@@ -830,6 +835,24 @@ void main() {
       expect(find.textContaining('Limit'), findsNothing);
     });
 
+    testWidgets('an alert card names its device and its time in full, and leaves severity to its color', (
+      tester,
+    ) async {
+      const name = 'Congeladora de vacunas del almacén';
+      stubSummary(_summary(open: openAlerts(), deviceName: name));
+      await pumpHome(tester, const Size(320, 2000), textScale: 1.3, locale: const Locale('es'));
+
+      final card = find.byType(HomeAlertCard).first;
+      final device = find.descendant(of: card, matching: find.text('$name 1'));
+      final when = find.descendant(of: card, matching: find.text('Hace 2 h'));
+      // The end of a long name tells two devices apart: it wraps instead of being cut.
+      expect(lineCount(tester, device), greaterThan(1));
+      expect(isCut(tester, device), isFalse);
+      expect(isCut(tester, when), isFalse);
+      // The icon, the color and TalkBack give the severity.
+      expect(find.descendant(of: card, matching: find.textContaining('Crítica')), findsNothing);
+    });
+
     testWidgets('the tiles give up their detail to make room for the most urgent alerts', (tester) async {
       await pumpHome(tester, const Size(360, 2000));
       final body = tester.getRect(find.byType(CustomScrollView));
@@ -871,7 +894,7 @@ void main() {
     });
 
     testWidgets('the dashboard fits a 320 dp phone with text x1.3', (tester) async {
-      stubSummary(_summary(open: openAlerts(), environmentNames: {3: 'Almacén de materias primas refrigerado'}));
+      stubSummary(_summary(open: openAlerts(), deviceName: 'Congeladora de vacunas del almacén'));
       for (final height in [640.0, 1000.0]) {
         await pumpHome(tester, Size(320, height), textScale: 1.3, locale: const Locale('es'));
 
@@ -890,7 +913,10 @@ void main() {
       await pumpHome(tester, const Size(412, 915));
 
       expect(find.bySemanticsLabel('1, Open alerts, 1 critical'), findsOneWidget);
-      final card = RegExp(r'^Critical, Temperature, 38\.6 °C, Limit 30 °C, 8\.6 °C above the limit, Unresolved, ');
+      // An alert of a device the Home did not load reads its number.
+      final card = RegExp(
+        r'^Critical, Temperature, 38\.6 °C, Limit 30 °C, 8\.6 °C above the limit, Equipment #10, Unresolved, ',
+      );
       expect(find.bySemanticsLabel(card), findsOneWidget);
     });
 
