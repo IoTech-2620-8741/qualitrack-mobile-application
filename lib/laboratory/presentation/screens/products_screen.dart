@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/theme/app_typography.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
@@ -92,7 +91,7 @@ class _ProductTile extends StatelessWidget {
         subtitle: Text.rich(
           TextSpan(
             children: [
-              TextSpan(text: product.code, style: const TextStyle(fontFamily: AppTypography.monospace)),
+              TextSpan(text: product.code),
               if (environment != null) TextSpan(text: ' · ${environment!.displayName}'),
             ],
           ),

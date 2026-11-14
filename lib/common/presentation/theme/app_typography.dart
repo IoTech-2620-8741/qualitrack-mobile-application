@@ -6,7 +6,6 @@ import 'app_colors.dart';
 /// brand navy and body text the slate tones.
 abstract final class AppTypography {
   static const String fontFamily = 'Rubik';
-  static const String monospace = 'monospace';
 
   static TextTheme textTheme(TextTheme base) {
     return base

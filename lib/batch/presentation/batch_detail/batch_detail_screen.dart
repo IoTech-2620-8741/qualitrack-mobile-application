@@ -174,7 +174,7 @@ class _GeneralTab extends StatelessWidget {
                         if (trace.productCode != null)
                           Text(
                             trace.productCode!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontFamily: AppTypography.monospace),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                       ],
                     ),
@@ -610,7 +610,7 @@ class _SignatureHash extends StatelessWidget {
           child: Text(
             short,
             semanticsLabel: hash,
-            style: const TextStyle(fontFamily: AppTypography.monospace, fontSize: 12),
+            style: const TextStyle(fontSize: 12),
           ),
         ),
         IconButton(
