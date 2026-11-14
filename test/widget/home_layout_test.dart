@@ -52,6 +52,7 @@ CommandCenterSummary _summary({
   List<InventoryMaterial>? materials,
   String deviceName = 'Device',
   Map<int, MetricThreshold> thresholds = const {},
+  Duration age = const Duration(minutes: 5),
 }) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: '$deviceName $i')];
@@ -105,7 +106,7 @@ CommandCenterSummary _summary({
             ),
     materials: Part.ok(materials ?? [materialFixture(), materialFixture(id: 2, usable: 9, stockStatus: 'OK')]),
     subscription: null,
-    fetchedAt: now.subtract(const Duration(minutes: 5)),
+    fetchedAt: now.subtract(age),
   );
 }
 
@@ -697,12 +698,17 @@ void main() {
     testWidgets('the app bar leaves its width to the title: nothing in it is cut at 320 dp with text x1.3', (
       tester,
     ) async {
-      for (final chosen in HomeLayout.values) {
-        layout.value = chosen;
-        await pumpHome(tester, const Size(320, 800), textScale: 1.3, locale: const Locale('es'));
+      // Just loaded and a while ago: the update time is the longest line.
+      for (final age in [Duration.zero, const Duration(minutes: 5)]) {
+        stubSummary(_summary(age: age));
+        for (final chosen in HomeLayout.values) {
+          layout.value = chosen;
+          await pumpHome(tester, const Size(320, 800), textScale: 1.3, locale: const Locale('es'));
 
-        for (final title in ['QualiLab Lima', 'QA Manager', 'Actualizado hace 5 min']) {
-          expect(isCut(tester, find.text(title)), isFalse, reason: '$title, $chosen');
+          final titles = [find.text('QualiLab Lima'), find.text('QA Manager'), find.textContaining('Actualizado')];
+          for (final title in titles) {
+            expect(isCut(tester, title), isFalse, reason: '${tester.widget<Text>(title).data}, $chosen');
+          }
         }
       }
     });

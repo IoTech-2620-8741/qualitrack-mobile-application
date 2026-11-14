@@ -57,7 +57,7 @@ generalInformation	General information	Información general
 timeJustNow	Just now	Hace un momento
 timeMinutesAgo	{count} min ago	Hace {count} min	count:int
 timeHoursAgo	{count} h ago	Hace {count} h	count:int
-updatedJustNow	Updated just now	Actualizado hace un momento
+updatedJustNow	Updated just now	Actualizado ahora
 updatedMinutesAgo	Updated {count} min ago	Actualizado hace {count} min	count:int
 updatedHoursAgo	Updated {count} h ago	Actualizado hace {count} h	count:int
 updatedOn	Updated {date}	Actualizado el {date}	date:String

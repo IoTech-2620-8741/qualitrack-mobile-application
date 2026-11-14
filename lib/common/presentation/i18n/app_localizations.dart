@@ -1252,7 +1252,7 @@ const Map<String, String> _es = {
   'timeJustNow': 'Hace un momento',
   'timeMinutesAgo': 'Hace {count} min',
   'timeHoursAgo': 'Hace {count} h',
-  'updatedJustNow': 'Actualizado hace un momento',
+  'updatedJustNow': 'Actualizado ahora',
   'updatedMinutesAgo': 'Actualizado hace {count} min',
   'updatedHoursAgo': 'Actualizado hace {count} h',
   'updatedOn': 'Actualizado el {date}',
