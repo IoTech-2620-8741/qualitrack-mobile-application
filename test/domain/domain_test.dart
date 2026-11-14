@@ -150,6 +150,15 @@ void main() {
       expect(alerts.map((a) => a.id), [2, 1, 3, 4]);
     });
 
+    test('priority: the higher id first between alerts of the same time', () {
+      final sameTime = DateTime.utc(2026, 9, 1);
+      final alerts = [
+        alertFixture(id: 1, timestamp: sameTime),
+        alertFixture(id: 2, timestamp: sameTime),
+      ]..sort(DeviationAlert.compareByPriority);
+      expect(alerts.map((a) => a.id), [2, 1]);
+    });
+
     test('summary counts statuses and open critical alerts', () {
       final summary = AlertSummary.of([
         alertFixture(id: 1),
