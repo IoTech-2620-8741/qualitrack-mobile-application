@@ -869,6 +869,18 @@ void main() {
       expect(find.descendant(of: card, matching: find.textContaining('Crítica')), findsNothing);
     });
 
+    testWidgets('the most urgent alerts show their title only over an alert that fits whole', (tester) async {
+      const range = MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', normalMin: 15, normalMax: 30);
+      stubSummary(_summary(open: openAlerts(), thresholds: {1: range}, deviceName: 'Monitor de contenedor ALM'));
+      for (var height = 600.0; height <= 900; height += 8) {
+        await pumpHome(tester, Size(320, height), textScale: 1.3, locale: const Locale('es'));
+
+        final title = find.text('Lo más urgente').hitTestable().evaluate().isNotEmpty;
+        final alert = find.byType(HomeAlertCard).hitTestable().evaluate().isNotEmpty;
+        expect(title, alert, reason: '$height dp');
+      }
+    });
+
     testWidgets('the tiles give up their detail to make room for the most urgent alerts', (tester) async {
       await pumpHome(tester, const Size(360, 2000));
       final body = tester.getRect(find.byType(CustomScrollView));

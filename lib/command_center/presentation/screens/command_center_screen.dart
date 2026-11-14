@@ -973,49 +973,53 @@ class _LatestAlerts extends StatelessWidget {
     final open = summary.alerts.value?.byPriority ?? const [];
     bool acknowledged(DeviationAlert alert) => alert.status == AlertStatus.acknowledged;
     final shown = dashboard ? [...open.where((a) => !acknowledged(a)), ...open.where(acknowledged)] : open;
+    final title = Row(
+      children: [
+        Expanded(
+          child: Text(
+            i18n.homeMostUrgent,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: text.titleSmall?.copyWith(color: AppColors.navy),
+          ),
+        ),
+        TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
+      ],
+    );
+    final cards = [
+      for (final alert in shown.take(_limit))
+        if (!dashboard)
+          views.alertCard(
+            alert,
+            deviceName: summary.equipmentNames[alert.equipmentId],
+            environmentName: summary.environmentNames[alert.environmentId],
+            onTap: () => context.push('/alerts/${alert.id}'),
+          )
+        else if (acknowledged(alert))
+          HomeAcknowledgedAlertRow(alert: alert, onTap: () => context.push('/alerts/${alert.id}'))
+        else
+          HomeAlertCard(
+            alert: alert,
+            deviceName: summary.equipmentNames[alert.equipmentId],
+            threshold: summary.alerts.value?.thresholds[alert.id],
+            onTap: () => context.push('/alerts/${alert.id}'),
+          ),
+    ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      // The title goes with the first alert: where that alert does not fit,
+      // the title is left out with it instead of standing over nothing.
+      child: _FitColumn(
+        spacing: AppSpacing.sm,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  i18n.homeMostUrgent,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: text.titleSmall?.copyWith(color: AppColors.navy),
+          for (final (index, card) in cards.indexed)
+            index > 0
+                ? card
+                : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [title, const SizedBox(height: AppSpacing.xs), card],
                 ),
-              ),
-              TextButton(onPressed: () => context.go('/alerts'), child: Text(i18n.viewAll)),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Expanded(
-            child: _FitColumn(
-              spacing: AppSpacing.sm,
-              children: [
-                for (final alert in shown.take(_limit))
-                  if (!dashboard)
-                    views.alertCard(
-                      alert,
-                      deviceName: summary.equipmentNames[alert.equipmentId],
-                      environmentName: summary.environmentNames[alert.environmentId],
-                      onTap: () => context.push('/alerts/${alert.id}'),
-                    )
-                  else if (acknowledged(alert))
-                    HomeAcknowledgedAlertRow(alert: alert, onTap: () => context.push('/alerts/${alert.id}'))
-                  else
-                    HomeAlertCard(
-                      alert: alert,
-                      deviceName: summary.equipmentNames[alert.equipmentId],
-                      threshold: summary.alerts.value?.thresholds[alert.id],
-                      onTap: () => context.push('/alerts/${alert.id}'),
-                    ),
-              ],
-            ),
-          ),
         ],
       ),
     );
