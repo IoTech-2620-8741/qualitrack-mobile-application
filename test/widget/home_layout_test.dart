@@ -170,7 +170,7 @@ void main() {
 
   /// A text as the user reads it: a non-breaking space looks like a space.
   Finder readsAs(String text) =>
-      find.byWidgetPredicate((widget) => widget is Text && widget.data?.replaceAll(' ', ' ') == text);
+      find.byWidgetPredicate((widget) => widget is Text && widget.data?.replaceAll('\u00a0', ' ') == text);
 
   /// The lines [text] takes on screen.
   int lineCount(WidgetTester tester, Finder text) {

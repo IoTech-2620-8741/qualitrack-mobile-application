@@ -297,7 +297,7 @@ class _StatusStrip extends StatelessWidget {
     final urgent = critical > 0 ? summary.alerts.value?.byPriority.firstOrNull : null;
     // The count keeps its noun ("1 critical alert"): a message in two lines breaks after its colon.
     final parts = message.split(': ');
-    final shownMessage = [parts.first, ...parts.skip(1).map((part) => part.replaceAll(' ', ' '))].join(': ');
+    final shownMessage = [parts.first, ...parts.skip(1).map((part) => part.replaceAll(' ', '\u00a0'))].join(': ');
     final status = Row(
       children: [
         Icon(tone.icon, size: 20, color: tone.foreground),
@@ -386,7 +386,8 @@ class _AttentionRow extends StatelessWidget {
     // A detail of several parts ("3 unresolved · 1 acknowledged") wraps only
     // between them: non-breaking spaces keep each part, and its separator, whole.
     final parts = detail?.split(' · ') ?? const <String>[];
-    final shownDetail = parts.length < 2 ? detail : parts.map((part) => part.replaceAll(' ', ' ')).join(' · ');
+    final shownDetail =
+        parts.length < 2 ? detail : parts.map((part) => part.replaceAll(' ', '\u00a0')).join('\u00a0· ');
     final figureStyle = AppTypography.metric.copyWith(fontSize: 18, color: color);
     return Semantics(
       button: true,
