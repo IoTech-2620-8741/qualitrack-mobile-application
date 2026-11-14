@@ -143,7 +143,11 @@ void main() {
     Locale locale = const Locale('en'),
   }) async {
     await tester.pumpLocalized(
-      MediaQuery.withClampedTextScaling(minScaleFactor: textScale, maxScaleFactor: textScale, child: home(session: session)),
+      MediaQuery.withClampedTextScaling(
+        minScaleFactor: textScale,
+        maxScaleFactor: textScale,
+        child: home(session: session),
+      ),
       size: size,
       locale: locale,
     );

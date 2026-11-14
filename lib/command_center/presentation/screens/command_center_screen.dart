@@ -314,7 +314,12 @@ class _StatusStrip extends StatelessWidget {
           // With critical alerts the strip is the style guide's red banner, edged like Web's action banner.
           border:
               tone == BadgeTone.critical
-                  ? Border(left: _bannerEdge.copyWith(width: 4), top: _bannerEdge, right: _bannerEdge, bottom: _bannerEdge)
+                  ? Border(
+                    left: _bannerEdge.copyWith(width: 4),
+                    top: _bannerEdge,
+                    right: _bannerEdge,
+                    bottom: _bannerEdge,
+                  )
                   : null,
         ),
         child:

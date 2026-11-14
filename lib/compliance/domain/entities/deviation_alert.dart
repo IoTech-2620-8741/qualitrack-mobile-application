@@ -75,7 +75,8 @@ class DeviationAlert extends Equatable {
     if (open != 0) return open;
     final critical = (b.isCritical ? 1 : 0).compareTo(a.isCritical ? 1 : 0);
     if (critical != 0) return critical;
-    final unattended = (b.status == AlertStatus.unresolved ? 1 : 0).compareTo(a.status == AlertStatus.unresolved ? 1 : 0);
+    final unattended =
+        (b.status == AlertStatus.unresolved ? 1 : 0).compareTo(a.status == AlertStatus.unresolved ? 1 : 0);
     if (unattended != 0) return unattended;
     final left = a.lastDetectedAt ?? a.timestamp;
     final right = b.lastDetectedAt ?? b.timestamp;
