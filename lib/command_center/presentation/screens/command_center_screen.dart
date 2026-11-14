@@ -22,6 +22,7 @@ import '../../../iam/api/index.dart';
 import '../../application/get_command_center_summary.dart';
 import '../bloc/command_center_bloc.dart';
 import '../command_center_views.dart';
+import '../widgets/proportion_bar.dart';
 
 /// Home panel shown after signing in (US: consult the control panel of the
 /// laboratory).
@@ -347,8 +348,9 @@ class _StatusStrip extends StatelessWidget {
 }
 
 /// One row of the panel: the section icon, its figure, what it counts, a
-/// short detail (two lines at most, broken only between its parts; left out on
-/// a short screen) and a chevron to open it.
+/// short detail (two lines at most, broken only between its parts) over the
+/// share of its parts as a thin bar, both left out on a short screen, and a
+/// chevron to open it.
 ///
 /// The color of the tone goes only to the icon and the figure; a row with
 /// nothing to review shows the success icon and "Nothing pending".
@@ -362,6 +364,7 @@ class _AttentionRow extends StatelessWidget {
     required this.compact,
     this.total,
     this.detail,
+    this.segments = const [],
     this.badge,
   });
 
@@ -374,6 +377,9 @@ class _AttentionRow extends StatelessWidget {
   final int? total;
   final String label;
   final String? detail;
+
+  /// The count and the color of each part of the figure, for its bar.
+  final List<(int, Color)> segments;
   final Widget? badge;
   final VoidCallback onTap;
   final bool compact;
@@ -455,6 +461,10 @@ class _AttentionRow extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: text.bodySmall?.copyWith(color: AppColors.textMuted),
                         ),
+                      if (!compact && segments.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        ProportionBar(segments: segments, height: 4),
+                      ],
                       if (badge != null) ...[const SizedBox(height: AppSpacing.xs), badge!],
                     ],
                   ),
@@ -503,6 +513,10 @@ class _AlertsRow extends StatelessWidget {
               : s.acknowledged == 1
               ? i18n.homeAlertsDetailOneAcknowledged(s.unresolved)
               : i18n.homeAlertsDetail(s.unresolved, s.acknowledged),
+      segments:
+          s == null || open == 0
+              ? const []
+              : [(s.unresolved, AppColors.criticalBase), (s.acknowledged, AppColors.neutralContainer)],
       badge:
           critical > 0
               ? StatusBadge(
@@ -542,6 +556,14 @@ class _TelemetryRow extends StatelessWidget {
       total: none ? null : eq.devices,
       label: eq == null ? _error(context, part.failure) : (none ? i18n.noIotDevices : i18n.iotDevicesOnline),
       detail: none ? null : (toReview > 0 ? i18n.homeDevicesToReview(toReview) : i18n.homeNothingPending),
+      segments:
+          none
+              ? const []
+              : [
+                (eq.connected, AppColors.successBase),
+                (eq.requiresReview, AppColors.warningBase),
+                (eq.offline, AppColors.neutralContainer),
+              ],
       compact: compact,
       onTap: () => context.go('/telemetry'),
     );
@@ -585,6 +607,8 @@ class _BatchesRow extends StatelessWidget {
               : s.pending == 1
               ? i18n.homeBatchesDetailOnePending(s.inProgress)
               : i18n.homeBatchesDetail(s.pending, s.inProgress),
+      segments:
+          s == null ? const [] : [(awaiting!, AppColors.primary), (s.total - awaiting, AppColors.neutralContainer)],
       compact: compact,
       onTap: () => context.go('/batches'),
     );
@@ -621,6 +645,10 @@ class _InventoryRow extends StatelessWidget {
               : materials.length == 1
               ? i18n.homeMaterialsTotalOne
               : i18n.homeMaterialsTotal(materials.length),
+      segments:
+          materials == null || low == null
+              ? const []
+              : [(low, AppColors.warningBase), (materials.length - low, AppColors.successBase)],
       compact: compact,
       // Inventory is not a tab: it opens over Home, with its back arrow.
       onTap: () => context.push('/inventory'),

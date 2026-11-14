@@ -11,7 +11,9 @@ import 'package:qualitrack_mobile/compliance/api/index.dart';
 import 'package:qualitrack_mobile/command_center/presentation/bloc/command_center_bloc.dart';
 import 'package:qualitrack_mobile/command_center/presentation/command_center_views.dart';
 import 'package:qualitrack_mobile/command_center/presentation/screens/command_center_screen.dart';
+import 'package:qualitrack_mobile/command_center/presentation/widgets/proportion_bar.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
+import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/api/index.dart';
 import 'package:qualitrack_mobile/inventory/api/index.dart';
@@ -302,6 +304,20 @@ void main() {
     expect(total.style?.fontSize, 14);
   });
 
+  testWidgets('each row shows the share of its parts in a thin bar', (tester) async {
+    await pumpHome(tester, const Size(360, 800));
+
+    final bars = tester.widgetList<ProportionBar>(find.byType(ProportionBar)).toList();
+    expect([for (final bar in bars) bar.height], [4, 4, 4, 4]);
+    // Top to bottom: open alerts, devices, batches and materials.
+    expect([for (final bar in bars) bar.segments], [
+      [(3, AppColors.criticalBase), (1, AppColors.neutralContainer)],
+      [(6, AppColors.successBase), (1, AppColors.warningBase), (2, AppColors.neutralContainer)],
+      [(5, AppColors.primary), (4, AppColors.neutralContainer)],
+      [(1, AppColors.warningBase), (1, AppColors.successBase)],
+    ]);
+  });
+
   testWidgets('TalkBack reads the devices online as "6 of 9", in words', (tester) async {
     for (final (locale, label) in const [
       (Locale('en'), '6 of 9, Devices online'),
@@ -433,11 +449,13 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.text(detail), findsOneWidget, reason: 'whole in $locale');
+        expect(find.byType(ProportionBar), findsNWidgets(4), reason: 'whole in $locale');
         expect(scrollExtent(tester), 0, reason: 'whole in $locale');
 
         await pumpHome(tester, Size(width, tall - 1), locale: locale, textScale: scale);
 
         expect(find.text(detail), findsNothing, reason: 'compact in $locale');
+        expect(find.byType(ProportionBar), findsNothing, reason: 'compact in $locale');
         expect(scrollExtent(tester), 0, reason: 'compact in $locale');
       }
     });
