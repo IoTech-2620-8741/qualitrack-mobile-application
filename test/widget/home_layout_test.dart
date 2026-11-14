@@ -5,15 +5,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qualitrack_mobile/app/home_layout_preference.dart';
 import 'package:qualitrack_mobile/batch/api/index.dart';
 import 'package:qualitrack_mobile/command_center/application/get_command_center_summary.dart';
 import 'package:qualitrack_mobile/compliance/api/index.dart';
 import 'package:qualitrack_mobile/command_center/presentation/bloc/command_center_bloc.dart';
 import 'package:qualitrack_mobile/command_center/presentation/command_center_views.dart';
 import 'package:qualitrack_mobile/command_center/presentation/screens/command_center_screen.dart';
+import 'package:qualitrack_mobile/command_center/presentation/widgets/home_alert_card.dart';
 import 'package:qualitrack_mobile/command_center/presentation/widgets/proportion_bar.dart';
+import 'package:qualitrack_mobile/common/infrastructure/storage/secure_key_value_store.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
+import 'package:qualitrack_mobile/common/presentation/theme/app_spacing.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/api/index.dart';
 import 'package:qualitrack_mobile/inventory/api/index.dart';
@@ -21,7 +25,20 @@ import 'package:qualitrack_mobile/laboratory/api/index.dart';
 import 'package:qualitrack_mobile/tracking/api/index.dart';
 
 import '../helpers/fixtures.dart';
+import '../helpers/mocks.dart';
 import '../helpers/pump_app.dart';
+
+/// A keystore that cannot be read, as after the app's data is restored on another phone.
+class _UnreadableStore implements SecureKeyValueStore {
+  @override
+  Future<String?> read(String key) async => throw PlatformException(code: 'read');
+
+  @override
+  Future<void> write(String key, String value) async => throw PlatformException(code: 'write');
+
+  @override
+  Future<void> delete(String key) async => throw PlatformException(code: 'delete');
+}
 
 class _MockHomeBloc extends MockBloc<CommandCenterRequested, RemoteState<CommandCenterSummary>>
     implements CommandCenterBloc {}
@@ -32,6 +49,7 @@ CommandCenterSummary _summary({
   int pending = 2,
   int inProgress = 3,
   List<InventoryMaterial>? materials,
+  Map<int, String> environmentNames = const {},
 }) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
@@ -85,6 +103,7 @@ CommandCenterSummary _summary({
             ),
     materials: Part.ok(materials ?? [materialFixture(), materialFixture(id: 2, usable: 9, stockStatus: 'OK')]),
     subscription: null,
+    environmentNames: environmentNames,
     fetchedAt: now.subtract(const Duration(minutes: 5)),
   );
 }
@@ -101,6 +120,7 @@ CommandCenterViews _views() => CommandCenterViews(
 
 void main() {
   late _MockHomeBloc bloc;
+  late ValueNotifier<HomeLayout> layout;
 
   /// The bloc holding [summary], as after a successful load.
   void stubSummary(CommandCenterSummary summary) => whenListen(
@@ -119,13 +139,14 @@ void main() {
   setUp(() {
     bloc = _MockHomeBloc();
     stubSummary(_summary());
+    layout = ValueNotifier(HomeLayout.list);
   });
 
   /// The Home inside the navigation bar of the shell.
   Widget home({UserSession? session}) => Scaffold(
     body: BlocProvider<CommandCenterBloc>.value(
       value: bloc,
-      child: CommandCenterScreen(session: session ?? sessionFixture(), views: _views()),
+      child: CommandCenterScreen(session: session ?? sessionFixture(), views: _views(), layout: layout),
     ),
     bottomNavigationBar: NavigationBar(
       destinations: const [
@@ -612,5 +633,280 @@ void main() {
     );
 
     expect(find.text('Awaiting QA release'), findsOneWidget);
+  });
+
+  group('the dashboard', () {
+    /// Two critical alerts and a warning, unresolved, and an acknowledged warning.
+    List<DeviationAlert> openAlerts() {
+      final now = DateTime.now();
+      return [
+        alertFixture(id: 1, equipmentId: 1, timestamp: now.subtract(const Duration(hours: 2))),
+        alertFixture(id: 2, equipmentId: 2, timestamp: now.subtract(const Duration(days: 2))),
+        alertFixture(
+          id: 3,
+          equipmentId: 3,
+          severity: AlertSeverity.warning,
+          timestamp: now.subtract(const Duration(days: 4)),
+        ),
+        alertFixture(
+          id: 4,
+          equipmentId: 4,
+          severity: AlertSeverity.warning,
+          status: AlertStatus.acknowledged,
+          timestamp: now.subtract(const Duration(hours: 3)),
+        ),
+      ];
+    }
+
+    /// The tile labeled [label].
+    Finder tileOf(String label) => find.ancestor(of: find.text(label), matching: find.byType(Card)).first;
+
+    setUp(() => layout.value = HomeLayout.cards);
+
+    testWidgets('the app bar button switches the Home between the list and the dashboard', (tester) async {
+      layout.value = HomeLayout.list;
+      await pumpHome(tester, const Size(360, 800));
+      expect(find.text('View detail'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Show as cards'));
+      await tester.pump();
+      await tester.pump();
+
+      expect(layout.value, HomeLayout.cards);
+      expect(find.text('View detail'), findsNothing);
+      expect(find.byType(HomeAlertCard), findsWidgets);
+
+      await tester.tap(find.byTooltip('Show as list'));
+      await tester.pump();
+      await tester.pump();
+
+      expect(layout.value, HomeLayout.list);
+      expect(find.text('View detail'), findsOneWidget);
+    });
+
+    testWidgets('the dashboard lays the figures out two by two', (tester) async {
+      await pumpHome(tester, const Size(412, 915));
+
+      final alerts = tester.getRect(tileOf('Open alerts'));
+      final devices = tester.getRect(tileOf('Devices online'));
+      final batches = tester.getRect(tileOf('Awaiting QA release'));
+      final materials = tester.getRect(tileOf('Below minimum'));
+      expect(devices.top, alerts.top);
+      expect(devices.left, greaterThan(alerts.right));
+      expect(batches.left, alerts.left);
+      expect(batches.top, greaterThan(alerts.bottom));
+      expect(materials.top, batches.top);
+      // Each pair is as tall as its taller tile.
+      expect(devices.height, alerts.height);
+      expect(materials.height, batches.height);
+    });
+
+    testWidgets("an operator's dashboard shows the open alerts and the batches in progress", (tester) async {
+      await pumpHome(tester, const Size(360, 800), session: sessionFixture(roles: [UserRole.labOperator]));
+
+      expect(tester.getRect(tileOf('Batches in progress')).top, tester.getRect(tileOf('Open alerts')).top);
+      expect(find.text('Devices online'), findsNothing);
+      expect(find.text('Below minimum'), findsNothing);
+    });
+
+    testWidgets('a critical alert turns the open alerts tile red and names it, with no banner', (tester) async {
+      stubSummary(_summary(open: openAlerts()));
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(readsAs('2 critical · 1 acknowledged'), findsOneWidget);
+      expect(tester.widget<Card>(tileOf('Open alerts')).color, AppColors.criticalContainer);
+      expect(find.text('View detail'), findsNothing);
+    });
+
+    testWidgets('without critical alerts the open alerts tile stays white, with the list detail', (tester) async {
+      stubSummary(_summary(open: openAlerts().where((alert) => !alert.isCritical).toList()));
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(readsAs('1 unresolved · 1 acknowledged'), findsOneWidget);
+      expect(tester.widget<Card>(tileOf('Open alerts')).color, isNull);
+    });
+
+    testWidgets('the tile figures keep the 22 sp of the list', (tester) async {
+      await pumpHome(tester, const Size(412, 915));
+
+      for (final figure in ['4', '6/9', '5', '1']) {
+        expect(tester.widget<Text>(find.text(figure)).style?.fontSize, 22, reason: figure);
+      }
+    });
+
+    testWidgets('unresolved alerts come first as cards, then the acknowledged ones as one-line rows', (tester) async {
+      stubSummary(_summary(open: openAlerts()));
+      await pumpHome(tester, const Size(412, 2000));
+
+      final cards = find.byType(HomeAlertCard);
+      expect([for (final card in tester.widgetList<HomeAlertCard>(cards)) card.alert.id], [1, 2, 3]);
+      final row = find.byType(HomeAcknowledgedAlertRow);
+      expect(tester.widget<HomeAcknowledgedAlertRow>(row).alert.id, 4);
+      expect(tester.getRect(row).top, greaterThan(tester.getRect(cards.last).bottom));
+      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
+    });
+
+    testWidgets("an alert card measures its value against the alert's limit", (tester) async {
+      stubSummary(_summary(open: [alertFixture(id: 1)]));
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(find.text('38.6 °C'), findsOneWidget);
+      expect(find.text('Limit 30 °C'), findsOneWidget);
+      expect(find.text('8.6 °C above the limit'), findsOneWidget);
+      // The style guide's edge of a reading card: 4 dp in the color of its state.
+      final edges = [
+        for (final box in tester.widgetList<DecoratedBox>(
+          find.descendant(of: find.byType(HomeAlertCard), matching: find.byType(DecoratedBox)),
+        ))
+          if (box.decoration case BoxDecoration(border: final Border border)) border.left,
+      ];
+      expect(edges.single.width, 4);
+      expect(edges.single.color, AppColors.criticalBase);
+    });
+
+    test('outOfLimit tells how far and on which side a value is', () {
+      final above = outOfLimit(38.6, low: 30, high: 30)!;
+      expect(above.amount, closeTo(8.6, 1e-9));
+      expect(above.above, isTrue);
+      expect(outOfLimit(1, low: 2, high: 8), (amount: 1, above: false));
+      expect(outOfLimit(5, low: 2, high: 8), isNull);
+      expect(outOfLimit(null, low: 2, high: 8), isNull);
+      // A missing side is open.
+      expect(outOfLimit(9, high: 8), (amount: 1, above: true));
+      expect(outOfLimit(-40, high: 8), isNull);
+    });
+
+    testWidgets('an alert without a value or a limit shows a dash and no distance', (tester) async {
+      stubSummary(_summary(open: [alertFixture(id: 1, recordedValue: null, thresholdValue: null)]));
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(tester.takeException(), isNull);
+      expect(find.descendant(of: find.byType(HomeAlertCard), matching: find.text('—')), findsOneWidget);
+      expect(find.textContaining('limit'), findsNothing);
+      expect(find.textContaining('Limit'), findsNothing);
+    });
+
+    testWidgets('the tiles give up their detail to make room for the most urgent alerts', (tester) async {
+      await pumpHome(tester, const Size(360, 2000));
+      final body = tester.getRect(find.byType(CustomScrollView));
+      final tiles = tester.getRect(tileOf('Below minimum')).bottom - tester.getRect(tileOf('Open alerts')).top;
+      // A screen that leaves the alerts their minimum only under compact tiles.
+      await pumpHome(tester, Size(360, (2000 - body.height + AppSpacing.lg + tiles + 160 - 1).floorToDouble()));
+
+      expect(tester.takeException(), isNull);
+      expect(scrollExtent(tester), 0);
+      expect(find.text('Most urgent'), findsOneWidget);
+      expect(find.text('of 2 materials'), findsNothing);
+    });
+
+    testWidgets('with room to spare the tiles keep their detail above the most urgent alerts', (tester) async {
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(find.text('Most urgent'), findsOneWidget);
+      expect(find.text('of 2 materials'), findsOneWidget);
+    });
+
+    testWidgets('the tiles keep their detail when compacting would not make room for the alerts', (tester) async {
+      await pumpHome(tester, const Size(360, 2000));
+      final body = tester.getRect(find.byType(CustomScrollView));
+      final bottom = tester.getRect(tileOf('Below minimum')).bottom;
+      // A screen just as tall as the whole tiles.
+      await pumpHome(tester, Size(360, (2000 - body.height + bottom - body.top).ceilToDouble()));
+
+      expect(scrollExtent(tester), 0);
+      expect(find.text('of 2 materials'), findsOneWidget);
+      expect(find.text('Most urgent'), findsNothing);
+    });
+
+    testWidgets('the dashboard fits a small phone without scrolling', (tester) async {
+      await pumpHome(tester, const Size(360, 640));
+
+      expect(tester.takeException(), isNull);
+      expect(scrollExtent(tester), 0);
+      expect(find.text('Below minimum'), findsOneWidget);
+    });
+
+    testWidgets('the dashboard fits a 320 dp phone with text x1.3', (tester) async {
+      stubSummary(_summary(open: openAlerts(), environmentNames: {3: 'Almacén de materias primas refrigerado'}));
+      for (final height in [640.0, 1000.0]) {
+        await pumpHome(tester, Size(320, height), textScale: 1.3, locale: const Locale('es'));
+
+        expect(tester.takeException(), isNull, reason: '$height dp');
+        expect(
+          tester.getRect(tileOf('Dispositivos en línea')).top,
+          tester.getRect(tileOf('Alertas abiertas')).top,
+          reason: '$height dp',
+        );
+      }
+      expect(find.byType(HomeAlertCard), findsWidgets);
+    });
+
+    testWidgets('a tile and an alert card each read as one sentence', (tester) async {
+      stubSummary(_summary(open: [alertFixture(id: 1)]));
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(find.bySemanticsLabel('1, Open alerts, 1 critical'), findsOneWidget);
+      final card = RegExp(r'^Critical, Temperature, 38\.6 °C, Limit 30 °C, 8\.6 °C above the limit, Unresolved, ');
+      expect(find.bySemanticsLabel(card), findsOneWidget);
+    });
+
+    testWidgets('a count of one reads in the singular on the tiles', (tester) async {
+      stubSummary(
+        _summary(
+          open: [
+            alertFixture(id: 1),
+            alertFixture(id: 4, severity: AlertSeverity.warning, status: AlertStatus.acknowledged),
+          ],
+          materials: [materialFixture()],
+        ),
+      );
+      await pumpHome(tester, const Size(412, 915), locale: const Locale('es'));
+
+      expect(readsAs('1 crítica · 1 reconocida'), findsOneWidget);
+      expect(find.text('de 1 material'), findsOneWidget);
+    });
+
+    testWidgets('while it loads, the dashboard shows the shape of its tiles', (tester) async {
+      whenListen(
+        bloc,
+        const Stream<RemoteState<CommandCenterSummary>>.empty(),
+        initialState: const RemoteState<CommandCenterSummary>().loading(),
+      );
+      await pumpHome(tester, const Size(360, 800));
+
+      expect(tester.takeException(), isNull);
+      expect(find.bySemanticsLabel('Loading…'), findsOneWidget);
+      expect(find.byKey(const ValueKey('tile-bone')), findsNWidgets(4));
+    });
+
+    test('the choice is kept on the device and read again at start', () async {
+      final store = InMemorySecureStore();
+      HomeLayoutPreference(store).value = HomeLayout.cards;
+      await pumpEventQueue();
+
+      final next = HomeLayoutPreference(store);
+      await next.load();
+
+      expect(next.value, HomeLayout.cards);
+    });
+
+    test('a missing, unknown or unreadable choice keeps the list', () async {
+      for (final store in [
+        InMemorySecureStore(),
+        InMemorySecureStore()..values[HomeLayoutPreference.storageKey] = 'grid',
+        _UnreadableStore(),
+      ]) {
+        final preference = HomeLayoutPreference(store);
+        await preference.load();
+        expect(preference.value, HomeLayout.list, reason: '${store.runtimeType}');
+      }
+    });
+
+    test('a choice the keystore cannot save still holds until the app closes', () async {
+      final preference = HomeLayoutPreference(_UnreadableStore())..value = HomeLayout.cards;
+      await pumpEventQueue();
+
+      expect(preference.value, HomeLayout.cards);
+    });
   });
 }

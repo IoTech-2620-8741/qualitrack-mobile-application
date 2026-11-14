@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app/app.dart';
 import 'app/dependency_injection/injection.dart';
+import 'app/home_layout_preference.dart';
 import 'compliance/presentation/bloc/unread_notifications_controller.dart';
 import 'iam/application/session_controller.dart';
 import 'profile/presentation/bloc/current_profile_controller.dart';
@@ -12,6 +13,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppOrientation.lockPortrait();
   await configureDependencies();
+  // Before the first frame, so the Home opens in the layout the user chose.
+  await sl<HomeLayoutPreference>().load();
   final config = sl<ApiConfig>();
   if (!config.isConfigured) {
     runApp(const _MissingConfigurationApp());

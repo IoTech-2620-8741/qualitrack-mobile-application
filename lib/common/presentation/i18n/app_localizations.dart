@@ -642,6 +642,15 @@ class AppLocalizations {
   String get homeMaterialsTotalOne => _t('homeMaterialsTotalOne');
   String get homeNothingPending => _t('homeNothingPending');
   String get homeMostUrgent => _t('homeMostUrgent');
+  String get homeShowCards => _t('homeShowCards');
+  String get homeShowList => _t('homeShowList');
+  String homeAcknowledgedCount(int count) => _t('homeAcknowledgedCount')
+      .replaceAll('{count}', '$count');
+  String get homeAcknowledgedCountOne => _t('homeAcknowledgedCountOne');
+  String homeAboveLimit(String value) => _t('homeAboveLimit')
+      .replaceAll('{value}', value);
+  String homeBelowLimit(String value) => _t('homeBelowLimit')
+      .replaceAll('{value}', value);
   String get filterMaterials => _t('filterMaterials');
   String get batchCycle => _t('batchCycle');
   String get qaDecision => _t('qaDecision');
@@ -1171,6 +1180,12 @@ const Map<String, String> _en = {
   'homeMaterialsTotalOne': 'of 1 material',
   'homeNothingPending': 'Nothing pending',
   'homeMostUrgent': 'Most urgent',
+  'homeShowCards': 'Show as cards',
+  'homeShowList': 'Show as list',
+  'homeAcknowledgedCount': '{count} acknowledged',
+  'homeAcknowledgedCountOne': '1 acknowledged',
+  'homeAboveLimit': '{value} above the limit',
+  'homeBelowLimit': '{value} below the limit',
   'filterMaterials': 'Filter materials',
   'batchCycle': 'Batch cycle',
   'qaDecision': 'QA decision',
@@ -1700,6 +1715,12 @@ const Map<String, String> _es = {
   'homeMaterialsTotalOne': 'de 1 material',
   'homeNothingPending': 'Sin pendientes',
   'homeMostUrgent': 'Lo más urgente',
+  'homeShowCards': 'Ver en tarjetas',
+  'homeShowList': 'Ver en lista',
+  'homeAcknowledgedCount': '{count} reconocidas',
+  'homeAcknowledgedCountOne': '1 reconocida',
+  'homeAboveLimit': '{value} sobre el límite',
+  'homeBelowLimit': '{value} bajo el límite',
   'filterMaterials': 'Filtrar materiales',
   'batchCycle': 'Ciclo del lote',
   'qaDecision': 'Decisión QA',

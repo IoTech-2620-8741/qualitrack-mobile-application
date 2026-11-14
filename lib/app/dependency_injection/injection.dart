@@ -79,6 +79,7 @@ import '../../tracking/infrastructure/data_sources/telemetry_remote_data_provide
 import '../../tracking/infrastructure/repositories/telemetry_repository.dart';
 import '../../tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 import '../../tracking/presentation/bloc/telemetry_history_bloc.dart';
+import '../home_layout_preference.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -165,6 +166,7 @@ Future<void> configureDependencies({ApiConfig? config, SecureKeyValueStore? secu
   sl.registerLazySingleton(() => CurrentProfileController(profileService: sl()));
 
   // Command Center (UI composition)
+  sl.registerLazySingleton(() => HomeLayoutPreference(sl()));
   sl.registerLazySingleton(
     () => GetCommandCenterSummary(
       laboratoryApi: sl(),

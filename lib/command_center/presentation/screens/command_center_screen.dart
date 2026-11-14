@@ -18,10 +18,12 @@ import '../../../common/presentation/widgets/failure_message.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
+import '../../../compliance/api/index.dart';
 import '../../../iam/api/index.dart';
 import '../../application/get_command_center_summary.dart';
 import '../bloc/command_center_bloc.dart';
 import '../command_center_views.dart';
+import '../widgets/home_alert_card.dart';
 import '../widgets/proportion_bar.dart';
 
 /// Home panel shown after signing in (US: consult the control panel of the
@@ -39,19 +41,29 @@ import '../widgets/proportion_bar.dart';
 /// - the most urgent open alerts, in the rest of the screen.
 /// An operator's panel keeps only the alerts and the batches in progress, and
 /// an auditor's is marked read only (style guide §7).
+/// A button of the app bar switches between this list and a dashboard, as the
+/// user prefers: the figures as tiles two per row, with no strip (the open
+/// alerts tile turns red instead), over the unresolved alerts as reading cards
+/// and the acknowledged ones as one-line rows.
 /// The color of a state goes only to its icon and figure. When the whole panel
 /// does not fit the screen, each row leaves out its detail instead of
 /// shrinking. Only when the user's larger text does not fit even then, the
 /// panel scrolls, so the text keeps the size the user chose.
 /// Pull-to-refresh always works.
 class CommandCenterScreen extends StatelessWidget {
-  const CommandCenterScreen({super.key, required this.session, required this.views});
+  const CommandCenterScreen({super.key, required this.session, required this.views, required this.layout});
 
   final UserSession session;
   final CommandCenterViews views;
+  final ValueNotifier<HomeLayout> layout;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder(
+    valueListenable: layout,
+    builder: (context, chosen, _) => _home(context, cards: chosen == HomeLayout.cards),
+  );
+
+  Widget _home(BuildContext context, {required bool cards}) {
     void reload() => context.read<CommandCenterBloc>().add(const CommandCenterRequested(refresh: true));
     final forOperator = session.primaryRole == UserRole.labOperator;
     return Scaffold(
@@ -62,7 +74,16 @@ class CommandCenterScreen extends StatelessWidget {
         title: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
           builder: (context, state) => _PanelTitle(session: session, views: views, summary: state.data),
         ),
-        actions: [views.notificationBell, views.profileButton],
+        actions: [
+          // The icon shows the layout the button switches to.
+          IconButton(
+            tooltip: cards ? context.i18n.homeShowList : context.i18n.homeShowCards,
+            icon: Icon(cards ? Icons.view_agenda_outlined : Icons.grid_view_outlined),
+            onPressed: () => layout.value = cards ? HomeLayout.list : HomeLayout.cards,
+          ),
+          views.notificationBell,
+          views.profileButton,
+        ],
       ),
       body: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
         builder:
@@ -71,7 +92,7 @@ class CommandCenterScreen extends StatelessWidget {
               onRetry: reload,
               // The shape of the panel while it loads, so nothing jumps when
               // the figures arrive.
-              loading: const _PanelSkeleton(),
+              loading: _PanelSkeleton(dashboard: cards),
               builder:
                   (context, summary) => LayoutBuilder(
                     builder: (context, constraints) {
@@ -90,6 +111,7 @@ class CommandCenterScreen extends StatelessWidget {
                                 child: _FittedPanel(
                                   summary: summary,
                                   forOperator: forOperator,
+                                  cards: cards,
                                   // The body under the top padding.
                                   maxHeight: constraints.maxHeight - AppSpacing.lg,
                                 ),
@@ -108,7 +130,10 @@ class CommandCenterScreen extends StatelessWidget {
                                 return SliverToBoxAdapter(
                                   child: SizedBox(
                                     height: rest > 0 ? rest : 0,
-                                    child: fits && hasOpen ? _LatestAlerts(summary: summary, views: views) : null,
+                                    child:
+                                        fits && hasOpen
+                                            ? _LatestAlerts(summary: summary, views: views, dashboard: cards)
+                                            : null,
                                   ),
                                 );
                               },
@@ -123,6 +148,9 @@ class CommandCenterScreen extends StatelessWidget {
     );
   }
 }
+
+/// How the Home lays out its figures: the list of rows or the dashboard.
+enum HomeLayout { list, cards }
 
 String _error(BuildContext context, Failure? failure) =>
     failure == null ? '' : failureMessage(context, failure).split('\n').first;
@@ -180,12 +208,15 @@ class _PanelTitleState extends State<_PanelTitle> {
 
 /// The panel whole when it fits [maxHeight], or with compact rows when it does
 /// not. Whether it fits depends on the width, the language and the text size,
-/// so the whole panel is laid out offstage and measured, not assumed.
+/// so the whole panel is laid out offstage and measured, not assumed. The
+/// dashboard's tiles are compact also when that leaves under them the room of
+/// the most urgent alerts, which the style guide puts on Home.
 class _FittedPanel extends StatefulWidget {
-  const _FittedPanel({required this.summary, required this.forOperator, required this.maxHeight});
+  const _FittedPanel({required this.summary, required this.forOperator, required this.cards, required this.maxHeight});
 
   final CommandCenterSummary summary;
   final bool forOperator;
+  final bool cards;
   final double maxHeight;
 
   @override
@@ -194,26 +225,42 @@ class _FittedPanel extends StatefulWidget {
 
 class _FittedPanelState extends State<_FittedPanel> {
   final _whole = GlobalKey();
+  final _compact = GlobalKey();
 
-  /// Height of the whole panel at the last layout; unknown before the first.
+  /// Heights of the whole and the compact panel at the last layout; unknown
+  /// before the first.
   double? _wholeHeight;
+  double? _compactHeight;
 
   @override
   Widget build(BuildContext context) {
-    // A layout cannot rebuild the tree: the height is read after the frame, and
-    // a change shows on the next one.
+    // A layout cannot rebuild the tree: the heights are read after the frame,
+    // and a change shows on the next one.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final height = _whole.currentContext?.size?.height;
-      if (mounted && height != null && height != _wholeHeight) setState(() => _wholeHeight = height);
+      final whole = _whole.currentContext?.size?.height;
+      final compact = _compact.currentContext?.size?.height;
+      if (mounted && (whole != _wholeHeight || compact != _compactHeight)) {
+        setState(() {
+          _wholeHeight = whole;
+          _compactHeight = compact;
+        });
+      }
     });
-    final whole = _Panel(summary: widget.summary, compact: false, forOperator: widget.forOperator);
+    final whole = _Panel(summary: widget.summary, compact: false, forOperator: widget.forOperator, cards: widget.cards);
+    final compact =
+        _Panel(summary: widget.summary, compact: true, forOperator: widget.forOperator, cards: widget.cards);
+    final makeRoom = widget.cards && (widget.summary.alerts.value?.open.isNotEmpty ?? false);
+    // The height that leaves the most urgent alerts their minimum under the panel.
+    final aboveAlerts = widget.maxHeight - MediaQuery.textScalerOf(context).scale(_LatestAlerts.minHeight);
+    final wholeHeight = _wholeHeight ?? 0;
+    final useCompact =
+        wholeHeight > widget.maxHeight ||
+        (makeRoom && wholeHeight > aboveAlerts && (_compactHeight ?? double.infinity) <= aboveAlerts);
     return Stack(
       children: [
         Offstage(child: ExcludeFocus(child: KeyedSubtree(key: _whole, child: whole))),
-        if ((_wholeHeight ?? 0) > widget.maxHeight)
-          _Panel(summary: widget.summary, compact: true, forOperator: widget.forOperator)
-        else
-          whole,
+        if (makeRoom) Offstage(child: ExcludeFocus(child: KeyedSubtree(key: _compact, child: compact))),
+        if (useCompact) compact else whole,
       ],
     );
   }
@@ -221,16 +268,44 @@ class _FittedPanelState extends State<_FittedPanel> {
 
 /// The state of the laboratory in one line, and the rows to review in order of
 /// importance: all four, or for an operator the open alerts and the batches in
-/// progress.
+/// progress. As [cards], the same figures as the dashboard's tiles, two per
+/// row and each pair as tall as its taller tile, with no strip.
 class _Panel extends StatelessWidget {
-  const _Panel({required this.summary, required this.compact, required this.forOperator});
+  const _Panel({required this.summary, required this.compact, required this.forOperator, required this.cards});
 
   final CommandCenterSummary summary;
   final bool compact;
   final bool forOperator;
+  final bool cards;
 
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) => cards ? _tiles() : _list();
+
+  Widget _tiles() {
+    Widget pair(Widget left, Widget right) => IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [Expanded(child: left), const SizedBox(width: AppSpacing.sm), Expanded(child: right)],
+      ),
+    );
+    final alerts = _AlertsRow(summary: summary, compact: compact, tile: true);
+    if (forOperator) {
+      return pair(alerts, _BatchesRow(summary: summary, compact: compact, inProgressOnly: true, tile: true));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        pair(alerts, _TelemetryRow(summary: summary, compact: compact, tile: true)),
+        const SizedBox(height: AppSpacing.sm),
+        pair(
+          _BatchesRow(summary: summary, compact: compact, tile: true),
+          _InventoryRow(summary: summary, compact: compact, tile: true),
+        ),
+      ],
+    );
+  }
+
+  Widget _list() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       _StatusStrip(summary: summary, forOperator: forOperator),
@@ -350,7 +425,9 @@ class _StatusStrip extends StatelessWidget {
 /// One row of the panel: the section icon, its figure, what it counts, a
 /// short detail (two lines at most, broken only between its parts) over the
 /// share of its parts as a thin bar, both left out on a short screen, and a
-/// chevron to open it.
+/// chevron to open it. As a [tile] of the dashboard: what it counts on top,
+/// then the figure beside the icon and the detail, with no bar nor chevron;
+/// a critical tile is red.
 ///
 /// The color of the tone goes only to the icon and the figure; a row with
 /// nothing to review shows the success icon and "Nothing pending".
@@ -365,6 +442,7 @@ class _AttentionRow extends StatelessWidget {
     this.total,
     this.detail,
     this.segments = const [],
+    this.tile = false,
   });
 
   final IconData icon;
@@ -381,11 +459,14 @@ class _AttentionRow extends StatelessWidget {
   final List<(int, Color)> segments;
   final VoidCallback onTap;
   final bool compact;
+  final bool tile;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final color = tone == BadgeTone.brand ? AppColors.primaryDark : tone.foreground;
+    // A critical tile is red: its fill, its border and its text.
+    final alarming = tile && tone == BadgeTone.critical;
     final showDetail = !compact && detail != null && detail!.isNotEmpty;
     // A detail of several parts ("3 unresolved · 1 acknowledged") wraps only
     // between them: non-breaking spaces keep each part, and its separator, whole.
@@ -393,6 +474,47 @@ class _AttentionRow extends StatelessWidget {
     final shownDetail =
         parts.length < 2 ? detail : parts.map((part) => part.replaceAll(' ', '\u00a0')).join('\u00a0· ');
     final figureStyle = AppTypography.metric.copyWith(fontSize: 22, color: color);
+    final badge = Container(
+      width: tile ? 32 : 36,
+      height: tile ? 32 : 36,
+      decoration: BoxDecoration(color: alarming ? AppColors.surface : tone.background, shape: BoxShape.circle),
+      child: Icon(icon, size: 20, color: color),
+    );
+    final figureText = FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      // 22 sp, the top of the style guide's scale, so the figures are read and compared
+      // first; the total in its body size (14 sp).
+      child: Text.rich(
+        TextSpan(
+          text: figure,
+          children: [
+            if (total != null)
+              TextSpan(text: '/$total', style: figureStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500)),
+          ],
+        ),
+        maxLines: 1,
+        style: figureStyle,
+      ),
+    );
+    final labelText = Text(
+      label,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: text.bodyMedium?.copyWith(
+        color: alarming ? AppColors.critical : AppColors.navy,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+    final detailText =
+        showDetail
+            ? Text(
+              shownDetail!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: text.bodySmall?.copyWith(color: alarming ? AppColors.critical : AppColors.textMuted),
+            )
+            : null;
     return Semantics(
       button: true,
       label: [
@@ -402,76 +524,71 @@ class _AttentionRow extends StatelessWidget {
         if (detail != null && detail!.isNotEmpty) detail,
       ].join(', '),
       excludeSemantics: true,
-      child: InkWell(
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 56),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(color: tone.background, shape: BoxShape.circle),
-                  child: Icon(icon, size: 20, color: color),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 36, maxWidth: 96),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    // 22 sp, the top of the style guide's scale, so the figures are read and compared
-                    // first; the total in its body size (14 sp).
-                    child: Text.rich(
-                      TextSpan(
-                        text: figure,
-                        children: [
-                          if (total != null)
-                            TextSpan(
-                              text: '/$total',
-                              style: figureStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500),
-                            ),
-                        ],
-                      ),
-                      maxLines: 1,
-                      style: figureStyle,
+      child:
+          tile
+              ? Card(
+                color: alarming ? AppColors.criticalContainer : null,
+                shape:
+                    alarming
+                        ? const RoundedRectangleBorder(
+                          borderRadius: AppRadius.xlAll,
+                          side: BorderSide(color: AppColors.criticalBase),
+                        )
+                        : null,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // The label on top, whole: beside the icon, a long word
+                        // would break on a narrow phone with a larger text.
+                        labelText,
+                        const SizedBox(height: AppSpacing.xs),
+                        Row(children: [Expanded(child: figureText), const SizedBox(width: AppSpacing.sm), badge]),
+                        if (detailText != null) ...[const SizedBox(height: AppSpacing.xs), detailText],
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        label,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.bodyMedium?.copyWith(color: AppColors.navy, fontWeight: FontWeight.w600),
-                      ),
-                      if (showDetail)
-                        Text(
-                          shownDetail!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: text.bodySmall?.copyWith(color: AppColors.textMuted),
+              )
+              : InkWell(
+                onTap: onTap,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 56),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                    child: Row(
+                      children: [
+                        badge,
+                        const SizedBox(width: AppSpacing.md),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: 36, maxWidth: 96),
+                          child: figureText,
                         ),
-                      if (!compact && segments.isNotEmpty) ...[
-                        const SizedBox(height: AppSpacing.xs),
-                        ProportionBar(segments: segments, height: 4),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              labelText,
+                              if (detailText != null) detailText,
+                              if (!compact && segments.isNotEmpty) ...[
+                                const SizedBox(height: AppSpacing.xs),
+                                ProportionBar(segments: segments, height: 4),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, color: AppColors.textMuted),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.textMuted),
-              ],
-            ),
-          ),
-        ),
-      ),
+              ),
     );
   }
 }
@@ -481,12 +598,14 @@ class _AttentionRow extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 /// Open alerts by status. Their severity is the red banner's: the critical
-/// ones are not counted again here.
+/// ones are not counted again here. The dashboard has no banner, so its tile
+/// counts the critical ones and the acknowledged ones instead.
 class _AlertsRow extends StatelessWidget {
-  const _AlertsRow({required this.summary, required this.compact});
+  const _AlertsRow({required this.summary, required this.compact, this.tile = false});
 
   final CommandCenterSummary summary;
   final bool compact;
+  final bool tile;
 
   @override
   Widget build(BuildContext context) {
@@ -507,6 +626,12 @@ class _AlertsRow extends StatelessWidget {
       detail:
           s == null || open == 0
               ? null
+              : tile && critical > 0
+              ? [
+                critical == 1 ? i18n.criticalCountOne : i18n.criticalCount(critical),
+                if (s.acknowledged > 0)
+                  s.acknowledged == 1 ? i18n.homeAcknowledgedCountOne : i18n.homeAcknowledgedCount(s.acknowledged),
+              ].join(' · ')
               : s.acknowledged == 1
               ? i18n.homeAlertsDetailOneAcknowledged(s.unresolved)
               : i18n.homeAlertsDetail(s.unresolved, s.acknowledged),
@@ -515,6 +640,7 @@ class _AlertsRow extends StatelessWidget {
               ? const []
               : [(s.unresolved, AppColors.criticalBase), (s.acknowledged, AppColors.neutralContainer)],
       compact: compact,
+      tile: tile,
       onTap: () => context.go('/alerts'),
     );
   }
@@ -527,10 +653,11 @@ class _AlertsRow extends StatelessWidget {
 /// IoT devices online out of every device. The ones flagged for review and the
 /// ones without data count together as to review, in grey.
 class _TelemetryRow extends StatelessWidget {
-  const _TelemetryRow({required this.summary, required this.compact});
+  const _TelemetryRow({required this.summary, required this.compact, this.tile = false});
 
   final CommandCenterSummary summary;
   final bool compact;
+  final bool tile;
 
   @override
   Widget build(BuildContext context) {
@@ -555,6 +682,7 @@ class _TelemetryRow extends StatelessWidget {
                 (eq.offline, AppColors.neutralContainer),
               ],
       compact: compact,
+      tile: tile,
       onTap: () => context.go('/telemetry'),
     );
   }
@@ -567,11 +695,12 @@ class _TelemetryRow extends StatelessWidget {
 /// Batches awaiting the QA decision: pending and in progress. An operator sees
 /// only the ones in progress.
 class _BatchesRow extends StatelessWidget {
-  const _BatchesRow({required this.summary, required this.compact, this.inProgressOnly = false});
+  const _BatchesRow({required this.summary, required this.compact, this.inProgressOnly = false, this.tile = false});
 
   final CommandCenterSummary summary;
   final bool compact;
   final bool inProgressOnly;
+  final bool tile;
 
   @override
   Widget build(BuildContext context) {
@@ -600,6 +729,7 @@ class _BatchesRow extends StatelessWidget {
       segments:
           s == null ? const [] : [(awaiting!, AppColors.primary), (s.total - awaiting, AppColors.neutralContainer)],
       compact: compact,
+      tile: tile,
       onTap: () => context.go('/batches'),
     );
   }
@@ -611,10 +741,11 @@ class _BatchesRow extends StatelessWidget {
 
 /// Materials below the minimum stock, out of every material.
 class _InventoryRow extends StatelessWidget {
-  const _InventoryRow({required this.summary, required this.compact});
+  const _InventoryRow({required this.summary, required this.compact, this.tile = false});
 
   final CommandCenterSummary summary;
   final bool compact;
+  final bool tile;
 
   @override
   Widget build(BuildContext context) {
@@ -640,6 +771,7 @@ class _InventoryRow extends StatelessWidget {
               ? const []
               : [(low, AppColors.warningBase), (materials.length - low, AppColors.successBase)],
       compact: compact,
+      tile: tile,
       // Inventory is not a tab: it opens over Home, with its back arrow.
       onTap: () => context.push('/inventory'),
     );
@@ -650,10 +782,13 @@ class _InventoryRow extends StatelessWidget {
 // Loading
 // ---------------------------------------------------------------------------
 
-/// Gray placeholders with the shape of the strip, the four rows and the most
-/// urgent alerts, pulsing softly while the panel loads.
+/// Gray placeholders with the shape of the strip, the four rows (or the
+/// dashboard's four tiles) and the most urgent alerts, pulsing softly while
+/// the panel loads.
 class _PanelSkeleton extends StatefulWidget {
-  const _PanelSkeleton();
+  const _PanelSkeleton({this.dashboard = false});
+
+  final bool dashboard;
 
   @override
   State<_PanelSkeleton> createState() => _PanelSkeletonState();
@@ -701,6 +836,35 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
         ],
       ),
     );
+    // One tile of the dashboard: label, figure and icon, as _AttentionRow's tile.
+    Widget tile() => Expanded(
+      child: Card(
+        key: const ValueKey('tile-bone'),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              bone(96, 12),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  bone(36, 22),
+                  const Spacer(),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(color: AppColors.neutralContainer, shape: BoxShape.circle),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              bone(72, 10),
+            ],
+          ),
+        ),
+      ),
+    );
     return Semantics(
       label: context.i18n.loading,
       child: ExcludeSemantics(
@@ -710,26 +874,33 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
-              // The status strip.
-              Container(
-                height: AppSpacing.minTouchTarget,
-                decoration: const BoxDecoration(color: AppColors.neutralContainer, borderRadius: AppRadius.lgAll),
-              ),
-              _gap,
-              // The four rows.
-              Material(
-                color: AppColors.surface,
-                elevation: 1,
-                borderRadius: AppRadius.xlAll,
-                child: Column(
-                  children: [
-                    for (var i = 0; i < 4; i++) ...[
-                      if (i > 0) const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
-                      row(),
-                    ],
-                  ],
+              if (widget.dashboard) ...[
+                // The four tiles, two per row.
+                Row(children: [tile(), const SizedBox(width: AppSpacing.sm), tile()]),
+                const SizedBox(height: AppSpacing.sm),
+                Row(children: [tile(), const SizedBox(width: AppSpacing.sm), tile()]),
+              ] else ...[
+                // The status strip.
+                Container(
+                  height: AppSpacing.minTouchTarget,
+                  decoration: const BoxDecoration(color: AppColors.neutralContainer, borderRadius: AppRadius.lgAll),
                 ),
-              ),
+                _gap,
+                // The four rows.
+                Material(
+                  color: AppColors.surface,
+                  elevation: 1,
+                  borderRadius: AppRadius.xlAll,
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < 4; i++) ...[
+                        if (i > 0) const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+                        row(),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
               _gap,
               // The most urgent alerts: their title and two cards.
               bone(96, 12),
@@ -755,12 +926,15 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
 // ---------------------------------------------------------------------------
 
 /// The open alerts, most urgent first, as many as fit whole in the height the
-/// rows leave (the same cards as the Alerts tab).
+/// rows leave (the same cards as the Alerts tab). On the [dashboard], the
+/// unresolved ones as reading cards, then the acknowledged ones, which someone
+/// is already on, as one-line rows.
 class _LatestAlerts extends StatelessWidget {
-  const _LatestAlerts({required this.summary, required this.views});
+  const _LatestAlerts({required this.summary, required this.views, required this.dashboard});
 
   final CommandCenterSummary summary;
   final CommandCenterViews views;
+  final bool dashboard;
 
   /// Alerts built at most; a phone never shows more.
   static const int _limit = 8;
@@ -774,6 +948,8 @@ class _LatestAlerts extends StatelessWidget {
     final i18n = context.i18n;
     final text = Theme.of(context).textTheme;
     final open = summary.alerts.value?.byPriority ?? const [];
+    bool acknowledged(DeviationAlert alert) => alert.status == AlertStatus.acknowledged;
+    final shown = dashboard ? [...open.where((a) => !acknowledged(a)), ...open.where(acknowledged)] : open;
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
       child: Column(
@@ -797,13 +973,22 @@ class _LatestAlerts extends StatelessWidget {
             child: _FitColumn(
               spacing: AppSpacing.sm,
               children: [
-                for (final alert in open.take(_limit))
-                  views.alertCard(
-                    alert,
-                    deviceName: summary.equipmentNames[alert.equipmentId],
-                    environmentName: summary.environmentNames[alert.environmentId],
-                    onTap: () => context.push('/alerts/${alert.id}'),
-                  ),
+                for (final alert in shown.take(_limit))
+                  if (!dashboard)
+                    views.alertCard(
+                      alert,
+                      deviceName: summary.equipmentNames[alert.equipmentId],
+                      environmentName: summary.environmentNames[alert.environmentId],
+                      onTap: () => context.push('/alerts/${alert.id}'),
+                    )
+                  else if (acknowledged(alert))
+                    HomeAcknowledgedAlertRow(alert: alert, onTap: () => context.push('/alerts/${alert.id}'))
+                  else
+                    HomeAlertCard(
+                      alert: alert,
+                      environmentName: summary.environmentNames[alert.environmentId],
+                      onTap: () => context.push('/alerts/${alert.id}'),
+                    ),
               ],
             ),
           ),
