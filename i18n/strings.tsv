@@ -211,7 +211,7 @@ batchInProgress	In progress	En proceso
 batchReleased	Released	Liberado
 batchRejected	Rejected	Rechazado
 product	Product	Producto
-awaitingQaRelease	Awaiting QA release	En espera de liberación QA
+awaitingQaRelease	Awaiting QA release	En espera de QA
 batchDetail	Batch detail	Detalle del lote
 rawMaterialsUsed	Raw materials used	Materias primas usadas
 traceability	Traceability	Trazabilidad

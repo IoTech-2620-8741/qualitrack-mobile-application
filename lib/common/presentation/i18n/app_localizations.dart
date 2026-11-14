@@ -1391,7 +1391,7 @@ const Map<String, String> _es = {
   'batchReleased': 'Liberado',
   'batchRejected': 'Rechazado',
   'product': 'Producto',
-  'awaitingQaRelease': 'En espera de liberación QA',
+  'awaitingQaRelease': 'En espera de QA',
   'batchDetail': 'Detalle del lote',
   'rawMaterialsUsed': 'Materias primas usadas',
   'traceability': 'Trazabilidad',

@@ -550,6 +550,13 @@ void main() {
     expect(readsAs('3 sin resolver · 1 reconocida'), findsOneWidget);
   });
 
+  testWidgets('the batches awaiting QA take one line in Spanish', (tester) async {
+    await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
+
+    expect(find.text('En espera de QA'), findsOneWidget);
+    expect(lineCount(tester, find.text('En espera de QA')), 1);
+  });
+
   testWidgets('a count of one reads in the singular', (tester) async {
     stubSummary(_summary(open: [alertFixture(id: 1)], pending: 1, materials: [materialFixture()]));
     await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
