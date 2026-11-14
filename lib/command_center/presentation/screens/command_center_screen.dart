@@ -298,17 +298,10 @@ class _StatusStrip extends StatelessWidget {
     // The count keeps its noun ("1 critical alert"): a message in two lines breaks after its colon.
     final parts = message.split(': ');
     final shownMessage = [parts.first, ...parts.skip(1).map((part) => part.replaceAll(' ', '\u00a0'))].join(': ');
-    final status = Row(
-      children: [
-        Icon(tone.icon, size: 20, color: tone.foreground),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
-            shownMessage,
-            style: text.bodyMedium?.copyWith(color: tone.foreground, fontWeight: FontWeight.w600),
-          ),
-        ),
-      ],
+    final icon = Icon(tone.icon, size: 20, color: tone.foreground);
+    final label = Text(
+      shownMessage,
+      style: text.bodyMedium?.copyWith(color: tone.foreground, fontWeight: FontWeight.w600),
     );
     return Semantics(
       container: true,
@@ -326,9 +319,10 @@ class _StatusStrip extends StatelessWidget {
         ),
         child:
             urgent == null
-                ? status
+                ? Row(children: [icon, const SizedBox(width: AppSpacing.sm), Expanded(child: label)])
                 : _BannerLayout(
-                  message: status,
+                  icon: icon,
+                  message: label,
                   action: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: tone.foreground,
@@ -892,11 +886,12 @@ class _RenderFitColumn extends RenderBox
   }
 }
 
-/// The critical banner: its message with the action beside it while the
-/// message takes two lines at most there, or under it, at its end, on a
+/// The critical banner: its icon and message with the action beside them while
+/// the message takes two lines at most there, or under them, at their end, on a
 /// narrower phone or with a larger text.
 class _BannerLayout extends MultiChildRenderObjectWidget {
-  _BannerLayout({required Widget message, required Widget action}) : super(children: [message, action]);
+  _BannerLayout({required Widget icon, required Widget message, required Widget action})
+    : super(children: [icon, message, action]);
 
   @override
   RenderObject createRenderObject(BuildContext context) => _RenderBannerLayout();
@@ -916,27 +911,50 @@ class _RenderBannerLayout extends RenderBox
 
   @override
   void performLayout() {
-    final message = firstChild!;
+    final layout = _arrange(constraints, ChildLayoutHelper.layoutChild);
+    _place(firstChild!, layout.icon);
+    _place(childAfter(firstChild!)!, layout.message);
+    _place(lastChild!, layout.action);
+    size = layout.size;
+  }
+
+  void _place(RenderBox child, Offset offset) => (child.parentData! as _BannerParentData).offset = offset;
+
+  /// Where the icon, the message and the action go under [constraints], with the
+  /// children laid out for real or dry by [layoutChild].
+  ({Size size, Offset icon, Offset message, Offset action, BoxConstraints messageConstraints}) _arrange(
+    BoxConstraints constraints,
+    ChildLayouter layoutChild,
+  ) {
+    final icon = firstChild!;
+    final message = childAfter(icon)!;
     final action = lastChild!;
-    final messageData = message.parentData! as _BannerParentData;
-    final actionData = action.parentData! as _BannerParentData;
     final width = constraints.maxWidth;
-    action.layout(constraints.loosen(), parentUsesSize: true);
+    final iconSize = layoutChild(icon, constraints.loosen());
+    final actionSize = layoutChild(action, constraints.loosen());
+    final indent = iconSize.width + AppSpacing.sm;
+    // The message's own line, not the icon's 20 dp: a smaller text has shorter lines.
     final oneLine = message.getMinIntrinsicHeight(double.infinity);
-    final besideWidth = math.max(0.0, width - action.size.width - AppSpacing.sm);
-    message.layout(BoxConstraints.tightFor(width: besideWidth), parentUsesSize: true);
+    final besideWidth = math.max(0.0, width - indent - AppSpacing.sm - actionSize.width);
+    var messageConstraints = BoxConstraints.tightFor(width: besideWidth);
+    var messageSize = layoutChild(message, messageConstraints);
     // Two lines at most beside the action, with half a line of slack for rounding.
-    if (message.size.height < 2.5 * oneLine) {
-      final height = math.max(message.size.height, action.size.height);
-      messageData.offset = Offset(0, (height - message.size.height) / 2);
-      actionData.offset = Offset(width - action.size.width, (height - action.size.height) / 2);
-      size = constraints.constrain(Size(width, height));
-    } else {
-      message.layout(BoxConstraints.tightFor(width: width), parentUsesSize: true);
-      messageData.offset = Offset.zero;
-      actionData.offset = Offset(width - action.size.width, message.size.height);
-      size = constraints.constrain(Size(width, message.size.height + action.size.height));
+    final beside = messageSize.height < 2.5 * oneLine;
+    if (!beside) {
+      messageConstraints = BoxConstraints.tightFor(width: math.max(0.0, width - indent));
+      messageSize = layoutChild(message, messageConstraints);
     }
+    // The icon and the message are centred on each other, as in the strip without an action.
+    final textHeight = math.max(iconSize.height, messageSize.height);
+    final height = beside ? math.max(textHeight, actionSize.height) : textHeight + actionSize.height;
+    final top = beside ? (height - textHeight) / 2 : 0.0;
+    return (
+      size: constraints.constrain(Size(width, height)),
+      icon: Offset(0, top + (textHeight - iconSize.height) / 2),
+      message: Offset(indent, top + (textHeight - messageSize.height) / 2),
+      action: Offset(width - actionSize.width, beside ? (height - actionSize.height) / 2 : textHeight),
+      messageConstraints: messageConstraints,
+    );
   }
 
   @override

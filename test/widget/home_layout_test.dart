@@ -341,6 +341,25 @@ void main() {
     });
   }
 
+  // A smaller text has lines shorter than the 20 dp icon: three of them still do not go beside the button.
+  for (final (locale, message, action, count) in const [
+    (Locale('es'), 'Requiere atención: 1 alerta crítica', 'Ver detalle', 1),
+    (Locale('en'), 'Needs attention: 2 critical alerts', 'View detail', 2),
+  ]) {
+    testWidgets('the banner keeps two lines at most beside View detail with a small text, in $locale', (tester) async {
+      stubSummary(_summary(open: [for (var id = 1; id <= count; id++) alertFixture(id: id)]));
+      for (var width = 290.0; width <= 340; width += 2) {
+        await pumpHome(tester, Size(width, 800), locale: locale, textScale: 0.8);
+
+        final text = readsAs(message);
+        final button = find.widgetWithText(OutlinedButton, action);
+        if (tester.getRect(button).top < tester.getRect(text).bottom) {
+          expect(lineCount(tester, text), lessThanOrEqualTo(2), reason: 'at $width dp');
+        }
+      }
+    });
+  }
+
   // On a narrower phone or with larger text two lines beside the button are not enough: it goes under.
   for (final (width, scale) in const [(320.0, 1.0), (360.0, 1.3)]) {
     testWidgets('the critical banner puts View detail under the message at $width dp, text x$scale', (tester) async {
