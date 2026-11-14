@@ -110,7 +110,10 @@ class _DetailBody extends StatelessWidget {
               return SectionRow(
                 leading: Icon(_trendIcon(t.direction)),
                 title: alertVariable(i18n, t.parameterName),
-                subtitle: i18n.deviationsSummary(t.deviationCount, t.criticalDeviationCount),
+                subtitle: [
+                  t.deviationCount == 1 ? i18n.deviationsCountOne : i18n.deviationsCount(t.deviationCount),
+                  t.criticalDeviationCount == 1 ? i18n.criticalCountOne : i18n.criticalCount(t.criticalDeviationCount),
+                ].join(' · '),
                 trailing: StatusBadge(
                   label: percent == null ? '—' : i18n.timeInRange('${Formatters.number(percent, locale, maxDecimals: 1)}%'),
                   tone: _severityTone(t.severity),

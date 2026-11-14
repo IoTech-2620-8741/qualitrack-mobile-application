@@ -49,7 +49,7 @@ class TelemetryChart extends StatelessWidget {
     final states = {for (final p in points) p.measuredAt!.millisecondsSinceEpoch.toDouble(): p.state};
 
     return Semantics(
-      label: i18n.chartSemantics(points.length, unit ?? ''),
+      label: points.length == 1 ? i18n.chartSemanticsOne(unit ?? '') : i18n.chartSemantics(points.length, unit ?? ''),
       child: SizedBox(
         height: 220,
         child: LineChart(

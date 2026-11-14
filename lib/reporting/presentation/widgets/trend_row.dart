@@ -70,7 +70,10 @@ class TrendRow extends StatelessWidget {
                 Text(
                   [
                     data.deviceNames[trend.equipmentId],
-                    i18n.deviationsSummary(trend.deviationCount, trend.criticalDeviationCount),
+                    trend.deviationCount == 1 ? i18n.deviationsCountOne : i18n.deviationsCount(trend.deviationCount),
+                    trend.criticalDeviationCount == 1
+                        ? i18n.criticalCountOne
+                        : i18n.criticalCount(trend.criticalDeviationCount),
                   ].whereType<String>().join(' · '),
                   style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
                 ),

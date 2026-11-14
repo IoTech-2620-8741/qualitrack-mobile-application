@@ -385,7 +385,12 @@ class _StatusRow extends StatelessWidget {
                     color: deviations > 0 ? AppColors.critical : AppColors.success,
                   ),
                   const SizedBox(width: AppSpacing.xs),
-                  Expanded(child: Text(i18n.eventsCount(deviations), style: theme.textTheme.titleMedium)),
+                  Expanded(
+                    child: Text(
+                      deviations == 1 ? i18n.eventsCountOne : i18n.eventsCount(deviations),
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),

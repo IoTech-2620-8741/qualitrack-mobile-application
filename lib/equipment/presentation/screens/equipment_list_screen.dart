@@ -54,6 +54,15 @@ class EquipmentListScreen extends StatelessWidget {
     EquipmentFilter.inactive => BadgeTone.neutral,
   };
 
+  String _summary(BuildContext context, List<EquipmentOverview> all) {
+    final i18n = context.i18n;
+    final attention = all.where((e) => e.needsAttention).length;
+    return [
+      all.length == 1 ? i18n.equipmentRegisteredCountOne : i18n.equipmentRegisteredCount(all.length),
+      attention == 1 ? i18n.equipmentAttentionCountOne : i18n.equipmentAttentionCount(attention),
+    ].join(' · ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
@@ -65,8 +74,7 @@ class EquipmentListScreen extends StatelessWidget {
             final all = state.remote.data;
             return AppBarTitle(
               title: i18n.equipmentTitle,
-              subtitle:
-                  all == null ? null : i18n.equipmentSummary(all.length, all.where((e) => e.needsAttention).length),
+              subtitle: all == null ? null : _summary(context, all),
             );
           },
         ),
