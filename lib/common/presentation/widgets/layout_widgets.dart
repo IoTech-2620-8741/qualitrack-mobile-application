@@ -8,18 +8,23 @@ import 'toggle_button.dart';
 export 'search_field.dart';
 
 /// Title of a screen's top app bar, with an optional subtitle line below it
-/// (count, code, context). The screen shows its title here only, never again
-/// inside the body.
+/// (count, code, context) and an optional caption line below that (metadata
+/// such as when the data was read; style guide: Caption, 12 sp Regular). The
+/// screen shows its title here only, never again inside the body.
 class AppBarTitle extends StatelessWidget {
-  const AppBarTitle({super.key, required this.title, this.subtitle});
+  const AppBarTitle({super.key, required this.title, this.subtitle, this.caption});
 
   final String title;
   final String? subtitle;
+
+  /// A third line: the app bar must be tall enough for it.
+  final String? caption;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sub = subtitle;
+    final meta = caption;
     return Semantics(
       header: true,
       child: Column(
@@ -38,6 +43,13 @@ class AppBarTitle extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500, height: 1.3),
+            ),
+          if (meta != null && meta.isNotEmpty)
+            Text(
+              meta,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(height: 1.3),
             ),
         ],
       ),

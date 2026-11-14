@@ -161,7 +161,8 @@ void main() {
       expect(scrollExtent(tester), 0);
       // A sober header: the laboratory, the role and how current the figures are.
       expect(find.text('QualiLab Lima'), findsOneWidget);
-      expect(find.text('QA Manager · Updated 5 min ago'), findsOneWidget);
+      expect(find.text('QA Manager'), findsOneWidget);
+      expect(find.text('Updated 5 min ago'), findsOneWidget);
       expect(find.text('Needs attention: 2 critical alerts'), findsOneWidget);
       final alerts = tester.getTopLeft(find.text('Open alerts'));
       final telemetry = tester.getTopLeft(find.text('Devices online'));
@@ -300,6 +301,20 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(scrollExtent(tester), greaterThan(0));
+  });
+
+  testWidgets('the header gives the role and the update time a line each, inside the bar', (tester) async {
+    // In Spanish a long role and the update time do not fit one line at 360 dp.
+    for (final scale in [1.0, 1.3]) {
+      await pumpHome(tester, const Size(360, 800), textScale: scale);
+
+      expect(find.text('Updated 5 min ago'), findsOneWidget);
+      final bar = tester.getRect(find.byType(AppBar));
+      final role = tester.getRect(find.text('QA Manager'));
+      final updated = tester.getRect(find.text('Updated 5 min ago'));
+      expect(updated.top, greaterThanOrEqualTo(role.bottom));
+      expect(updated.bottom, lessThanOrEqualTo(bar.bottom));
+    }
   });
 
   // Each role sees its own Home (style guide §7).

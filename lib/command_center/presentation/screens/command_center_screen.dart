@@ -25,9 +25,9 @@ import '../command_center_views.dart';
 /// Home panel shown after signing in (US: consult the control panel of the
 /// laboratory).
 ///
-/// The laboratory is the app bar title, with the user's role and how long ago
-/// the figures were loaded below it. The body reads state, then priority, then
-/// action:
+/// The laboratory is the app bar title, with the user's role below it and how
+/// long ago the figures were loaded on a third line. The body reads state, then
+/// priority, then action:
 /// - a strip with what the laboratory needs now (critical alerts, items to
 ///   review or all in order);
 /// - four rows in order of importance (Report, Mobile Style Guidelines), each
@@ -59,6 +59,9 @@ class CommandCenterScreen extends StatelessWidget {
     final forOperator = session.primaryRole == UserRole.labOperator;
     return Scaffold(
       appBar: AppBar(
+        // Room for the three lines of the title: the Material 3 small app bar
+        // height, grown with the title's text, which AppBar scales up to 1.34.
+        toolbarHeight: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.34).scale(64),
         title: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
           builder: (context, state) => _PanelTitle(session: session, views: views, summary: state.data),
         ),
@@ -125,10 +128,10 @@ String _error(BuildContext context, Failure? failure) =>
 
 const _gap = SizedBox.square(dimension: AppSpacing.md);
 
-/// The laboratory as the title and "role · updated 2 min ago" below it (with
-/// "read only" after an auditor's role): a sober header for a compliance
-/// panel, which says how current the figures are. The user is the avatar of
-/// the profile button.
+/// The laboratory as the title, the role below it (with "read only" after an
+/// auditor's role) and "updated 2 min ago" on a line of its own, so neither is
+/// cut on a narrow phone: a sober header for a compliance panel, which says how
+/// current the figures are. The user is the avatar of the profile button.
 class _PanelTitle extends StatefulWidget {
   const _PanelTitle({required this.session, required this.views, required this.summary});
 
@@ -165,11 +168,11 @@ class _PanelTitleState extends State<_PanelTitle> {
     final subtitle = [
       if (role != null) widget.views.roleLabel(role, i18n),
       if (widget.session.isAuditor) i18n.readOnly,
-      if (fetchedAt != null) updatedText(context, fetchedAt),
     ].join(' · ');
     return AppBarTitle(
       title: widget.summary?.laboratory.value?.name ?? i18n.navHome,
       subtitle: subtitle.isEmpty ? null : subtitle,
+      caption: fetchedAt == null ? null : updatedText(context, fetchedAt),
     );
   }
 }

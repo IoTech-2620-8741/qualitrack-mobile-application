@@ -154,8 +154,9 @@ the notifications). A Home card opens its tab with `go`, or pushes inventory,
 which is not a tab; links to a detail use `push`, which keeps the current tab and
 adds a back arrow.
 
-**Home.** The laboratory is the app bar title, with the user's role and how
-long ago the data was read below it. The body reads state, then priority, then
+**Home.** The laboratory is the app bar title, with the user's role below it
+and how long ago the data was read on a third line, so neither is cut on a
+narrow phone. The body reads state, then priority, then
 action. A strip says what the laboratory needs now (critical alerts, items to
 review or all in order). With critical alerts the strip becomes a red banner
 whose View detail opens the most urgent one. Below it, four rows read by
