@@ -507,14 +507,7 @@ String readingText(BuildContext context, Measurement m) {
 String? rangeText(BuildContext context, MetricThreshold? threshold) {
   if (threshold == null) return null;
   final locale = context.localeName;
-  final unit = threshold.unit ?? '';
-  // An open bound reads as "≤ 300 lux" or "≥ 2 °C" instead of an infinity.
-  String bounds(double? min, double? max) {
-    final low = min == null ? null : Formatters.number(min, locale);
-    final high = max == null ? null : Formatters.number(max, locale);
-    final text = low == null ? '≤ $high' : (high == null ? '≥ $low' : '$low–$high');
-    return '$text $unit'.trim();
-  }
+  String bounds(double? min, double? max) => Formatters.range(min, max, threshold.unit, locale);
   final parts = <String>[
     if (threshold.normalMin != null || threshold.normalMax != null)
       context.i18n.normalRangeValue(bounds(threshold.normalMin, threshold.normalMax)),

@@ -37,6 +37,14 @@ abstract final class Formatters {
     return format.format(value);
   }
 
+  /// "2–8 °C"; an open bound reads as "≤ 800 ppm" or "≥ 2 °C" instead of an infinity.
+  static String range(double? min, double? max, String? unit, String locale) {
+    final low = min == null ? null : number(min, locale);
+    final high = max == null ? null : number(max, locale);
+    final text = low == null ? '≤ $high' : (high == null ? '≥ $low' : '$low–$high');
+    return '$text ${unit ?? ''}'.trim();
+  }
+
   static String money(num? value, String? currency, String locale) {
     if (value == null) return '—';
     final code = (currency == null || currency.isEmpty) ? '' : currency.toUpperCase();

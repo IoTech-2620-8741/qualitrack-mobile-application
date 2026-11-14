@@ -25,28 +25,42 @@ class TelemetryFacadeService with TelemetryLogic {
   /// status could not be read are absent from the map and are displayed as
   /// "telemetry unavailable"; an authentication problem is rethrown so the
   /// session can be closed.
-  Future<Map<int, DeviceConnection>> getConnections(LaboratoryId laboratoryId, List<TelemetryTarget> targets) async {
-    final result = <int, DeviceConnection>{};
+  Future<Map<int, DeviceConnection>> getConnections(LaboratoryId laboratoryId, List<TelemetryTarget> targets) =>
+      _readEach(targets, (target) => _repository.getConnection(laboratoryId, target));
+
+  /// The profile each device applies, by device id; devices without one, or
+  /// that cannot be read, are absent.
+  Future<Map<int, EnvironmentalProfile>> getProfiles(LaboratoryId laboratoryId, List<TelemetryTarget> targets) =>
+      _readEach(targets, (target) => _repository.getProfile(laboratoryId, target));
+
+  /// [read] of each target, by device id, at most [maxParallel] at a time. A
+  /// target that reads null or fails is absent; an authentication problem is
+  /// rethrown so the session can be closed.
+  Future<Map<int, T>> _readEach<T extends Object>(
+    List<TelemetryTarget> targets,
+    Future<T?> Function(TelemetryTarget target) read,
+  ) async {
+    Future<T?> readOrNull(TelemetryTarget target) async {
+      try {
+        return await read(target);
+      } on UnauthorizedFailure {
+        rethrow;
+      } on OnboardingRequiredFailure {
+        rethrow;
+      } on Failure {
+        return null;
+      }
+    }
+
+    final result = <int, T>{};
     for (var i = 0; i < targets.length; i += maxParallel) {
-      final chunk = targets.skip(i).take(maxParallel);
-      final connections = await Future.wait(chunk.map((target) => _readOrNull(laboratoryId, target)));
-      for (final connection in connections.whereType<DeviceConnection>()) {
-        result[connection.deviceId] = connection;
+      final chunk = targets.skip(i).take(maxParallel).toList();
+      final values = await Future.wait(chunk.map(readOrNull));
+      for (final (index, value) in values.indexed) {
+        if (value != null) result[chunk[index].deviceId] = value;
       }
     }
     return result;
-  }
-
-  Future<DeviceConnection?> _readOrNull(LaboratoryId laboratoryId, TelemetryTarget target) async {
-    try {
-      return await _repository.getConnection(laboratoryId, target);
-    } on UnauthorizedFailure {
-      rethrow;
-    } on OnboardingRequiredFailure {
-      rethrow;
-    } on Failure {
-      return null;
-    }
   }
 
   /// Readings of one device in a period of up to 31 days, newest first.

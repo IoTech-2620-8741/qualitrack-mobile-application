@@ -9,6 +9,8 @@ import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../../compliance/api/index.dart';
+import '../../../tracking/api/index.dart';
+import 'range_bar.dart';
 
 /// How far [value] lies outside [low]..[high] (a null side is open), or null inside.
 ({double amount, bool above})? outOfLimit(double? value, {double? low, double? high}) {
@@ -34,11 +36,16 @@ String _reading(double? value, String? unit, String locale) =>
 /// An open alert on the dashboard, as the style guide's reading card: a 4 dp
 /// edge in the color of its severity, the metric over its severity, area and
 /// time, its value, and under them its limit and how far past it the value is.
+/// With the normal range of the device's profile, the card draws the range and
+/// the value on a bar and measures the value against the range instead.
 class HomeAlertCard extends StatelessWidget {
-  const HomeAlertCard({super.key, required this.alert, this.environmentName, required this.onTap});
+  const HomeAlertCard({super.key, required this.alert, this.environmentName, this.threshold, required this.onTap});
 
   final DeviationAlert alert;
   final String? environmentName;
+
+  /// The range of the alert's metric in its device's profile, when it was read.
+  final MetricThreshold? threshold;
   final VoidCallback onTap;
 
   @override
@@ -48,14 +55,25 @@ class HomeAlertCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final (tone, edge, severity) = _severity(alert.severity, i18n);
     final variable = alertVariable(i18n, alert.parameterName);
-    final value = _reading(alert.recordedValue, alert.unit, locale);
+    final unit = alert.unit ?? threshold?.unit;
+    final value = _reading(alert.recordedValue, unit, locale);
+    final normalMin = threshold?.normalMin;
+    final normalMax = threshold?.normalMax;
+    final ranged = normalMin != null || normalMax != null;
     final limit =
-        alert.thresholdValue == null ? null : i18n.alertLimitValue(_reading(alert.thresholdValue, alert.unit, locale));
-    final out = outOfLimit(alert.recordedValue, low: alert.thresholdValue, high: alert.thresholdValue);
+        ranged
+            ? i18n.normalRangeValue(Formatters.range(normalMin, normalMax, unit, locale))
+            : alert.thresholdValue == null
+            ? null
+            : i18n.alertLimitValue(_reading(alert.thresholdValue, unit, locale));
+    final out =
+        ranged
+            ? outOfLimit(alert.recordedValue, low: normalMin, high: normalMax)
+            : outOfLimit(alert.recordedValue, low: alert.thresholdValue, high: alert.thresholdValue);
     final distance = switch (out) {
       null => null,
-      (amount: final amount, above: true) => i18n.homeAboveLimit(_reading(amount, alert.unit, locale)),
-      (amount: final amount, above: false) => i18n.homeBelowLimit(_reading(amount, alert.unit, locale)),
+      (amount: final amount, above: true) => i18n.homeAboveLimit(_reading(amount, unit, locale)),
+      (amount: final amount, above: false) => i18n.homeBelowLimit(_reading(amount, unit, locale)),
     };
     final when = relativeTime(context, alert.lastDetectedAt ?? alert.timestamp);
     final status = alert.status == AlertStatus.unresolved ? i18n.alertUnresolved : i18n.unknown;
@@ -123,6 +141,15 @@ class HomeAlertCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (ranged && alert.recordedValue != null) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    RangeBar(
+                      normalMin: normalMin,
+                      normalMax: normalMax,
+                      value: alert.recordedValue!,
+                      color: tone.foreground,
+                    ),
+                  ],
                   if (limit != null || distance != null) ...[
                     const SizedBox(height: AppSpacing.sm),
                     // The limit on the left, the distance on the right; on a

@@ -27,6 +27,7 @@ import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
+import 'package:qualitrack_mobile/common/presentation/formatting/formatters.dart';
 import 'package:qualitrack_mobile/common/presentation/formatting/relative_time.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
@@ -187,6 +188,12 @@ void main() {
         rangeText(context, const MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', normalMin: 2)),
         'normal ≥ 2 °C',
       );
+    });
+
+    test('Formatters.range writes a closed or an open range', () {
+      expect(Formatters.range(2, 8, '°C', 'en'), '2–8 °C');
+      expect(Formatters.range(null, 800, 'ppm', 'en'), '≤ 800 ppm');
+      expect(Formatters.range(2, null, '°C', 'en'), '≥ 2 °C');
     });
   });
 

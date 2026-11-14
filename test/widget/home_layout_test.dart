@@ -14,6 +14,7 @@ import 'package:qualitrack_mobile/command_center/presentation/command_center_vie
 import 'package:qualitrack_mobile/command_center/presentation/screens/command_center_screen.dart';
 import 'package:qualitrack_mobile/command_center/presentation/widgets/home_alert_card.dart';
 import 'package:qualitrack_mobile/command_center/presentation/widgets/proportion_bar.dart';
+import 'package:qualitrack_mobile/command_center/presentation/widgets/range_bar.dart';
 import 'package:qualitrack_mobile/common/infrastructure/storage/secure_key_value_store.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
@@ -50,6 +51,7 @@ CommandCenterSummary _summary({
   int inProgress = 3,
   List<InventoryMaterial>? materials,
   Map<int, String> environmentNames = const {},
+  Map<int, MetricThreshold> thresholds = const {},
 }) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
@@ -78,7 +80,7 @@ CommandCenterSummary _summary({
     ),
     alerts:
         open != null
-            ? Part.ok(AlertOverview(summary: AlertSummary.of(open), open: open))
+            ? Part.ok(AlertOverview(summary: AlertSummary.of(open), open: open, thresholds: thresholds))
             : !openAlerts
             ? const Part.ok(
               AlertOverview(
@@ -774,6 +776,48 @@ void main() {
       // A missing side is open.
       expect(outOfLimit(9, high: 8), (amount: 1, above: true));
       expect(outOfLimit(-40, high: 8), isNull);
+    });
+
+    test('rangeBarStops puts the normal range and the value on one scale', () {
+      for (final (normalMin, normalMax, value, expected) in const [
+        (2.0, 8.0, 9.6, (0.1667, 0.6930, 0.8333)),
+        (null, 800.0, 1450.0, (0.0, 0.1667, 0.8333)),
+        (2.0, 8.0, 1.0, (0.2619, 0.8333, 0.1667)),
+      ]) {
+        final stops = rangeBarStops(normalMin: normalMin, normalMax: normalMax, value: value);
+        final reason = '$normalMin–$normalMax, $value';
+        expect(stops.bandStart, closeTo(expected.$1, 0.001), reason: reason);
+        expect(stops.bandEnd, closeTo(expected.$2, 0.001), reason: reason);
+        expect(stops.marker, closeTo(expected.$3, 0.001), reason: reason);
+      }
+    });
+
+    testWidgets('an alert card with a profile draws its normal range and measures the value against it', (
+      tester,
+    ) async {
+      const range = MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', normalMin: 15, normalMax: 30);
+      stubSummary(_summary(open: [alertFixture(id: 1)], thresholds: {1: range}));
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(find.text('normal 15–30 °C'), findsOneWidget);
+      expect(find.text('8.6 °C above the limit'), findsOneWidget);
+      expect(find.byType(RangeBar), findsOneWidget);
+      expect(find.text('Limit 30 °C'), findsNothing);
+    });
+
+    testWidgets('an alert whose profile has no normal range keeps its limit and draws no bar', (tester) async {
+      const critical = MetricThreshold(
+        metric: MonitoredMetric.temperature,
+        unit: '°C',
+        criticalMin: 0,
+        criticalMax: 35,
+      );
+      stubSummary(_summary(open: [alertFixture(id: 1)], thresholds: {1: critical}));
+      await pumpHome(tester, const Size(412, 915));
+
+      expect(find.text('Limit 30 °C'), findsOneWidget);
+      expect(find.text('8.6 °C above the limit'), findsOneWidget);
+      expect(find.byType(RangeBar), findsNothing);
     });
 
     testWidgets('an alert without a value or a limit shows a dash and no distance', (tester) async {
