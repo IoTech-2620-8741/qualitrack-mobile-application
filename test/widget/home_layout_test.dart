@@ -225,11 +225,10 @@ void main() {
       expect(telemetry.dy, greaterThan(alerts.dy));
       expect(batches.dy, greaterThan(telemetry.dy));
       expect(inventory.dy, greaterThan(batches.dy));
-      // The figures and the critical badge stay in every size.
+      // The figures stay in every size.
       expect(find.text('6/9'), findsOneWidget);
-      expect(find.text('2 critical'), findsOneWidget);
-      // Severity (the badge) and status (the detail) are told apart; the
-      // rows are short enough to keep their detail even on a small phone.
+      // Severity is the banner's and status the detail's; the rows are short
+      // enough to keep their detail even on a small phone.
       expect(readsAs('3 unresolved · 1 acknowledged'), findsOneWidget);
       expect(readsAs('2 pending · 3 in progress'), findsOneWidget);
       expect(find.text('of 2 materials'), findsOneWidget);
@@ -277,6 +276,13 @@ void main() {
     expect(find.text('No open alerts'), findsOneWidget);
     expect(find.text('Most urgent'), findsNothing);
     expect(find.text('View all'), findsNothing);
+  });
+
+  testWidgets('the open alerts row leaves the critical count to the red banner', (tester) async {
+    await pumpHome(tester, const Size(360, 800));
+
+    expect(readsAs('Needs attention: 2 critical alerts'), findsOneWidget);
+    expect(find.text('2 critical'), findsNothing);
   });
 
   testWidgets('devices without data show as to review, in grey', (tester) async {
@@ -549,7 +555,6 @@ void main() {
     await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
 
     expect(readsAs('Requiere atención: 1 alerta crítica'), findsOneWidget);
-    expect(find.text('1 crítica'), findsOneWidget);
     expect(readsAs('1 pendiente · 3 en proceso'), findsOneWidget);
     expect(find.text('de 1 material'), findsOneWidget);
 

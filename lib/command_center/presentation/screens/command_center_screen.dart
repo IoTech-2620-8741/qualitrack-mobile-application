@@ -365,7 +365,6 @@ class _AttentionRow extends StatelessWidget {
     this.total,
     this.detail,
     this.segments = const [],
-    this.badge,
   });
 
   final IconData icon;
@@ -380,7 +379,6 @@ class _AttentionRow extends StatelessWidget {
 
   /// The count and the color of each part of the figure, for its bar.
   final List<(int, Color)> segments;
-  final Widget? badge;
   final VoidCallback onTap;
   final bool compact;
 
@@ -465,7 +463,6 @@ class _AttentionRow extends StatelessWidget {
                         const SizedBox(height: AppSpacing.xs),
                         ProportionBar(segments: segments, height: 4),
                       ],
-                      if (badge != null) ...[const SizedBox(height: AppSpacing.xs), badge!],
                     ],
                   ),
                 ),
@@ -483,8 +480,8 @@ class _AttentionRow extends StatelessWidget {
 // 1 · Compliance alerts
 // ---------------------------------------------------------------------------
 
-/// Open alerts by status, with the critical ones as a badge: severity and
-/// status are told apart.
+/// Open alerts by status. Their severity is the red banner's: the critical
+/// ones are not counted again here.
 class _AlertsRow extends StatelessWidget {
   const _AlertsRow({required this.summary, required this.compact});
 
@@ -517,13 +514,6 @@ class _AlertsRow extends StatelessWidget {
           s == null || open == 0
               ? const []
               : [(s.unresolved, AppColors.criticalBase), (s.acknowledged, AppColors.neutralContainer)],
-      badge:
-          critical > 0
-              ? StatusBadge(
-                label: critical == 1 ? i18n.criticalCountOne : i18n.criticalCount(critical),
-                tone: BadgeTone.critical,
-              )
-              : null,
       compact: compact,
       onTap: () => context.go('/alerts'),
     );
