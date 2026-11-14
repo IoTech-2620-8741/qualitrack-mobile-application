@@ -477,6 +477,7 @@ tabUsedIn	Used in	Usado en
 tabGeneral	General	General
 noOpenAlertsShort	No open alerts	Sin alertas abiertas
 viewAll	View all	Ver todas
+viewDetail	View detail	Ver detalle
 filterAlerts	Filter alerts	Filtrar alertas
 showingFilter	Showing: {filter}	Mostrando: {filter}	filter:String
 ofTotal	of {total}	de {total}	total:int

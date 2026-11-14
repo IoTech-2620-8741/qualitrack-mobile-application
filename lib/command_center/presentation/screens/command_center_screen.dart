@@ -232,12 +232,21 @@ class _StatusStrip extends StatelessWidget {
             : pending
             ? (BadgeTone.warning, i18n.homeStatusPending)
             : (BadgeTone.success, i18n.homeStatusAllClear);
+    final urgent = critical > 0 ? summary.alerts.value?.byPriority.firstOrNull : null;
     return Semantics(
       container: true,
       child: Container(
         constraints: const BoxConstraints(minHeight: AppSpacing.minTouchTarget),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-        decoration: BoxDecoration(color: tone.background, borderRadius: AppRadius.lgAll),
+        decoration: BoxDecoration(
+          color: tone.background,
+          borderRadius: AppRadius.lgAll,
+          // With critical alerts the strip is the style guide's red banner, edged like Web's action banner.
+          border:
+              tone == BadgeTone.critical
+                  ? Border(left: _bannerEdge.copyWith(width: 4), top: _bannerEdge, right: _bannerEdge, bottom: _bannerEdge)
+                  : null,
+        ),
         child: Row(
           children: [
             Icon(tone.icon, size: 20, color: tone.foreground),
@@ -245,16 +254,31 @@ class _StatusStrip extends StatelessWidget {
             Expanded(
               child: Text(
                 message,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
                 style: text.bodyMedium?.copyWith(color: tone.foreground, fontWeight: FontWeight.w600),
               ),
             ),
+            if (urgent != null) ...[
+              const SizedBox(width: AppSpacing.sm),
+              // Flexible: with large text the label wraps instead of pushing the strip off the screen.
+              Flexible(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: tone.foreground,
+                    side: BorderSide(color: tone.foreground),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  ),
+                  onPressed: () => context.push('/alerts/${urgent.id}'),
+                  child: Text(i18n.viewDetail, textAlign: TextAlign.center),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+
+  static const _bannerEdge = BorderSide(color: AppColors.criticalBase);
 }
 
 /// One row of the panel: the section icon, its figure, what it counts, a

@@ -157,7 +157,9 @@ adds a back arrow.
 **Home.** The laboratory is the app bar title, with the user's role and how
 long ago the data was read below it. The body reads state, then priority, then
 action. A strip says what the laboratory needs now (critical alerts, items to
-review or all in order). Below it, four rows read by importance top to bottom:
+review or all in order). With critical alerts the strip becomes a red banner
+whose View detail opens the most urgent one. Below it, four rows read by
+importance top to bottom:
 open alerts (the critical ones as a badge, unresolved and acknowledged as the
 detail), IoT devices online, batches awaiting the QA decision, and materials
 below the minimum stock. Each row has its figure, a short detail and a chevron

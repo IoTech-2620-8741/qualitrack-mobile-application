@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qualitrack_mobile/batch/api/index.dart';
 import 'package:qualitrack_mobile/command_center/application/get_command_center_summary.dart';
 import 'package:qualitrack_mobile/compliance/api/index.dart';
@@ -10,6 +11,7 @@ import 'package:qualitrack_mobile/command_center/presentation/command_center_vie
 import 'package:qualitrack_mobile/command_center/presentation/screens/command_center_screen.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
+import 'package:qualitrack_mobile/iam/api/index.dart';
 import 'package:qualitrack_mobile/laboratory/api/index.dart';
 import 'package:qualitrack_mobile/tracking/api/index.dart';
 
@@ -19,7 +21,7 @@ import '../helpers/pump_app.dart';
 class _MockHomeBloc extends MockBloc<CommandCenterRequested, RemoteState<CommandCenterSummary>>
     implements CommandCenterBloc {}
 
-CommandCenterSummary _summary({bool openAlerts = true}) {
+CommandCenterSummary _summary({bool openAlerts = true, List<DeviationAlert>? open}) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
   return CommandCenterSummary(
@@ -40,7 +42,9 @@ CommandCenterSummary _summary({bool openAlerts = true}) {
       ),
     ),
     alerts:
-        !openAlerts
+        open != null
+            ? Part.ok(AlertOverview(summary: AlertSummary.of(open), open: open))
+            : !openAlerts
             ? const Part.ok(
               AlertOverview(
                 summary: AlertSummary(total: 2, unresolved: 0, acknowledged: 0, resolved: 2, critical: 0),
@@ -90,30 +94,50 @@ void main() {
     );
   });
 
+  /// The Home inside the navigation bar of the shell.
+  Widget home({UserSession? session}) => Scaffold(
+    body: BlocProvider<CommandCenterBloc>.value(
+      value: bloc,
+      child: CommandCenterScreen(session: session ?? sessionFixture(), views: _views()),
+    ),
+    bottomNavigationBar: NavigationBar(
+      destinations: const [
+        NavigationDestination(icon: Icon(Icons.space_dashboard), label: 'Home'),
+        NavigationDestination(icon: Icon(Icons.menu), label: 'More'),
+      ],
+    ),
+  );
+
   /// The Home as the app shows it: under the status bar and above the
   /// navigation bar of the shell.
   Future<void> pumpHome(WidgetTester tester, Size size, {double textScale = 1}) async {
     await tester.pumpLocalized(
-      MediaQuery.withClampedTextScaling(
-        minScaleFactor: textScale,
-        maxScaleFactor: textScale,
-        child: Scaffold(
-          body: BlocProvider<CommandCenterBloc>.value(
-            value: bloc,
-            child: CommandCenterScreen(session: sessionFixture(), views: _views()),
-          ),
-          bottomNavigationBar: NavigationBar(
-            destinations: const [
-              NavigationDestination(icon: Icon(Icons.space_dashboard), label: 'Home'),
-              NavigationDestination(icon: Icon(Icons.menu), label: 'More'),
-            ],
-          ),
-        ),
-      ),
+      MediaQuery.withClampedTextScaling(minScaleFactor: textScale, maxScaleFactor: textScale, child: home()),
       size: size,
     );
     tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
     await tester.pump();
+  }
+
+  /// The Home with [summary] inside a router, to follow where it leads: each
+  /// detail screen is a text with its name and id.
+  Future<GoRouter> pumpHomeWithRouter(WidgetTester tester, CommandCenterSummary summary, {UserSession? session}) async {
+    whenListen(
+      bloc,
+      const Stream<RemoteState<CommandCenterSummary>>.empty(),
+      initialState: const RemoteState<CommandCenterSummary>().success(summary),
+    );
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(path: '/home', builder: (context, state) => home(session: session)),
+        for (final (path, name) in [('alerts', 'alert'), ('batches', 'batch'), ('equipment', 'equipment')])
+          GoRoute(path: '/$path/:id', builder: (context, state) => Text('$name ${state.pathParameters['id']}')),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpLocalizedRouter(router, size: const Size(360, 800));
+    return router;
   }
 
   double scrollExtent(WidgetTester tester) =>
@@ -210,6 +234,30 @@ void main() {
 
     expect(find.text('3 to review'), findsOneWidget);
     expect(tester.widget<Icon>(find.byIcon(Icons.signal_wifi_off)).color, BadgeTone.neutral.foreground);
+  });
+
+  testWidgets('the critical banner opens the most urgent unattended critical alert', (tester) async {
+    final now = DateTime.now();
+    await pumpHomeWithRouter(
+      tester,
+      _summary(
+        open: [
+          alertFixture(id: 7, status: AlertStatus.acknowledged, timestamp: now.subtract(const Duration(minutes: 5))),
+          alertFixture(id: 8, timestamp: now.subtract(const Duration(hours: 3))),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('View detail'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('alert 8'), findsOneWidget);
+  });
+
+  testWidgets('without critical alerts the strip offers no detail', (tester) async {
+    await pumpHomeWithRouter(tester, _summary(openAlerts: false));
+
+    expect(find.text('View detail'), findsNothing);
   });
 
   testWidgets('a short screen shows fewer latest alerts, never half a card', (tester) async {

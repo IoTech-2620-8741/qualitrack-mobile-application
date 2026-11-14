@@ -587,6 +587,7 @@ class AppLocalizations {
   String get tabGeneral => _t('tabGeneral');
   String get noOpenAlertsShort => _t('noOpenAlertsShort');
   String get viewAll => _t('viewAll');
+  String get viewDetail => _t('viewDetail');
   String get filterAlerts => _t('filterAlerts');
   String showingFilter(String filter) => _t('showingFilter')
       .replaceAll('{filter}', filter);
@@ -1116,6 +1117,7 @@ const Map<String, String> _en = {
   'tabGeneral': 'General',
   'noOpenAlertsShort': 'No open alerts',
   'viewAll': 'View all',
+  'viewDetail': 'View detail',
   'filterAlerts': 'Filter alerts',
   'showingFilter': 'Showing: {filter}',
   'ofTotal': 'of {total}',
@@ -1636,6 +1638,7 @@ const Map<String, String> _es = {
   'tabGeneral': 'General',
   'noOpenAlertsShort': 'Sin alertas abiertas',
   'viewAll': 'Ver todas',
+  'viewDetail': 'Ver detalle',
   'filterAlerts': 'Filtrar alertas',
   'showingFilter': 'Mostrando: {filter}',
   'ofTotal': 'de {total}',
