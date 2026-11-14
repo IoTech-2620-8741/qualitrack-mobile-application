@@ -264,7 +264,7 @@ class _Panel extends StatelessWidget {
 
 /// What the laboratory needs now, read from the data (not a score): critical
 /// alerts, anything else to review, or all in order. An operator's strip
-/// counts only what their Home shows: open alerts and batches in progress.
+/// counts only the open alerts: their batches in progress are daily work.
 class _StatusStrip extends StatelessWidget {
   const _StatusStrip({required this.summary, required this.forOperator});
 
@@ -281,8 +281,8 @@ class _StatusStrip extends StatelessWidget {
     final batches = summary.batches.value?.summary;
     final pending = [
       alerts?.open ?? 0,
-      batches?.inProgress ?? 0,
       if (!forOperator) ...[
+        batches?.inProgress ?? 0,
         equipment == null ? 0 : equipment.devices - equipment.connected,
         batches?.pending ?? 0,
         summary.materials.value?.where((m) => m.isBelowMinimum).length ?? 0,

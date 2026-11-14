@@ -164,7 +164,8 @@ importance top to bottom:
 open alerts (the critical ones as a badge, unresolved and acknowledged as the
 detail), IoT devices online, batches awaiting the QA decision, and materials
 below the minimum stock. An operator sees only the open alerts and the batches
-in progress, and the strip counts only those; an auditor sees the whole panel,
+in progress, and the strip counts only the alerts, as batches in progress are
+their daily work; an auditor sees the whole panel,
 marked read only after the role (style guide §7). Each row has its figure, a
 short detail and a chevron to the screen that acts on it; the color of a state goes only to its icon and
 figure. The most urgent open alerts fill the rest of the screen, only as many

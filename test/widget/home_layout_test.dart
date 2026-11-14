@@ -489,8 +489,8 @@ void main() {
     expect(find.textContaining(RegExp('material', caseSensitive: false)), findsNothing);
   });
 
-  testWidgets('the operator strip counts only alerts and batches in progress', (tester) async {
-    stubSummary(_summary(openAlerts: false, inProgress: 0));
+  testWidgets('the operator strip counts only open alerts, not their daily batches in progress', (tester) async {
+    stubSummary(_summary(openAlerts: false, inProgress: 3));
     await pumpHome(tester, const Size(360, 800), session: sessionFixture(roles: [UserRole.labOperator]));
 
     expect(find.text('All in order'), findsOneWidget);
