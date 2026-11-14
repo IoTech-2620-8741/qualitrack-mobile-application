@@ -670,12 +670,15 @@ void main() {
 
     setUp(() => layout.value = HomeLayout.cards);
 
-    testWidgets('the app bar button switches the Home between the list and the dashboard', (tester) async {
+    testWidgets('the switch above the content changes the Home between the list and the dashboard', (tester) async {
       layout.value = HomeLayout.list;
       await pumpHome(tester, const Size(360, 800));
       expect(find.text('View detail'), findsOneWidget);
+      final segments = find.byType(SegmentedButton<HomeLayout>);
+      expect(find.descendant(of: find.byType(AppBar), matching: segments), findsNothing);
+      expect(tester.getRect(segments).top, greaterThanOrEqualTo(tester.getRect(find.byType(AppBar)).bottom));
 
-      await tester.tap(find.byTooltip('Show as cards'));
+      await tester.tap(find.text('Dashboard'));
       await tester.pump();
       await tester.pump();
 
@@ -683,12 +686,25 @@ void main() {
       expect(find.text('View detail'), findsNothing);
       expect(find.byType(HomeAlertCard), findsWidgets);
 
-      await tester.tap(find.byTooltip('Show as list'));
+      await tester.tap(find.text('List'));
       await tester.pump();
       await tester.pump();
 
       expect(layout.value, HomeLayout.list);
       expect(find.text('View detail'), findsOneWidget);
+    });
+
+    testWidgets('the app bar leaves its width to the title: nothing in it is cut at 320 dp with text x1.3', (
+      tester,
+    ) async {
+      for (final chosen in HomeLayout.values) {
+        layout.value = chosen;
+        await pumpHome(tester, const Size(320, 800), textScale: 1.3, locale: const Locale('es'));
+
+        for (final title in ['QualiLab Lima', 'QA Manager', 'Actualizado hace 5 min']) {
+          expect(isCut(tester, find.text(title)), isFalse, reason: '$title, $chosen');
+        }
+      }
     });
 
     testWidgets('the dashboard lays the figures out two by two', (tester) async {

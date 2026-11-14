@@ -642,8 +642,8 @@ class AppLocalizations {
   String get homeMaterialsTotalOne => _t('homeMaterialsTotalOne');
   String get homeNothingPending => _t('homeNothingPending');
   String get homeMostUrgent => _t('homeMostUrgent');
-  String get homeShowCards => _t('homeShowCards');
-  String get homeShowList => _t('homeShowList');
+  String get homeLayoutList => _t('homeLayoutList');
+  String get homeLayoutDashboard => _t('homeLayoutDashboard');
   String homeAcknowledgedCount(int count) => _t('homeAcknowledgedCount')
       .replaceAll('{count}', '$count');
   String get homeAcknowledgedCountOne => _t('homeAcknowledgedCountOne');
@@ -1180,8 +1180,8 @@ const Map<String, String> _en = {
   'homeMaterialsTotalOne': 'of 1 material',
   'homeNothingPending': 'Nothing pending',
   'homeMostUrgent': 'Most urgent',
-  'homeShowCards': 'Show as cards',
-  'homeShowList': 'Show as list',
+  'homeLayoutList': 'List',
+  'homeLayoutDashboard': 'Dashboard',
   'homeAcknowledgedCount': '{count} acknowledged',
   'homeAcknowledgedCountOne': '1 acknowledged',
   'homeAboveLimit': '{value} above the limit',
@@ -1715,8 +1715,8 @@ const Map<String, String> _es = {
   'homeMaterialsTotalOne': 'de 1 material',
   'homeNothingPending': 'Sin pendientes',
   'homeMostUrgent': 'Lo más urgente',
-  'homeShowCards': 'Ver en tarjetas',
-  'homeShowList': 'Ver en lista',
+  'homeLayoutList': 'Lista',
+  'homeLayoutDashboard': 'Tablero',
   'homeAcknowledgedCount': '{count} reconocidas',
   'homeAcknowledgedCountOne': '1 reconocida',
   'homeAboveLimit': '{value} sobre el límite',

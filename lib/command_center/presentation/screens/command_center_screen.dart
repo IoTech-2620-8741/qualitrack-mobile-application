@@ -74,18 +74,43 @@ class CommandCenterScreen extends StatelessWidget {
         title: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
           builder: (context, state) => _PanelTitle(session: session, views: views, summary: state.data),
         ),
-        actions: [
-          // The icon shows the layout the button switches to.
-          IconButton(
-            tooltip: cards ? context.i18n.homeShowList : context.i18n.homeShowCards,
-            icon: Icon(cards ? Icons.view_agenda_outlined : Icons.grid_view_outlined),
-            onPressed: () => layout.value = cards ? HomeLayout.list : HomeLayout.cards,
+        actions: [views.notificationBell, views.profileButton],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Out of the app bar, whose width the title needs on a small phone.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: SegmentedButton<HomeLayout>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: HomeLayout.list,
+                    icon: const Icon(Icons.view_agenda_outlined),
+                    label: Text(context.i18n.homeLayoutList),
+                  ),
+                  ButtonSegment(
+                    value: HomeLayout.cards,
+                    icon: const Icon(Icons.grid_view_outlined),
+                    label: Text(context.i18n.homeLayoutDashboard),
+                  ),
+                ],
+                selected: {layout.value},
+                onSelectionChanged: (selection) => layout.value = selection.single,
+              ),
+            ),
           ),
-          views.notificationBell,
-          views.profileButton,
+          Expanded(child: _content(cards: cards, forOperator: forOperator, reload: reload)),
         ],
       ),
-      body: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
+    );
+  }
+
+  Widget _content({required bool cards, required bool forOperator, required VoidCallback reload}) =>
+      BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
         builder:
             (context, state) => RemoteStateView<CommandCenterSummary>(
               state: state,
@@ -144,9 +169,7 @@ class CommandCenterScreen extends StatelessWidget {
                     },
                   ),
             ),
-      ),
-    );
-  }
+      );
 }
 
 /// How the Home lays out its figures: the list of rows or the dashboard.

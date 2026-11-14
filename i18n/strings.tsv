@@ -520,8 +520,8 @@ homeMaterialsTotal	of {count} materials	de {count} materiales	count:int
 homeMaterialsTotalOne	of 1 material	de 1 material
 homeNothingPending	Nothing pending	Sin pendientes
 homeMostUrgent	Most urgent	Lo más urgente
-homeShowCards	Show as cards	Ver en tarjetas
-homeShowList	Show as list	Ver en lista
+homeLayoutList	List	Lista
+homeLayoutDashboard	Dashboard	Tablero
 homeAcknowledgedCount	{count} acknowledged	{count} reconocidas	count:int
 homeAcknowledgedCountOne	1 acknowledged	1 reconocida
 homeAboveLimit	{value} above the limit	{value} sobre el límite	value:String
