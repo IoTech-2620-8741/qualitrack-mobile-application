@@ -358,11 +358,12 @@ class _AttentionRow extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.md),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 44, maxWidth: 96),
+                  constraints: const BoxConstraints(minWidth: 36, maxWidth: 96),
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    child: Text(figure, maxLines: 1, style: AppTypography.metric.copyWith(fontSize: 24, color: color)),
+                    // The style guide's H2 (18 sp), the size of a value, under the 22 sp screen title.
+                    child: Text(figure, maxLines: 1, style: AppTypography.metric.copyWith(fontSize: 18, color: color)),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -600,7 +601,7 @@ class _PanelSkeletonState extends State<_PanelSkeleton> with SingleTickerProvide
             decoration: const BoxDecoration(color: AppColors.neutralContainer, shape: BoxShape.circle),
           ),
           const SizedBox(width: AppSpacing.md),
-          bone(44, 24),
+          bone(36, 18),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(

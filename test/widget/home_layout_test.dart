@@ -265,6 +265,14 @@ void main() {
     expect(tester.widget<Icon>(find.byIcon(Icons.signal_wifi_off)).color, BadgeTone.neutral.foreground);
   });
 
+  testWidgets('the row figures take the H2 size of the style guide, 18 sp', (tester) async {
+    await pumpHome(tester, const Size(360, 800));
+
+    for (final figure in ['4', '6/9', '5', '1']) {
+      expect(tester.widget<Text>(find.text(figure)).style?.fontSize, 18, reason: figure);
+    }
+  });
+
   testWidgets('the critical banner opens the most urgent unattended critical alert', (tester) async {
     final now = DateTime.now();
     await pumpHomeWithRouter(
