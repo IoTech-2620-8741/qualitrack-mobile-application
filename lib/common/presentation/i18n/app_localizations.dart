@@ -174,6 +174,7 @@ class AppLocalizations {
   String get openAlerts => _t('openAlerts');
   String criticalCount(int count) => _t('criticalCount')
       .replaceAll('{count}', '$count');
+  String get criticalCountOne => _t('criticalCountOne');
   String get liveTelemetryHint => _t('liveTelemetryHint');
   String get equipmentTitle => _t('equipmentTitle');
   String get equipmentDetail => _t('equipmentDetail');
@@ -620,6 +621,7 @@ class AppLocalizations {
   String get stockAboveMinimum => _t('stockAboveMinimum');
   String homeStatusCritical(int count) => _t('homeStatusCritical')
       .replaceAll('{count}', '$count');
+  String get homeStatusCriticalOne => _t('homeStatusCriticalOne');
   String get homeStatusPending => _t('homeStatusPending');
   String get homeStatusAllClear => _t('homeStatusAllClear');
   String homeAlertsDetail(int unresolved, int acknowledged) => _t('homeAlertsDetail')
@@ -632,9 +634,12 @@ class AppLocalizations {
   String homeBatchesDetail(int pending, int inProgress) => _t('homeBatchesDetail')
       .replaceAll('{pending}', '$pending')
       .replaceAll('{inProgress}', '$inProgress');
+  String homeBatchesDetailOnePending(int inProgress) => _t('homeBatchesDetailOnePending')
+      .replaceAll('{inProgress}', '$inProgress');
   String get homeBatchesInProgress => _t('homeBatchesInProgress');
   String homeMaterialsTotal(int count) => _t('homeMaterialsTotal')
       .replaceAll('{count}', '$count');
+  String get homeMaterialsTotalOne => _t('homeMaterialsTotalOne');
   String get homeNothingPending => _t('homeNothingPending');
   String get homeMostUrgent => _t('homeMostUrgent');
   String get filterMaterials => _t('filterMaterials');
@@ -772,6 +777,7 @@ const Map<String, String> _en = {
   'regulations': 'Applicable regulations',
   'openAlerts': 'Open alerts',
   'criticalCount': '{count} critical',
+  'criticalCountOne': '1 critical',
   'liveTelemetryHint': 'Readings of the last 24 hours',
   'equipmentTitle': 'Equipment',
   'equipmentDetail': 'Equipment detail',
@@ -1152,14 +1158,17 @@ const Map<String, String> _en = {
   'noIotDevices': 'No IoT devices',
   'stockAboveMinimum': 'All materials above the minimum stock',
   'homeStatusCritical': 'Needs attention: {count} critical alerts',
+  'homeStatusCriticalOne': 'Needs attention: 1 critical alert',
   'homeStatusPending': 'There are items to review',
   'homeStatusAllClear': 'All in order',
   'homeAlertsDetail': '{unresolved} unresolved · {acknowledged} acknowledged',
   'homeAlertsDetailOneAcknowledged': '{unresolved} unresolved · 1 acknowledged',
   'homeDevicesToReview': '{count} to review',
   'homeBatchesDetail': '{pending} pending · {inProgress} in progress',
+  'homeBatchesDetailOnePending': '1 pending · {inProgress} in progress',
   'homeBatchesInProgress': 'Batches in progress',
   'homeMaterialsTotal': 'of {count} materials',
+  'homeMaterialsTotalOne': 'of 1 material',
   'homeNothingPending': 'Nothing pending',
   'homeMostUrgent': 'Most urgent',
   'filterMaterials': 'Filter materials',
@@ -1297,6 +1306,7 @@ const Map<String, String> _es = {
   'regulations': 'Normativas aplicables',
   'openAlerts': 'Alertas abiertas',
   'criticalCount': '{count} críticas',
+  'criticalCountOne': '1 crítica',
   'liveTelemetryHint': 'Lecturas de las últimas 24 horas',
   'equipmentTitle': 'Equipos',
   'equipmentDetail': 'Detalle del equipo',
@@ -1677,14 +1687,17 @@ const Map<String, String> _es = {
   'noIotDevices': 'Sin dispositivos IoT',
   'stockAboveMinimum': 'Todos los materiales sobre el stock mínimo',
   'homeStatusCritical': 'Requiere atención: {count} alertas críticas',
+  'homeStatusCriticalOne': 'Requiere atención: 1 alerta crítica',
   'homeStatusPending': 'Hay pendientes por revisar',
   'homeStatusAllClear': 'Todo en orden',
   'homeAlertsDetail': '{unresolved} sin resolver · {acknowledged} reconocidas',
   'homeAlertsDetailOneAcknowledged': '{unresolved} sin resolver · 1 reconocida',
   'homeDevicesToReview': '{count} por revisar',
   'homeBatchesDetail': '{pending} pendientes · {inProgress} en proceso',
+  'homeBatchesDetailOnePending': '1 pendiente · {inProgress} en proceso',
   'homeBatchesInProgress': 'Lotes en proceso',
   'homeMaterialsTotal': 'de {count} materiales',
+  'homeMaterialsTotalOne': 'de 1 material',
   'homeNothingPending': 'Sin pendientes',
   'homeMostUrgent': 'Lo más urgente',
   'filterMaterials': 'Filtrar materiales',

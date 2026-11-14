@@ -14,6 +14,7 @@ import 'package:qualitrack_mobile/command_center/presentation/screens/command_ce
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/api/index.dart';
+import 'package:qualitrack_mobile/inventory/api/index.dart';
 import 'package:qualitrack_mobile/laboratory/api/index.dart';
 import 'package:qualitrack_mobile/tracking/api/index.dart';
 
@@ -23,7 +24,13 @@ import '../helpers/pump_app.dart';
 class _MockHomeBloc extends MockBloc<CommandCenterRequested, RemoteState<CommandCenterSummary>>
     implements CommandCenterBloc {}
 
-CommandCenterSummary _summary({bool openAlerts = true, List<DeviationAlert>? open, int inProgress = 3}) {
+CommandCenterSummary _summary({
+  bool openAlerts = true,
+  List<DeviationAlert>? open,
+  int pending = 2,
+  int inProgress = 3,
+  List<InventoryMaterial>? materials,
+}) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
   return CommandCenterSummary(
@@ -39,7 +46,13 @@ CommandCenterSummary _summary({bool openAlerts = true, List<DeviationAlert>? ope
     ),
     batches: Part.ok(
       BatchOverview(
-        summary: BatchSummary(total: 6 + inProgress, pending: 2, inProgress: inProgress, released: 4, rejected: 0),
+        summary: BatchSummary(
+          total: 4 + pending + inProgress,
+          pending: pending,
+          inProgress: inProgress,
+          released: 4,
+          rejected: 0,
+        ),
         recent: [batchFixture(id: 9, batchNumber: 'LOT-2026-0009')],
       ),
     ),
@@ -68,7 +81,7 @@ CommandCenterSummary _summary({bool openAlerts = true, List<DeviationAlert>? ope
                 ],
               ),
             ),
-    materials: Part.ok([materialFixture(), materialFixture(id: 2, usable: 9, stockStatus: 'OK')]),
+    materials: Part.ok(materials ?? [materialFixture(), materialFixture(id: 2, usable: 9, stockStatus: 'OK')]),
     subscription: null,
     fetchedAt: now.subtract(const Duration(minutes: 5)),
   );
@@ -357,6 +370,21 @@ void main() {
     await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
 
     expect(readsAs('3 sin resolver · 1 reconocida'), findsOneWidget);
+  });
+
+  testWidgets('a count of one reads in the singular', (tester) async {
+    stubSummary(_summary(open: [alertFixture(id: 1)], pending: 1, materials: [materialFixture()]));
+    await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
+
+    expect(find.text('Requiere atención: 1 alerta crítica'), findsOneWidget);
+    expect(find.text('1 crítica'), findsOneWidget);
+    expect(readsAs('1 pendiente · 3 en proceso'), findsOneWidget);
+    expect(find.text('de 1 material'), findsOneWidget);
+
+    await pumpHome(tester, const Size(360, 800));
+
+    expect(find.text('Needs attention: 1 critical alert'), findsOneWidget);
+    expect(find.text('of 1 material'), findsOneWidget);
   });
 
   // Each role sees its own Home (style guide §7).

@@ -126,6 +126,7 @@ address	Address	Dirección
 regulations	Applicable regulations	Normativas aplicables
 openAlerts	Open alerts	Alertas abiertas
 criticalCount	{count} critical	{count} críticas	count:int
+criticalCountOne	1 critical	1 crítica
 liveTelemetryHint	Readings of the last 24 hours	Lecturas de las últimas 24 horas
 equipmentTitle	Equipment	Equipos
 equipmentDetail	Equipment detail	Detalle del equipo
@@ -506,14 +507,17 @@ iotDevicesOnline	Devices online	Dispositivos en línea
 noIotDevices	No IoT devices	Sin dispositivos IoT
 stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
 homeStatusCritical	Needs attention: {count} critical alerts	Requiere atención: {count} alertas críticas	count:int
+homeStatusCriticalOne	Needs attention: 1 critical alert	Requiere atención: 1 alerta crítica
 homeStatusPending	There are items to review	Hay pendientes por revisar
 homeStatusAllClear	All in order	Todo en orden
 homeAlertsDetail	{unresolved} unresolved · {acknowledged} acknowledged	{unresolved} sin resolver · {acknowledged} reconocidas	unresolved:int,acknowledged:int
 homeAlertsDetailOneAcknowledged	{unresolved} unresolved · 1 acknowledged	{unresolved} sin resolver · 1 reconocida	unresolved:int
 homeDevicesToReview	{count} to review	{count} por revisar	count:int
 homeBatchesDetail	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en proceso	pending:int,inProgress:int
+homeBatchesDetailOnePending	1 pending · {inProgress} in progress	1 pendiente · {inProgress} en proceso	inProgress:int
 homeBatchesInProgress	Batches in progress	Lotes en proceso
 homeMaterialsTotal	of {count} materials	de {count} materiales	count:int
+homeMaterialsTotalOne	of 1 material	de 1 material
 homeNothingPending	Nothing pending	Sin pendientes
 homeMostUrgent	Most urgent	Lo más urgente
 filterMaterials	Filter materials	Filtrar materiales

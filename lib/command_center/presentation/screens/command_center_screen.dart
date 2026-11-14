@@ -249,7 +249,7 @@ class _StatusStrip extends StatelessWidget {
     ].any((count) => count > 0);
     final (tone, message) =
         critical > 0
-            ? (BadgeTone.critical, i18n.homeStatusCritical(critical))
+            ? (BadgeTone.critical, critical == 1 ? i18n.homeStatusCriticalOne : i18n.homeStatusCritical(critical))
             : pending
             ? (BadgeTone.warning, i18n.homeStatusPending)
             : (BadgeTone.success, i18n.homeStatusAllClear);
@@ -432,7 +432,13 @@ class _AlertsRow extends StatelessWidget {
               : s.acknowledged == 1
               ? i18n.homeAlertsDetailOneAcknowledged(s.unresolved)
               : i18n.homeAlertsDetail(s.unresolved, s.acknowledged),
-      badge: critical > 0 ? StatusBadge(label: i18n.criticalCount(critical), tone: BadgeTone.critical) : null,
+      badge:
+          critical > 0
+              ? StatusBadge(
+                label: critical == 1 ? i18n.criticalCountOne : i18n.criticalCount(critical),
+                tone: BadgeTone.critical,
+              )
+              : null,
       compact: compact,
       onTap: () => context.go('/alerts'),
     );
@@ -502,7 +508,11 @@ class _BatchesRow extends StatelessWidget {
               ? null
               : awaiting == 0
               ? i18n.homeNothingPending
-              : (inProgressOnly ? null : i18n.homeBatchesDetail(s.pending, s.inProgress)),
+              : inProgressOnly
+              ? null
+              : s.pending == 1
+              ? i18n.homeBatchesDetailOnePending(s.inProgress)
+              : i18n.homeBatchesDetail(s.pending, s.inProgress),
       compact: compact,
       onTap: () => context.go('/batches'),
     );
@@ -531,7 +541,14 @@ class _InventoryRow extends StatelessWidget {
       tone: low == null ? BadgeTone.neutral : (low > 0 ? BadgeTone.warning : BadgeTone.success),
       figure: low == null ? '—' : '$low',
       label: low == null ? _error(context, part.failure) : i18n.belowMinimum,
-      detail: materials == null ? null : (low == 0 ? i18n.stockAboveMinimum : i18n.homeMaterialsTotal(materials.length)),
+      detail:
+          materials == null
+              ? null
+              : low == 0
+              ? i18n.stockAboveMinimum
+              : materials.length == 1
+              ? i18n.homeMaterialsTotalOne
+              : i18n.homeMaterialsTotal(materials.length),
       compact: compact,
       // Inventory is not a tab: it opens over Home, with its back arrow.
       onTap: () => context.push('/inventory'),
