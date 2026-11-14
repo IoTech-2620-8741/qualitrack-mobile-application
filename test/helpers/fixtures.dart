@@ -57,6 +57,7 @@ DeviationAlert alertFixture({
   AlertStatus status = AlertStatus.unresolved,
   AlertSeverity severity = AlertSeverity.critical,
   DateTime? timestamp,
+  double? thresholdValue = 30,
 }) => DeviationAlert(
   id: id,
   environmentId: environmentId,
@@ -64,7 +65,7 @@ DeviationAlert alertFixture({
   equipmentId: equipmentId,
   parameterName: 'TEMPERATURE',
   recordedValue: 38.6,
-  thresholdValue: 30,
+  thresholdValue: thresholdValue,
   unit: '°C',
   status: status,
   severity: severity,

@@ -187,6 +187,7 @@ userNumber	User #{id}	Usuario #{id}	id:int
 deviationDetails	Alert details	Detalle de alerta
 technicalInspection	Technical inspection	Inspección técnica
 thresholdValue	Threshold value	Valor umbral
+alertLimitValue	Limit {value}	Límite {value}	value:String
 acknowledgedBy	Acknowledged by	Reconocida por
 resolvedBy	Resolved by	Resuelta por
 resolutionNotes	Resolution notes	Notas de resolución

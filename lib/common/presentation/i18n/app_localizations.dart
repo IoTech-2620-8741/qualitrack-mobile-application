@@ -245,6 +245,8 @@ class AppLocalizations {
   String get deviationDetails => _t('deviationDetails');
   String get technicalInspection => _t('technicalInspection');
   String get thresholdValue => _t('thresholdValue');
+  String alertLimitValue(String value) => _t('alertLimitValue')
+      .replaceAll('{value}', value);
   String get acknowledgedBy => _t('acknowledgedBy');
   String get resolvedBy => _t('resolvedBy');
   String get resolutionNotes => _t('resolutionNotes');
@@ -827,6 +829,7 @@ const Map<String, String> _en = {
   'deviationDetails': 'Alert details',
   'technicalInspection': 'Technical inspection',
   'thresholdValue': 'Threshold value',
+  'alertLimitValue': 'Limit {value}',
   'acknowledgedBy': 'Acknowledged by',
   'resolvedBy': 'Resolved by',
   'resolutionNotes': 'Resolution notes',
@@ -1348,6 +1351,7 @@ const Map<String, String> _es = {
   'deviationDetails': 'Detalle de alerta',
   'technicalInspection': 'Inspección técnica',
   'thresholdValue': 'Valor umbral',
+  'alertLimitValue': 'Límite {value}',
   'acknowledgedBy': 'Reconocida por',
   'resolvedBy': 'Resuelta por',
   'resolutionNotes': 'Notas de resolución',
