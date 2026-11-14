@@ -66,6 +66,25 @@ void main() {
       );
     });
 
+    // The Home breaks its banner only after ': ' and a row detail only at ' · ': a
+    // translation without them would wrap anywhere, so it fails here instead.
+    test('every language keeps the separators the Home wraps its texts at', () {
+      for (final locale in AppLocalizations.supportedLocales) {
+        final i18n = AppLocalizations(locale);
+        for (final banner in [i18n.homeStatusCritical(2), i18n.homeStatusCriticalOne]) {
+          expect(banner, contains(': '), reason: '$locale');
+        }
+        for (final detail in [
+          i18n.homeAlertsDetail(3, 2),
+          i18n.homeAlertsDetailOneAcknowledged(3),
+          i18n.homeBatchesDetail(2, 3),
+          i18n.homeBatchesDetailOnePending(3),
+        ]) {
+          expect(detail, contains(' · '), reason: '$locale');
+        }
+      }
+    });
+
     test('batches in progress read "En proceso", as the style guide and Web say', () {
       final es = AppLocalizations(const Locale('es'));
       expect(es.batchInProgress, 'En proceso');
