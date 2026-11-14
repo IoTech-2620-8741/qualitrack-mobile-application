@@ -59,17 +59,51 @@ final class BatchOverview extends Equatable {
 
 /// Open alerts of every environment, most urgent first.
 final class AlertOverview extends Equatable {
-  const AlertOverview({required this.summary, required this.open});
+  const AlertOverview({required this.summary, required this.open, this.thresholds = const {}});
 
   final AlertSummary summary;
   final List<DeviationAlert> open;
 
-  /// The open alerts in the order to look at them: critical first, then the
-  /// most recent.
+  /// The range of the metric of the most urgent unresolved alerts, by alert id.
+  final Map<int, MetricThreshold> thresholds;
+
+  /// The open alerts in the order to look at them: critical first, the
+  /// unattended before the acknowledged ones, then the most recent.
   List<DeviationAlert> get byPriority => [...open]..sort(DeviationAlert.compareByPriority);
 
   @override
-  List<Object?> get props => [summary, open];
+  List<Object?> get props => [summary, open, thresholds];
+}
+
+/// Alerts whose profile is read: one parallel round.
+const int rangedAlerts = 4;
+
+/// The range of the metric of each of the [rangedAlerts] most urgent unresolved
+/// alerts, by alert id. Each device's profile is read once.
+Future<Map<int, MetricThreshold>> alertThresholds(
+  TelemetryApi telemetryApi,
+  LaboratoryId lab,
+  List<DeviationAlert> open,
+) async {
+  final ranged =
+      (open.where((a) => a.status == AlertStatus.unresolved && a.environmentId != null).toList()
+            ..sort(DeviationAlert.compareByPriority))
+          .take(rangedAlerts)
+          .toList();
+  final targets = {
+    for (final alert in ranged)
+      TelemetryTarget(
+        deviceId: alert.equipmentId,
+        environmentId: alert.environmentId!,
+        containerMonitor: alert.origin == AlertOrigin.container,
+      ),
+  };
+  final profiles = await telemetryApi.getProfiles(lab, targets.toList());
+  return {
+    for (final alert in ranged)
+      if (profiles[alert.equipmentId]?.thresholdFor(MonitoredMetric.fromCode(alert.parameterName)) case final range?)
+        alert.id: range,
+  };
 }
 
 /// Operational overview of the laboratory, the same cards as the Web
@@ -154,7 +188,11 @@ class GetCommandCenterSummary {
       perEnvironment((ids) async {
         final alerts = await _complianceApi.getLaboratoryAlerts(lab, ids);
         final open = alerts.where((a) => a.isOpen).toList();
-        return AlertOverview(summary: AlertSummary.of(alerts), open: open);
+        return AlertOverview(
+          summary: AlertSummary.of(alerts),
+          open: open,
+          thresholds: await alertThresholds(_telemetryApi, lab, open),
+        );
       }),
       perEnvironment((ids) => _inventoryApi.getMaterials(lab, ids)),
       includeSubscription ? _part(() => _subscriptionApi.getBillingSummary(lab)) : Future<Part<BillingSummary>?>.value(),

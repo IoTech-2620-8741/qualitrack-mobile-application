@@ -79,11 +79,16 @@ class AlertCard extends StatelessWidget {
     final at = alert.lastDetectedAt ?? alert.timestamp;
     // Elapsed time on the card ("5 min ago"); the exact moment in a tooltip.
     final when = relativeTime(context, at);
+    final limit =
+        alert.thresholdValue == null
+            ? null
+            : i18n.alertLimitValue(formatAlertValue(alert.thresholdValue, alert.unit, locale));
     // One label for screen readers, in the order the card is read visually.
     final semanticLabel = [
       alert.severity.label(i18n),
       alertVariable(i18n, alert.parameterName),
       formatAlertValue(alert.recordedValue, alert.unit, locale),
+      if (limit != null) limit,
       where,
       alert.status.label(i18n),
       if (alert.deviationCount > 1) i18n.deviationsCount(alert.deviationCount),
@@ -136,7 +141,16 @@ class AlertCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.xxs),
-                      Text(where, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall),
+                      // Device · area on the left, the limit on the right under the
+                      // value; when both do not fit, the limit drops to the next line.
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        spacing: AppSpacing.sm,
+                        children: [
+                          Text(where, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall),
+                          if (limit != null) Text(limit, style: text.bodySmall),
+                        ],
+                      ),
                       const SizedBox(height: AppSpacing.sm),
                       // Status on the left, time on the right; on narrow screens
                       // or long translations the time drops to the next line.

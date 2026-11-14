@@ -252,6 +252,8 @@ class AppLocalizations {
   String get deviationDetails => _t('deviationDetails');
   String get technicalInspection => _t('technicalInspection');
   String get thresholdValue => _t('thresholdValue');
+  String alertLimitValue(String value) => _t('alertLimitValue')
+      .replaceAll('{value}', value);
   String get acknowledgedBy => _t('acknowledgedBy');
   String get resolvedBy => _t('resolvedBy');
   String get resolutionNotes => _t('resolutionNotes');
@@ -517,6 +519,7 @@ class AppLocalizations {
   String get photoUpdated => _t('photoUpdated');
   String get preferencesSaved => _t('preferencesSaved');
   String get profileSaved => _t('profileSaved');
+  String get readOnly => _t('readOnly');
   String get removePhoto => _t('removePhoto');
   String get removePhotoConfirm => _t('removePhotoConfirm');
   String renewalCancelled(String date) => _t('renewalCancelled')
@@ -586,9 +589,6 @@ class AppLocalizations {
   String get clearFilters => _t('clearFilters');
   String get copySignatureHash => _t('copySignatureHash');
   String get signatureHashCopied => _t('signatureHashCopied');
-  String iotOnline(int connected, int total) => _t('iotOnline')
-      .replaceAll('{connected}', '$connected')
-      .replaceAll('{total}', '$total');
   String get clearSearch => _t('clearSearch');
   String get tabMaintenance => _t('tabMaintenance');
   String get tabEvents => _t('tabEvents');
@@ -597,15 +597,8 @@ class AppLocalizations {
   String get tabUsedIn => _t('tabUsedIn');
   String get tabGeneral => _t('tabGeneral');
   String get noOpenAlertsShort => _t('noOpenAlertsShort');
-  String get latestAlerts => _t('latestAlerts');
-  String unattendedCount(int count) => _t('unattendedCount')
-      .replaceAll('{count}', '$count');
-  String get allDevicesOnline => _t('allDevicesOnline');
-  String ofTotalBatches(int total) => _t('ofTotalBatches')
-      .replaceAll('{total}', '$total');
-  String ofTotalMaterials(int total) => _t('ofTotalMaterials')
-      .replaceAll('{total}', '$total');
   String get viewAll => _t('viewAll');
+  String get viewDetail => _t('viewDetail');
   String get filterAlerts => _t('filterAlerts');
   String showingFilter(String filter) => _t('showingFilter')
       .replaceAll('{filter}', filter);
@@ -630,10 +623,41 @@ class AppLocalizations {
   String get moreQuality => _t('moreQuality');
   String get moreAdministration => _t('moreAdministration');
   String get navEquipment => _t('navEquipment');
-  String attentionCount(int count) => _t('attentionCount')
-      .replaceAll('{count}', '$count');
   String get iotDevicesOnline => _t('iotDevicesOnline');
   String get noIotDevices => _t('noIotDevices');
+  String get stockAboveMinimum => _t('stockAboveMinimum');
+  String homeStatusCritical(int count) => _t('homeStatusCritical')
+      .replaceAll('{count}', '$count');
+  String get homeStatusCriticalOne => _t('homeStatusCriticalOne');
+  String get homeStatusPending => _t('homeStatusPending');
+  String get homeStatusAllClear => _t('homeStatusAllClear');
+  String homeAlertsDetail(int unresolved, int acknowledged) => _t('homeAlertsDetail')
+      .replaceAll('{unresolved}', '$unresolved')
+      .replaceAll('{acknowledged}', '$acknowledged');
+  String homeAlertsDetailOneAcknowledged(int unresolved) => _t('homeAlertsDetailOneAcknowledged')
+      .replaceAll('{unresolved}', '$unresolved');
+  String homeDevicesToReview(int count) => _t('homeDevicesToReview')
+      .replaceAll('{count}', '$count');
+  String homeBatchesDetail(int pending, int inProgress) => _t('homeBatchesDetail')
+      .replaceAll('{pending}', '$pending')
+      .replaceAll('{inProgress}', '$inProgress');
+  String homeBatchesDetailOnePending(int inProgress) => _t('homeBatchesDetailOnePending')
+      .replaceAll('{inProgress}', '$inProgress');
+  String get homeBatchesInProgress => _t('homeBatchesInProgress');
+  String homeMaterialsTotal(int count) => _t('homeMaterialsTotal')
+      .replaceAll('{count}', '$count');
+  String get homeMaterialsTotalOne => _t('homeMaterialsTotalOne');
+  String get homeNothingPending => _t('homeNothingPending');
+  String get homeMostUrgent => _t('homeMostUrgent');
+  String get homeLayoutList => _t('homeLayoutList');
+  String get homeLayoutDashboard => _t('homeLayoutDashboard');
+  String homeAcknowledgedCount(int count) => _t('homeAcknowledgedCount')
+      .replaceAll('{count}', '$count');
+  String get homeAcknowledgedCountOne => _t('homeAcknowledgedCountOne');
+  String homeAboveLimit(String value) => _t('homeAboveLimit')
+      .replaceAll('{value}', value);
+  String homeBelowLimit(String value) => _t('homeBelowLimit')
+      .replaceAll('{value}', value);
   String get filterMaterials => _t('filterMaterials');
   String get batchCycle => _t('batchCycle');
   String get qaDecision => _t('qaDecision');
@@ -836,6 +860,7 @@ const Map<String, String> _en = {
   'deviationDetails': 'Alert details',
   'technicalInspection': 'Technical inspection',
   'thresholdValue': 'Threshold value',
+  'alertLimitValue': 'Limit {value}',
   'acknowledgedBy': 'Acknowledged by',
   'resolvedBy': 'Resolved by',
   'resolutionNotes': 'Resolution notes',
@@ -1063,6 +1088,7 @@ const Map<String, String> _en = {
   'photoUpdated': 'Your photo was updated.',
   'preferencesSaved': 'Preferences saved.',
   'profileSaved': 'Your data was saved.',
+  'readOnly': 'Read only',
   'removePhoto': 'Remove photo',
   'removePhotoConfirm': 'Your initials will be shown instead of the photo.',
   'renewalCancelled': 'Renewal cancelled: access until {date}',
@@ -1120,7 +1146,6 @@ const Map<String, String> _en = {
   'clearFilters': 'Clear filters',
   'copySignatureHash': 'Copy hash',
   'signatureHashCopied': 'Hash copied',
-  'iotOnline': '{connected}/{total} IoT online',
   'clearSearch': 'Clear search',
   'tabMaintenance': 'Maintenance',
   'tabEvents': 'Events',
@@ -1129,12 +1154,8 @@ const Map<String, String> _en = {
   'tabUsedIn': 'Used in',
   'tabGeneral': 'General',
   'noOpenAlertsShort': 'No open alerts',
-  'latestAlerts': 'Latest alerts',
-  'unattendedCount': '{count} unattended',
-  'allDevicesOnline': 'All devices online',
-  'ofTotalBatches': 'of {total} batches',
-  'ofTotalMaterials': 'of {total} materials',
   'viewAll': 'View all',
+  'viewDetail': 'View detail',
   'filterAlerts': 'Filter alerts',
   'showingFilter': 'Showing: {filter}',
   'ofTotal': 'of {total}',
@@ -1157,9 +1178,29 @@ const Map<String, String> _en = {
   'moreQuality': 'Quality',
   'moreAdministration': 'Administration',
   'navEquipment': 'Equipment',
-  'attentionCount': '{count} need attention',
-  'iotDevicesOnline': 'devices online',
+  'iotDevicesOnline': 'Devices online',
   'noIotDevices': 'No IoT devices',
+  'stockAboveMinimum': 'All materials above the minimum stock',
+  'homeStatusCritical': 'Needs attention: {count} critical alerts',
+  'homeStatusCriticalOne': 'Needs attention: 1 critical alert',
+  'homeStatusPending': 'There are items to review',
+  'homeStatusAllClear': 'All in order',
+  'homeAlertsDetail': '{unresolved} unresolved · {acknowledged} acknowledged',
+  'homeAlertsDetailOneAcknowledged': '{unresolved} unresolved · 1 acknowledged',
+  'homeDevicesToReview': '{count} to review',
+  'homeBatchesDetail': '{pending} pending · {inProgress} in progress',
+  'homeBatchesDetailOnePending': '1 pending · {inProgress} in progress',
+  'homeBatchesInProgress': 'Batches in progress',
+  'homeMaterialsTotal': 'of {count} materials',
+  'homeMaterialsTotalOne': 'of 1 material',
+  'homeNothingPending': 'Nothing pending',
+  'homeMostUrgent': 'Most urgent',
+  'homeLayoutList': 'List',
+  'homeLayoutDashboard': 'Dashboard',
+  'homeAcknowledgedCount': '{count} acknowledged',
+  'homeAcknowledgedCountOne': '1 acknowledged',
+  'homeAboveLimit': '{value} above the limit',
+  'homeBelowLimit': '{value} below the limit',
   'filterMaterials': 'Filter materials',
   'batchCycle': 'Batch cycle',
   'qaDecision': 'QA decision',
@@ -1226,7 +1267,7 @@ const Map<String, String> _es = {
   'timeJustNow': 'Hace un momento',
   'timeMinutesAgo': 'Hace {count} min',
   'timeHoursAgo': 'Hace {count} h',
-  'updatedJustNow': 'Actualizado hace un momento',
+  'updatedJustNow': 'Actualizado ahora',
   'updatedMinutesAgo': 'Actualizado hace {count} min',
   'updatedHoursAgo': 'Actualizado hace {count} h',
   'updatedOn': 'Actualizado el {date}',
@@ -1362,6 +1403,7 @@ const Map<String, String> _es = {
   'deviationDetails': 'Detalle de alerta',
   'technicalInspection': 'Inspección técnica',
   'thresholdValue': 'Valor umbral',
+  'alertLimitValue': 'Límite {value}',
   'acknowledgedBy': 'Reconocida por',
   'resolvedBy': 'Resuelta por',
   'resolutionNotes': 'Notas de resolución',
@@ -1380,11 +1422,11 @@ const Map<String, String> _es = {
   'batchesEmpty': 'Aún no se han registrado lotes de producción en QualiTrack Web.',
   'searchBatches': 'Buscar por número de lote o producto',
   'batchPending': 'Pendiente',
-  'batchInProgress': 'En progreso',
+  'batchInProgress': 'En proceso',
   'batchReleased': 'Liberado',
   'batchRejected': 'Rechazado',
   'product': 'Producto',
-  'awaitingQaRelease': 'En espera de liberación QA',
+  'awaitingQaRelease': 'En espera de QA',
   'batchDetail': 'Detalle del lote',
   'rawMaterialsUsed': 'Materias primas usadas',
   'traceability': 'Trazabilidad',
@@ -1589,6 +1631,7 @@ const Map<String, String> _es = {
   'photoUpdated': 'Se actualizó tu foto.',
   'preferencesSaved': 'Preferencias guardadas.',
   'profileSaved': 'Se guardaron tus datos.',
+  'readOnly': 'Solo lectura',
   'removePhoto': 'Quitar foto',
   'removePhotoConfirm': 'Se mostrarán tus iniciales en lugar de la foto.',
   'renewalCancelled': 'Renovación cancelada: acceso hasta el {date}',
@@ -1646,7 +1689,6 @@ const Map<String, String> _es = {
   'clearFilters': 'Limpiar filtros',
   'copySignatureHash': 'Copiar huella',
   'signatureHashCopied': 'Huella copiada',
-  'iotOnline': '{connected}/{total} IoT en línea',
   'clearSearch': 'Borrar búsqueda',
   'tabMaintenance': 'Mantenimiento',
   'tabEvents': 'Eventos',
@@ -1655,12 +1697,8 @@ const Map<String, String> _es = {
   'tabUsedIn': 'Usado en',
   'tabGeneral': 'General',
   'noOpenAlertsShort': 'Sin alertas abiertas',
-  'latestAlerts': 'Últimas alertas',
-  'unattendedCount': '{count} sin atender',
-  'allDevicesOnline': 'Todos en línea',
-  'ofTotalBatches': 'de {total} lotes',
-  'ofTotalMaterials': 'de {total} materiales',
   'viewAll': 'Ver todas',
+  'viewDetail': 'Ver detalle',
   'filterAlerts': 'Filtrar alertas',
   'showingFilter': 'Mostrando: {filter}',
   'ofTotal': 'de {total}',
@@ -1683,9 +1721,29 @@ const Map<String, String> _es = {
   'moreQuality': 'Calidad',
   'moreAdministration': 'Administración',
   'navEquipment': 'Equipos',
-  'attentionCount': '{count} requieren atención',
-  'iotDevicesOnline': 'dispositivos en línea',
+  'iotDevicesOnline': 'Dispositivos en línea',
   'noIotDevices': 'Sin dispositivos IoT',
+  'stockAboveMinimum': 'Todos los materiales sobre el stock mínimo',
+  'homeStatusCritical': 'Requiere atención: {count} alertas críticas',
+  'homeStatusCriticalOne': 'Requiere atención: 1 alerta crítica',
+  'homeStatusPending': 'Hay pendientes por revisar',
+  'homeStatusAllClear': 'Todo en orden',
+  'homeAlertsDetail': '{unresolved} sin resolver · {acknowledged} reconocidas',
+  'homeAlertsDetailOneAcknowledged': '{unresolved} sin resolver · 1 reconocida',
+  'homeDevicesToReview': '{count} por revisar',
+  'homeBatchesDetail': '{pending} pendientes · {inProgress} en proceso',
+  'homeBatchesDetailOnePending': '1 pendiente · {inProgress} en proceso',
+  'homeBatchesInProgress': 'Lotes en proceso',
+  'homeMaterialsTotal': 'de {count} materiales',
+  'homeMaterialsTotalOne': 'de 1 material',
+  'homeNothingPending': 'Sin pendientes',
+  'homeMostUrgent': 'Lo más urgente',
+  'homeLayoutList': 'Lista',
+  'homeLayoutDashboard': 'Tablero',
+  'homeAcknowledgedCount': '{count} reconocidas',
+  'homeAcknowledgedCountOne': '1 reconocida',
+  'homeAboveLimit': '{value} sobre el límite',
+  'homeBelowLimit': '{value} bajo el límite',
   'filterMaterials': 'Filtrar materiales',
   'batchCycle': 'Ciclo del lote',
   'qaDecision': 'Decisión QA',

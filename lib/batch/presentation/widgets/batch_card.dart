@@ -5,7 +5,6 @@ import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/theme/app_typography.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../domain/entities/production_batch.dart';
 import 'batch_labels.dart';
@@ -56,7 +55,6 @@ class BatchCard extends StatelessWidget {
                             style: text.titleMedium?.copyWith(
                               color: AppColors.textPrimary,
                               fontWeight: FontWeight.w600,
-                              fontFamily: AppTypography.monospace,
                             ),
                           ),
                         ),

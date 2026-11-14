@@ -39,6 +39,7 @@ class _PressableCardState extends State<PressableCard> {
   Widget build(BuildContext context) {
     final card = Material(
       color: widget.color,
+      elevation: 1,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: widget.borderRadius,

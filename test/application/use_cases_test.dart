@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/batch/application/batch_facade_service.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
+import 'package:qualitrack_mobile/command_center/application/get_command_center_summary.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/notification_preferences.dart';
 import 'package:qualitrack_mobile/iam/application/iam_facade_service.dart';
 import 'package:qualitrack_mobile/inventory/application/inventory_facade_service.dart';
@@ -21,11 +23,8 @@ import 'package:qualitrack_mobile/reporting/domain/entities/reporting_entities.d
 import 'package:qualitrack_mobile/subscription/application/subscription_facade_service.dart';
 import 'package:qualitrack_mobile/subscription/domain/entities/subscription.dart';
 import 'package:qualitrack_mobile/subscription/domain/entities/subscription_plan.dart';
+import 'package:qualitrack_mobile/tracking/api/index.dart';
 import 'package:qualitrack_mobile/tracking/application/telemetry_facade_service.dart';
-import 'package:qualitrack_mobile/tracking/application/telemetry_targets.dart';
-import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
-import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
-import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -221,6 +220,67 @@ void main() {
 
       when(() => repo.getConnection(lab, other)).thenThrow(const UnauthorizedFailure());
       expect(() => TelemetryFacadeService(repository: repo).getConnections(lab, [other]), throwsA(isA<UnauthorizedFailure>()));
+    });
+
+    test('getProfiles reads each device and leaves out the ones without a profile or that fail', () async {
+      final repo = MockTelemetryRepository();
+      const none = TelemetryTarget(deviceId: 11, environmentId: 3, containerMonitor: true);
+      const failing = TelemetryTarget(deviceId: 12, environmentId: 3, containerMonitor: true);
+      when(() => repo.getProfile(lab, container)).thenAnswer((_) async => const EnvironmentalProfile(version: 1));
+      when(() => repo.getProfile(lab, none)).thenAnswer((_) async => null);
+      when(() => repo.getProfile(lab, failing)).thenThrow(const ServerFailure(statusCode: 500));
+
+      final profiles = await TelemetryFacadeService(repository: repo).getProfiles(lab, [container, none, failing]);
+
+      expect(profiles.keys, [10]);
+    });
+
+    test('getProfiles lets an ended session through', () {
+      final repo = MockTelemetryRepository();
+      when(() => repo.getProfile(lab, container)).thenThrow(const UnauthorizedFailure());
+
+      expect(
+        () => TelemetryFacadeService(repository: repo).getProfiles(lab, [container]),
+        throwsA(isA<UnauthorizedFailure>()),
+      );
+    });
+
+    test('alertThresholds gives the most urgent unresolved alerts the range of their metric, '
+        'reading each device once', () async {
+      final repo = MockTelemetryRepository();
+      TelemetryTarget target(int device) => TelemetryTarget(deviceId: device, environmentId: 3, containerMonitor: true);
+      const temperature = MetricThreshold(
+        metric: MonitoredMetric.temperature,
+        unit: '°C',
+        normalMin: 15,
+        normalMax: 30,
+      );
+      when(() => repo.getProfile(lab, target(10))).thenAnswer(
+        (_) async => const EnvironmentalProfile(version: 1, thresholds: [temperature]),
+      );
+      when(() => repo.getProfile(lab, target(11))).thenAnswer(
+        (_) async => const EnvironmentalProfile(
+          version: 1,
+          thresholds: [MetricThreshold(metric: MonitoredMetric.humidity, unit: '%', normalMax: 60)],
+        ),
+      );
+      when(() => repo.getProfile(lab, target(12))).thenAnswer((_) async => null);
+      final open = [
+        // The fifth unresolved alert is the least urgent: a warning.
+        alertFixture(id: 5, equipmentId: 13, severity: AlertSeverity.warning),
+        alertFixture(id: 1, equipmentId: 10),
+        alertFixture(id: 2, equipmentId: 10),
+        alertFixture(id: 3, equipmentId: 11),
+        alertFixture(id: 4, equipmentId: 12),
+        alertFixture(id: 6, equipmentId: 14, status: AlertStatus.acknowledged),
+      ];
+
+      final thresholds = await alertThresholds(TelemetryApi(TelemetryFacadeService(repository: repo)), lab, open);
+
+      expect(thresholds, {1: temperature, 2: temperature});
+      verify(() => repo.getProfile(lab, target(10))).called(1);
+      verifyNever(() => repo.getProfile(lab, target(13)));
+      verifyNever(() => repo.getProfile(lab, target(14)));
     });
 
     test('environmental devices have no automatic actions', () async {

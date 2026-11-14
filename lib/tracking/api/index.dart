@@ -6,11 +6,15 @@ library;
 import '../../common/domain/value_objects.dart';
 import '../application/telemetry_facade_service.dart';
 import '../domain/entities/device_connection.dart';
+import '../domain/entities/environmental_profile.dart';
 import '../domain/entities/telemetry_target.dart';
 
 export '../application/telemetry_targets.dart';
 export '../domain/entities/connection_status.dart';
 export '../domain/entities/device_connection.dart';
+export '../domain/entities/environmental_profile.dart';
+export '../domain/entities/metric_threshold.dart';
+export '../domain/entities/monitored_metric.dart';
 export '../domain/entities/telemetry_target.dart';
 
 class TelemetryApi {
@@ -24,4 +28,8 @@ class TelemetryApi {
   /// Connection status of many devices; the ones that cannot be read are absent.
   Future<Map<int, DeviceConnection>> getConnections(LaboratoryId laboratoryId, List<TelemetryTarget> targets) =>
       _telemetryService.getConnections(laboratoryId, targets);
+
+  /// The profile each device applies; devices without one, or that cannot be read, are absent.
+  Future<Map<int, EnvironmentalProfile>> getProfiles(LaboratoryId laboratoryId, List<TelemetryTarget> targets) =>
+      _telemetryService.getProfiles(laboratoryId, targets);
 }

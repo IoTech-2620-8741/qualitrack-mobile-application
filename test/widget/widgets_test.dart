@@ -12,6 +12,7 @@ import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notificati
 import 'package:qualitrack_mobile/compliance/presentation/screens/alert_detail_screen.dart';
 import 'package:qualitrack_mobile/compliance/presentation/screens/alerts_screen.dart';
 import 'package:qualitrack_mobile/compliance/presentation/screens/notifications_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/widgets/alert_widgets.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
@@ -26,6 +27,7 @@ import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
+import 'package:qualitrack_mobile/common/presentation/formatting/formatters.dart';
 import 'package:qualitrack_mobile/common/presentation/formatting/relative_time.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
@@ -187,6 +189,12 @@ void main() {
         'normal ≥ 2 °C',
       );
     });
+
+    test('Formatters.range writes a closed or an open range', () {
+      expect(Formatters.range(2, 8, '°C', 'en'), '2–8 °C');
+      expect(Formatters.range(null, 800, 'ppm', 'en'), '≤ 800 ppm');
+      expect(Formatters.range(2, null, '°C', 'en'), '≥ 2 °C');
+    });
   });
 
   testWidgets('backend codes read in the language of the app, never raw', (tester) async {
@@ -320,7 +328,12 @@ void main() {
       expect(find.textContaining('38.6'), findsWidgets);
       expect(find.bySemanticsLabel('Showing: All, 2 of 2'), findsOneWidget);
       expect(
-        find.bySemanticsLabel(RegExp(r'^Critical, Temperature, 38\.6 °C, Stability Chamber with a very long descriptive name · Cold storage, Unresolved, ')),
+        find.bySemanticsLabel(
+          RegExp(
+            r'^Critical, Temperature, 38\.6 °C, Limit 30 °C, '
+            r'Stability Chamber with a very long descriptive name · Cold storage, Unresolved, ',
+          ),
+        ),
         findsOneWidget,
       );
       expect(find.byIcon(Icons.notifications_outlined), findsNothing);
@@ -388,6 +401,21 @@ void main() {
       await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
       expect(find.bySemanticsLabel('Showing: All, 0 of 1'), findsOneWidget);
       expect(find.text('No results match the current filters'), findsOneWidget);
+    });
+
+    testWidgets('an alert card shows its value against the limit', (tester) async {
+      await tester.pumpLocalized(Scaffold(body: AlertCard(alert: alertFixture())));
+
+      expect(find.text('Limit ${formatAlertValue(30, '°C', 'en')}'), findsOneWidget);
+      // Screen readers hear the limit right after the value.
+      expect(find.bySemanticsLabel(RegExp(r'38\.6 °C, Limit 30 °C, ')), findsOneWidget);
+    });
+
+    testWidgets('an alert without a limit leaves the limit out', (tester) async {
+      await tester.pumpLocalized(Scaffold(body: AlertCard(alert: alertFixture(thresholdValue: null))));
+
+      expect(find.textContaining('Limit'), findsNothing);
+      expect(find.bySemanticsLabel(RegExp('Limit')), findsNothing);
     });
   });
 

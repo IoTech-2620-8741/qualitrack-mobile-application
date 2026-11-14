@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
-import '../../../common/presentation/theme/app_typography.dart';
 
 import '../../../common/presentation/i18n/app_localizations.dart';
 
@@ -60,10 +59,7 @@ class InventoryMaterialCard extends StatelessWidget {
                         Text.rich(
                           TextSpan(
                             children: [
-                              TextSpan(
-                                text: material.code,
-                                style: const TextStyle(fontFamily: AppTypography.monospace),
-                              ),
+                              TextSpan(text: material.code),
                               if (environmentName != null) TextSpan(text: ' · $environmentName'),
                             ],
                           ),

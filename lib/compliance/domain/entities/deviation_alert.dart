@@ -68,18 +68,23 @@ class DeviationAlert extends Equatable {
   bool get canAcknowledge => status == AlertStatus.unresolved;
   bool get canResolve => status == AlertStatus.unresolved || status == AlertStatus.acknowledged;
 
-  /// Open critical alerts first, then newest first (same order as Web).
+  /// Open alerts first; among them critical first, then the unattended before
+  /// the acknowledged ones, then the newest first, the higher id breaking a tie.
   static int compareByPriority(DeviationAlert a, DeviationAlert b) {
     final open = (b.isOpen ? 1 : 0).compareTo(a.isOpen ? 1 : 0);
     if (open != 0) return open;
     final critical = (b.isCritical ? 1 : 0).compareTo(a.isCritical ? 1 : 0);
     if (critical != 0) return critical;
+    final unattended =
+        (b.status == AlertStatus.unresolved ? 1 : 0).compareTo(a.status == AlertStatus.unresolved ? 1 : 0);
+    if (unattended != 0) return unattended;
     final left = a.lastDetectedAt ?? a.timestamp;
     final right = b.lastDetectedAt ?? b.timestamp;
     if (left == null && right == null) return b.id.compareTo(a.id);
     if (left == null) return 1;
     if (right == null) return -1;
-    return right.compareTo(left);
+    final newest = right.compareTo(left);
+    return newest != 0 ? newest : b.id.compareTo(a.id);
   }
 
   @override

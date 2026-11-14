@@ -57,7 +57,7 @@ generalInformation	General information	Información general
 timeJustNow	Just now	Hace un momento
 timeMinutesAgo	{count} min ago	Hace {count} min	count:int
 timeHoursAgo	{count} h ago	Hace {count} h	count:int
-updatedJustNow	Updated just now	Actualizado hace un momento
+updatedJustNow	Updated just now	Actualizado ahora
 updatedMinutesAgo	Updated {count} min ago	Actualizado hace {count} min	count:int
 updatedHoursAgo	Updated {count} h ago	Actualizado hace {count} h	count:int
 updatedOn	Updated {date}	Actualizado el {date}	date:String
@@ -193,6 +193,7 @@ userNumber	User #{id}	Usuario #{id}	id:int
 deviationDetails	Alert details	Detalle de alerta
 technicalInspection	Technical inspection	Inspección técnica
 thresholdValue	Threshold value	Valor umbral
+alertLimitValue	Limit {value}	Límite {value}	value:String
 acknowledgedBy	Acknowledged by	Reconocida por
 resolvedBy	Resolved by	Resuelta por
 resolutionNotes	Resolution notes	Notas de resolución
@@ -211,11 +212,11 @@ batchesSubtitle	Traceability and quality control of production cycles	Trazabilid
 batchesEmpty	No production batches have been registered in QualiTrack Web yet.	Aún no se han registrado lotes de producción en QualiTrack Web.
 searchBatches	Search by batch number or product	Buscar por número de lote o producto
 batchPending	Pending	Pendiente
-batchInProgress	In progress	En progreso
+batchInProgress	In progress	En proceso
 batchReleased	Released	Liberado
 batchRejected	Rejected	Rechazado
 product	Product	Producto
-awaitingQaRelease	Awaiting QA release	En espera de liberación QA
+awaitingQaRelease	Awaiting QA release	En espera de QA
 batchDetail	Batch detail	Detalle del lote
 rawMaterialsUsed	Raw materials used	Materias primas usadas
 traceability	Traceability	Trazabilidad
@@ -420,6 +421,7 @@ photoTypeNotAllowed	Choose a JPG, PNG or WebP image.	Elige una imagen JPG, PNG o
 photoUpdated	Your photo was updated.	Se actualizó tu foto.
 preferencesSaved	Preferences saved.	Preferencias guardadas.
 profileSaved	Your data was saved.	Se guardaron tus datos.
+readOnly	Read only	Solo lectura
 removePhoto	Remove photo	Quitar foto
 removePhotoConfirm	Your initials will be shown instead of the photo.	Se mostrarán tus iniciales en lugar de la foto.
 renewalCancelled	Renewal cancelled: access until {date}	Renovación cancelada: acceso hasta el {date}	date:String
@@ -477,7 +479,6 @@ historyShowing	Showing {shown} of {total}	Mostrando {shown} de {total}	shown:int
 clearFilters	Clear filters	Limpiar filtros
 copySignatureHash	Copy hash	Copiar huella
 signatureHashCopied	Hash copied	Huella copiada
-iotOnline	{connected}/{total} IoT online	{connected}/{total} IoT en línea	connected:int,total:int
 clearSearch	Clear search	Borrar búsqueda
 tabMaintenance	Maintenance	Mantenimiento
 tabEvents	Events	Eventos
@@ -486,12 +487,8 @@ tabMovements	Movements	Movimientos
 tabUsedIn	Used in	Usado en
 tabGeneral	General	General
 noOpenAlertsShort	No open alerts	Sin alertas abiertas
-latestAlerts	Latest alerts	Últimas alertas
-unattendedCount	{count} unattended	{count} sin atender	count:int
-allDevicesOnline	All devices online	Todos en línea
-ofTotalBatches	of {total} batches	de {total} lotes	total:int
-ofTotalMaterials	of {total} materials	de {total} materiales	total:int
 viewAll	View all	Ver todas
+viewDetail	View detail	Ver detalle
 filterAlerts	Filter alerts	Filtrar alertas
 showingFilter	Showing: {filter}	Mostrando: {filter}	filter:String
 ofTotal	of {total}	de {total}	total:int
@@ -514,9 +511,29 @@ moreAboutHint	Version and information	Versión e información
 moreQuality	Quality	Calidad
 moreAdministration	Administration	Administración
 navEquipment	Equipment	Equipos
-attentionCount	{count} need attention	{count} requieren atención	count:int
-iotDevicesOnline	devices online	dispositivos en línea
+iotDevicesOnline	Devices online	Dispositivos en línea
 noIotDevices	No IoT devices	Sin dispositivos IoT
+stockAboveMinimum	All materials above the minimum stock	Todos los materiales sobre el stock mínimo
+homeStatusCritical	Needs attention: {count} critical alerts	Requiere atención: {count} alertas críticas	count:int
+homeStatusCriticalOne	Needs attention: 1 critical alert	Requiere atención: 1 alerta crítica
+homeStatusPending	There are items to review	Hay pendientes por revisar
+homeStatusAllClear	All in order	Todo en orden
+homeAlertsDetail	{unresolved} unresolved · {acknowledged} acknowledged	{unresolved} sin resolver · {acknowledged} reconocidas	unresolved:int,acknowledged:int
+homeAlertsDetailOneAcknowledged	{unresolved} unresolved · 1 acknowledged	{unresolved} sin resolver · 1 reconocida	unresolved:int
+homeDevicesToReview	{count} to review	{count} por revisar	count:int
+homeBatchesDetail	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en proceso	pending:int,inProgress:int
+homeBatchesDetailOnePending	1 pending · {inProgress} in progress	1 pendiente · {inProgress} en proceso	inProgress:int
+homeBatchesInProgress	Batches in progress	Lotes en proceso
+homeMaterialsTotal	of {count} materials	de {count} materiales	count:int
+homeMaterialsTotalOne	of 1 material	de 1 material
+homeNothingPending	Nothing pending	Sin pendientes
+homeMostUrgent	Most urgent	Lo más urgente
+homeLayoutList	List	Lista
+homeLayoutDashboard	Dashboard	Tablero
+homeAcknowledgedCount	{count} acknowledged	{count} reconocidas	count:int
+homeAcknowledgedCountOne	1 acknowledged	1 reconocida
+homeAboveLimit	{value} above the limit	{value} sobre el límite	value:String
+homeBelowLimit	{value} below the limit	{value} bajo el límite	value:String
 filterMaterials	Filter materials	Filtrar materiales
 batchCycle	Batch cycle	Ciclo del lote
 qaDecision	QA decision	Decisión QA

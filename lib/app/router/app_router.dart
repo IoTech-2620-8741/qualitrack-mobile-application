@@ -51,6 +51,7 @@ import '../../tracking/presentation/bloc/telemetry_history_bloc.dart';
 import '../../tracking/presentation/screens/telemetry_dashboard_screen.dart';
 import '../../tracking/presentation/screens/telemetry_history_screen.dart';
 import '../dependency_injection/injection.dart';
+import '../home_layout_preference.dart';
 import 'app_routes.dart';
 import 'main_shell.dart';
 import 'more_screen.dart';
@@ -137,6 +138,7 @@ GoRouter createRouter(
                     create: (_) => sl<CommandCenterBloc>()..add(const CommandCenterRequested()),
                     child: CommandCenterScreen(
                       session: current,
+                      layout: sl<HomeLayoutPreference>(),
                       views: commandCenterViews(
                         session: current,
                         currentProfile: currentProfile,

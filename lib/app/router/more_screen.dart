@@ -128,6 +128,7 @@ class _ProfileCard extends StatelessWidget {
     final role = session.primaryRole?.label(i18n);
     return Material(
       color: AppColors.surface,
+      elevation: 1,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.xlAll),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
