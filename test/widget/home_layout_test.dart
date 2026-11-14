@@ -302,6 +302,17 @@ void main() {
     expect(total.style?.fontSize, 14);
   });
 
+  testWidgets('TalkBack reads the devices online as "6 of 9", in words', (tester) async {
+    for (final (locale, label) in const [
+      (Locale('en'), '6 of 9, Devices online'),
+      (Locale('es'), '6 de 9, Dispositivos en línea'),
+    ]) {
+      await pumpHome(tester, const Size(360, 800), locale: locale);
+
+      expect(find.bySemanticsLabel(RegExp('^$label, ')), findsOneWidget, reason: '$locale');
+    }
+  });
+
   testWidgets('the critical banner opens the most urgent unattended critical alert', (tester) async {
     final now = DateTime.now();
     await pumpHomeWithRouter(

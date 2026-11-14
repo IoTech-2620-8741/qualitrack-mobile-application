@@ -370,7 +370,7 @@ class _AttentionRow extends StatelessWidget {
 
   /// What the figure counts out of ("/3"), smaller after it, so it does not
   /// outweigh the other figures nor crowd its label.
-  final String? total;
+  final int? total;
   final String label;
   final String? detail;
   final Widget? badge;
@@ -391,7 +391,8 @@ class _AttentionRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: [
-        total == null ? figure : '$figure/$total',
+        // "6 of 9" in words: a screen reader may read "6/9" as a date or a fraction.
+        total == null ? figure : '$figure ${context.i18n.ofTotal(total!)}',
         label,
         if (detail != null && detail!.isNotEmpty) detail,
       ].join(', '),
@@ -537,7 +538,7 @@ class _TelemetryRow extends StatelessWidget {
       icon: toReview > 0 ? Icons.signal_wifi_off : Icons.monitor_heart_outlined,
       tone: none || toReview > 0 ? BadgeTone.neutral : BadgeTone.success,
       figure: none ? '—' : '${eq.connected}',
-      total: none ? null : '${eq.devices}',
+      total: none ? null : eq.devices,
       label: eq == null ? _error(context, part.failure) : (none ? i18n.noIotDevices : i18n.iotDevicesOnline),
       detail: none ? null : (toReview > 0 ? i18n.homeDevicesToReview(toReview) : i18n.homeNothingPending),
       compact: compact,
