@@ -623,8 +623,6 @@ class AppLocalizations {
       .replaceAll('{acknowledged}', '$acknowledged');
   String homeDevicesToReview(int count) => _t('homeDevicesToReview')
       .replaceAll('{count}', '$count');
-  String homeDevicesNoData(int count) => _t('homeDevicesNoData')
-      .replaceAll('{count}', '$count');
   String homeBatchesDetail(int pending, int inProgress) => _t('homeBatchesDetail')
       .replaceAll('{pending}', '$pending')
       .replaceAll('{inProgress}', '$inProgress');
@@ -1148,7 +1146,6 @@ const Map<String, String> _en = {
   'homeStatusAllClear': 'All in order',
   'homeAlertsDetail': '{unresolved} unresolved · {acknowledged} acknowledged',
   'homeDevicesToReview': '{count} to review',
-  'homeDevicesNoData': '{count} without data',
   'homeBatchesDetail': '{pending} pending · {inProgress} in progress',
   'homeMaterialsTotal': 'of {count} materials',
   'homeNothingPending': 'Nothing pending',
@@ -1669,7 +1666,6 @@ const Map<String, String> _es = {
   'homeStatusAllClear': 'Todo en orden',
   'homeAlertsDetail': '{unresolved} sin resolver · {acknowledged} reconocidas',
   'homeDevicesToReview': '{count} por revisar',
-  'homeDevicesNoData': '{count} sin datos',
   'homeBatchesDetail': '{pending} pendientes · {inProgress} en progreso',
   'homeMaterialsTotal': 'de {count} materiales',
   'homeNothingPending': 'Sin pendientes',

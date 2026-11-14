@@ -286,8 +286,7 @@ class _AttentionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final highlighted = tone != BadgeTone.neutral && tone != BadgeTone.brand;
-    final color = highlighted ? tone.foreground : AppColors.primaryDark;
+    final color = tone == BadgeTone.brand ? AppColors.primaryDark : tone.foreground;
     final showDetail = !compact && detail != null && detail!.isNotEmpty;
     return Semantics(
       button: true,
@@ -304,10 +303,7 @@ class _AttentionRow extends StatelessWidget {
                 Container(
                   width: 36,
                   height: 36,
-                  decoration: BoxDecoration(
-                    color: highlighted ? tone.background : AppColors.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: BoxDecoration(color: tone.background, shape: BoxShape.circle),
                   child: Icon(icon, size: 20, color: color),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -392,8 +388,8 @@ class _AlertsRow extends StatelessWidget {
 // 2 · Telemetry: IoT devices
 // ---------------------------------------------------------------------------
 
-/// IoT devices online out of every device, and the ones to review or without
-/// data.
+/// IoT devices online out of every device. The ones flagged for review and the
+/// ones without data count together as to review, in grey.
 class _TelemetryRow extends StatelessWidget {
   const _TelemetryRow({required this.summary, required this.compact});
 
@@ -406,20 +402,13 @@ class _TelemetryRow extends StatelessWidget {
     final part = summary.equipment;
     final eq = part.value;
     final none = eq == null || eq.devices == 0;
-    final tone = none ? BadgeTone.neutral : (eq.connected < eq.devices ? BadgeTone.warning : BadgeTone.success);
-    final detail =
-        none
-            ? null
-            : [
-              if (eq.requiresReview > 0) i18n.homeDevicesToReview(eq.requiresReview),
-              if (eq.offline > 0) i18n.homeDevicesNoData(eq.offline),
-            ].join(' · ');
+    final toReview = none ? 0 : eq.requiresReview + eq.offline;
     return _AttentionRow(
-      icon: Icons.monitor_heart_outlined,
-      tone: tone,
+      icon: toReview > 0 ? Icons.signal_wifi_off : Icons.monitor_heart_outlined,
+      tone: none || toReview > 0 ? BadgeTone.neutral : BadgeTone.success,
       figure: none ? '—' : '${eq.connected}/${eq.devices}',
       label: eq == null ? _error(context, part.failure) : (none ? i18n.noIotDevices : i18n.iotDevicesOnline),
-      detail: detail == null || detail.isEmpty ? (none ? null : i18n.homeNothingPending) : detail,
+      detail: none ? null : (toReview > 0 ? i18n.homeDevicesToReview(toReview) : i18n.homeNothingPending),
       compact: compact,
       onTap: () => context.go('/telemetry'),
     );

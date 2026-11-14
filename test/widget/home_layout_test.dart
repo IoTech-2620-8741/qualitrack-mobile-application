@@ -9,6 +9,7 @@ import 'package:qualitrack_mobile/command_center/presentation/bloc/command_cente
 import 'package:qualitrack_mobile/command_center/presentation/command_center_views.dart';
 import 'package:qualitrack_mobile/command_center/presentation/screens/command_center_screen.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/laboratory/api/index.dart';
 import 'package:qualitrack_mobile/tracking/api/index.dart';
 
@@ -202,6 +203,13 @@ void main() {
     expect(find.text('No open alerts'), findsOneWidget);
     expect(find.text('Most urgent'), findsNothing);
     expect(find.text('View all'), findsNothing);
+  });
+
+  testWidgets('devices without data show as to review, in grey', (tester) async {
+    await pumpHome(tester, const Size(360, 800));
+
+    expect(find.text('3 to review'), findsOneWidget);
+    expect(tester.widget<Icon>(find.byIcon(Icons.signal_wifi_off)).color, BadgeTone.neutral.foreground);
   });
 
   testWidgets('a short screen shows fewer latest alerts, never half a card', (tester) async {
