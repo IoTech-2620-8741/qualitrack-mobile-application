@@ -179,6 +179,14 @@ void main() {
     return paragraph.getBoxesForSelection(whole).map((box) => box.top).toSet().length;
   }
 
+  /// Whether [part] of [text] starts a line under its first one.
+  bool startsLaterLine(WidgetTester tester, Finder text, String part) {
+    final paragraph = tester.renderObject<RenderParagraph>(find.descendant(of: text, matching: find.byType(RichText)));
+    final offset = paragraph.text.toPlainText().indexOf(part);
+    final start = paragraph.getOffsetForCaret(TextPosition(offset: offset), Rect.zero);
+    return start.dx < 1 && start.dy > 0;
+  }
+
   double scrollExtent(WidgetTester tester) =>
       tester
           .state<ScrollableState>(
@@ -203,7 +211,7 @@ void main() {
       expect(find.text('QualiLab Lima'), findsOneWidget);
       expect(find.text('QA Manager'), findsOneWidget);
       expect(find.text('Updated 5 min ago'), findsOneWidget);
-      expect(find.text('Needs attention: 2 critical alerts'), findsOneWidget);
+      expect(readsAs('Needs attention: 2 critical alerts'), findsOneWidget);
       final alerts = tester.getTopLeft(find.text('Open alerts'));
       final telemetry = tester.getTopLeft(find.text('Devices online'));
       final batches = tester.getTopLeft(find.text('Awaiting QA release'));
@@ -314,17 +322,39 @@ void main() {
     expect(find.text('View detail'), findsNothing);
   });
 
-  testWidgets('the critical banner keeps its message on one line, with View detail under it', (tester) async {
-    // Beside the button, the Spanish message was cut into three lines at 360 dp.
-    stubSummary(_summary(open: [alertFixture(id: 1)]));
-    await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
+  // Beside the button the message takes two lines, broken after the colon: the count keeps its noun.
+  for (final (locale, count, message, action) in const [
+    (Locale('es'), 1, 'Requiere atención: 1 alerta crítica', 'Ver detalle'),
+    (Locale('en'), 2, 'Needs attention: 2 critical alerts', 'View detail'),
+  ]) {
+    testWidgets('the critical banner shows View detail beside its message in two lines, in $locale', (tester) async {
+      stubSummary(_summary(open: [for (var id = 1; id <= count; id++) alertFixture(id: id)]));
+      await pumpHome(tester, const Size(360, 800), locale: locale);
 
-    final message = find.text('Requiere atención: 1 alerta crítica');
-    final button = find.widgetWithText(OutlinedButton, 'Ver detalle');
-    expect(lineCount(tester, message), 1);
-    expect(tester.getRect(button).top, greaterThanOrEqualTo(tester.getRect(message).bottom));
-    expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
-  });
+      final text = readsAs(message);
+      final button = find.widgetWithText(OutlinedButton, action);
+      expect(lineCount(tester, text), 2);
+      expect(startsLaterLine(tester, text, '$count'), isTrue);
+      expect(tester.getRect(button).left, greaterThanOrEqualTo(tester.getRect(text).right));
+      expect(tester.getCenter(button).dy, moreOrLessEquals(tester.getCenter(text).dy, epsilon: 1));
+      expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+    });
+  }
+
+  // On a narrower phone or with larger text two lines beside the button are not enough: it goes under.
+  for (final (width, scale) in const [(320.0, 1.0), (360.0, 1.3)]) {
+    testWidgets('the critical banner puts View detail under the message at $width dp, text x$scale', (tester) async {
+      stubSummary(_summary(open: [alertFixture(id: 1)]));
+      await pumpHome(tester, Size(width, 800), locale: const Locale('es'), textScale: scale);
+
+      final text = readsAs('Requiere atención: 1 alerta crítica');
+      final button = find.widgetWithText(OutlinedButton, 'Ver detalle');
+      expect(tester.takeException(), isNull);
+      expect(startsLaterLine(tester, text, '1'), isTrue);
+      expect(tester.getRect(button).top, greaterThanOrEqualTo(tester.getRect(text).bottom));
+      expect(tester.getRect(button).right, tester.getRect(text).right);
+    });
+  }
 
   // Whether the rows fit with their detail depends on the width (which Android's
   // display size narrows), the language and the text size: a body as tall as the
@@ -438,14 +468,14 @@ void main() {
     stubSummary(_summary(open: [alertFixture(id: 1)], pending: 1, materials: [materialFixture()]));
     await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
 
-    expect(find.text('Requiere atención: 1 alerta crítica'), findsOneWidget);
+    expect(readsAs('Requiere atención: 1 alerta crítica'), findsOneWidget);
     expect(find.text('1 crítica'), findsOneWidget);
     expect(readsAs('1 pendiente · 3 en proceso'), findsOneWidget);
     expect(find.text('de 1 material'), findsOneWidget);
 
     await pumpHome(tester, const Size(360, 800));
 
-    expect(find.text('Needs attention: 1 critical alert'), findsOneWidget);
+    expect(readsAs('Needs attention: 1 critical alert'), findsOneWidget);
     expect(find.text('of 1 material'), findsOneWidget);
   });
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -294,13 +295,16 @@ class _StatusStrip extends StatelessWidget {
             ? (BadgeTone.warning, i18n.homeStatusPending)
             : (BadgeTone.success, i18n.homeStatusAllClear);
     final urgent = critical > 0 ? summary.alerts.value?.byPriority.firstOrNull : null;
+    // The count keeps its noun ("1 critical alert"): a message in two lines breaks after its colon.
+    final parts = message.split(': ');
+    final shownMessage = [parts.first, ...parts.skip(1).map((part) => part.replaceAll(' ', ' '))].join(': ');
     final status = Row(
       children: [
         Icon(tone.icon, size: 20, color: tone.foreground),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: Text(
-            message,
+            shownMessage,
             style: text.bodyMedium?.copyWith(color: tone.foreground, fontWeight: FontWeight.w600),
           ),
         ),
@@ -320,24 +324,20 @@ class _StatusStrip extends StatelessWidget {
                   ? Border(left: _bannerEdge.copyWith(width: 4), top: _bannerEdge, right: _bannerEdge, bottom: _bannerEdge)
                   : null,
         ),
-        // "View detail" goes under the message, which keeps the whole width on a narrow phone.
         child:
             urgent == null
                 ? status
-                : Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    status,
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: tone.foreground,
-                        side: BorderSide(color: tone.foreground),
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                      ),
-                      onPressed: () => context.push('/alerts/${urgent.id}'),
-                      child: Text(i18n.viewDetail, textAlign: TextAlign.center),
+                : _BannerLayout(
+                  message: status,
+                  action: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: tone.foreground,
+                      side: BorderSide(color: tone.foreground),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     ),
-                  ],
+                    onPressed: () => context.push('/alerts/${urgent.id}'),
+                    child: Text(i18n.viewDetail, textAlign: TextAlign.center),
+                  ),
                 ),
       ),
     );
@@ -889,4 +889,59 @@ class _RenderFitColumn extends RenderBox
       child = data.nextSibling;
     }
   }
+}
+
+/// The critical banner: its message with the action beside it while the
+/// message takes two lines at most there, or under it, at its end, on a
+/// narrower phone or with a larger text.
+class _BannerLayout extends MultiChildRenderObjectWidget {
+  _BannerLayout({required Widget message, required Widget action}) : super(children: [message, action]);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderBannerLayout();
+}
+
+class _BannerParentData extends ContainerBoxParentData<RenderBox> {}
+
+// shortcut: the action goes on the right only, as the app has no right-to-left language; mirror it to add one.
+class _RenderBannerLayout extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _BannerParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _BannerParentData> {
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _BannerParentData) child.parentData = _BannerParentData();
+  }
+
+  @override
+  void performLayout() {
+    final message = firstChild!;
+    final action = lastChild!;
+    final messageData = message.parentData! as _BannerParentData;
+    final actionData = action.parentData! as _BannerParentData;
+    final width = constraints.maxWidth;
+    action.layout(constraints.loosen(), parentUsesSize: true);
+    final oneLine = message.getMinIntrinsicHeight(double.infinity);
+    final besideWidth = math.max(0.0, width - action.size.width - AppSpacing.sm);
+    message.layout(BoxConstraints.tightFor(width: besideWidth), parentUsesSize: true);
+    // Two lines at most beside the action, with half a line of slack for rounding.
+    if (message.size.height < 2.5 * oneLine) {
+      final height = math.max(message.size.height, action.size.height);
+      messageData.offset = Offset(0, (height - message.size.height) / 2);
+      actionData.offset = Offset(width - action.size.width, (height - action.size.height) / 2);
+      size = constraints.constrain(Size(width, height));
+    } else {
+      message.layout(BoxConstraints.tightFor(width: width), parentUsesSize: true);
+      messageData.offset = Offset.zero;
+      actionData.offset = Offset(width - action.size.width, message.size.height);
+      size = constraints.constrain(Size(width, message.size.height + action.size.height));
+    }
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) => defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
