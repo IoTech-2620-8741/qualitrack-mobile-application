@@ -206,7 +206,7 @@ batchesSubtitle	Traceability and quality control of production cycles	Trazabilid
 batchesEmpty	No production batches have been registered in QualiTrack Web yet.	Aún no se han registrado lotes de producción en QualiTrack Web.
 searchBatches	Search by batch number or product	Buscar por número de lote o producto
 batchPending	Pending	Pendiente
-batchInProgress	In progress	En progreso
+batchInProgress	In progress	En proceso
 batchReleased	Released	Liberado
 batchRejected	Rejected	Rechazado
 product	Product	Producto
@@ -510,7 +510,7 @@ homeStatusPending	There are items to review	Hay pendientes por revisar
 homeStatusAllClear	All in order	Todo en orden
 homeAlertsDetail	{unresolved} unresolved · {acknowledged} acknowledged	{unresolved} sin resolver · {acknowledged} reconocidas	unresolved:int,acknowledged:int
 homeDevicesToReview	{count} to review	{count} por revisar	count:int
-homeBatchesDetail	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en progreso	pending:int,inProgress:int
+homeBatchesDetail	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en proceso	pending:int,inProgress:int
 homeBatchesInProgress	Batches in progress	Lotes en proceso
 homeMaterialsTotal	of {count} materials	de {count} materiales	count:int
 homeNothingPending	Nothing pending	Sin pendientes

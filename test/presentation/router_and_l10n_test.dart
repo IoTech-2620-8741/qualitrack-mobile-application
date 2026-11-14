@@ -65,5 +65,12 @@ void main() {
         'Billy released batch LOT-1.',
       );
     });
+
+    test('batches in progress read "En proceso", as the style guide and Web say', () {
+      final es = AppLocalizations(const Locale('es'));
+      expect(es.batchInProgress, 'En proceso');
+      expect(es.homeBatchesInProgress, 'Lotes en proceso');
+      expect(es.homeBatchesDetail(2, 3), '2 pendientes · 3 en proceso');
+    });
   });
 }
