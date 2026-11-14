@@ -292,11 +292,11 @@ void main() {
     expect(tester.widget<Icon>(find.byIcon(Icons.signal_wifi_off)).color, BadgeTone.neutral.foreground);
   });
 
-  testWidgets('the row figures take the H2 size of the style guide, 18 sp', (tester) async {
+  testWidgets('the row figures take 22 sp, the top of the style guide scale, to compare at a glance', (tester) async {
     await pumpHome(tester, const Size(360, 800));
 
     for (final figure in ['4', '6/9', '5', '1']) {
-      expect(tester.widget<Text>(find.text(figure)).style?.fontSize, 18, reason: figure);
+      expect(tester.widget<Text>(find.text(figure)).style?.fontSize, 22, reason: figure);
     }
   });
 
@@ -305,7 +305,7 @@ void main() {
 
     final figure = tester.widget<Text>(find.text('6/9'));
     final total = (figure.textSpan! as TextSpan).children!.single as TextSpan;
-    expect(figure.style?.fontSize, 18);
+    expect(figure.style?.fontSize, 22);
     expect(total.text, '/9');
     expect(total.style?.fontSize, 14);
   });

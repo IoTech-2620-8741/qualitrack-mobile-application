@@ -392,7 +392,7 @@ class _AttentionRow extends StatelessWidget {
     final parts = detail?.split(' · ') ?? const <String>[];
     final shownDetail =
         parts.length < 2 ? detail : parts.map((part) => part.replaceAll(' ', '\u00a0')).join('\u00a0· ');
-    final figureStyle = AppTypography.metric.copyWith(fontSize: 18, color: color);
+    final figureStyle = AppTypography.metric.copyWith(fontSize: 22, color: color);
     return Semantics(
       button: true,
       label: [
@@ -422,8 +422,8 @@ class _AttentionRow extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    // The style guide's H2 (18 sp), the size of a value, under the 22 sp screen title;
-                    // the total in its body size (14 sp).
+                    // 22 sp, the top of the style guide's scale, so the figures are read and compared
+                    // first; the total in its body size (14 sp).
                     child: Text.rich(
                       TextSpan(
                         text: figure,
