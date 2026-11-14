@@ -625,6 +625,8 @@ class AppLocalizations {
   String homeAlertsDetail(int unresolved, int acknowledged) => _t('homeAlertsDetail')
       .replaceAll('{unresolved}', '$unresolved')
       .replaceAll('{acknowledged}', '$acknowledged');
+  String homeAlertsDetailOneAcknowledged(int unresolved) => _t('homeAlertsDetailOneAcknowledged')
+      .replaceAll('{unresolved}', '$unresolved');
   String homeDevicesToReview(int count) => _t('homeDevicesToReview')
       .replaceAll('{count}', '$count');
   String homeBatchesDetail(int pending, int inProgress) => _t('homeBatchesDetail')
@@ -1153,6 +1155,7 @@ const Map<String, String> _en = {
   'homeStatusPending': 'There are items to review',
   'homeStatusAllClear': 'All in order',
   'homeAlertsDetail': '{unresolved} unresolved · {acknowledged} acknowledged',
+  'homeAlertsDetailOneAcknowledged': '{unresolved} unresolved · 1 acknowledged',
   'homeDevicesToReview': '{count} to review',
   'homeBatchesDetail': '{pending} pending · {inProgress} in progress',
   'homeBatchesInProgress': 'Batches in progress',
@@ -1677,6 +1680,7 @@ const Map<String, String> _es = {
   'homeStatusPending': 'Hay pendientes por revisar',
   'homeStatusAllClear': 'Todo en orden',
   'homeAlertsDetail': '{unresolved} sin resolver · {acknowledged} reconocidas',
+  'homeAlertsDetailOneAcknowledged': '{unresolved} sin resolver · 1 reconocida',
   'homeDevicesToReview': '{count} por revisar',
   'homeBatchesDetail': '{pending} pendientes · {inProgress} en proceso',
   'homeBatchesInProgress': 'Lotes en proceso',

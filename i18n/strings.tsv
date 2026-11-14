@@ -509,6 +509,7 @@ homeStatusCritical	Needs attention: {count} critical alerts	Requiere atención: 
 homeStatusPending	There are items to review	Hay pendientes por revisar
 homeStatusAllClear	All in order	Todo en orden
 homeAlertsDetail	{unresolved} unresolved · {acknowledged} acknowledged	{unresolved} sin resolver · {acknowledged} reconocidas	unresolved:int,acknowledged:int
+homeAlertsDetailOneAcknowledged	{unresolved} unresolved · 1 acknowledged	{unresolved} sin resolver · 1 reconocida	unresolved:int
 homeDevicesToReview	{count} to review	{count} por revisar	count:int
 homeBatchesDetail	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en proceso	pending:int,inProgress:int
 homeBatchesInProgress	Batches in progress	Lotes en proceso

@@ -1,5 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -92,6 +94,13 @@ void main() {
     initialState: const RemoteState<CommandCenterSummary>().success(summary),
   );
 
+  // Whether the Home fits depends on real text widths: lay it out with the app's
+  // font, Rubik, not with the test font, whose glyphs are much wider.
+  setUpAll(() async {
+    final rubik = FontLoader('Rubik')..addFont(rootBundle.load('assets/fonts/rubik/Rubik-VariableFont_wght.ttf'));
+    await rubik.load();
+  });
+
   setUp(() {
     bloc = _MockHomeBloc();
     stubSummary(_summary());
@@ -113,10 +122,17 @@ void main() {
 
   /// The Home as the app shows it: under the status bar and above the
   /// navigation bar of the shell.
-  Future<void> pumpHome(WidgetTester tester, Size size, {double textScale = 1, UserSession? session}) async {
+  Future<void> pumpHome(
+    WidgetTester tester,
+    Size size, {
+    double textScale = 1,
+    UserSession? session,
+    Locale locale = const Locale('en'),
+  }) async {
     await tester.pumpLocalized(
       MediaQuery.withClampedTextScaling(minScaleFactor: textScale, maxScaleFactor: textScale, child: home(session: session)),
       size: size,
+      locale: locale,
     );
     tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
     await tester.pump();
@@ -138,6 +154,10 @@ void main() {
     await tester.pumpLocalizedRouter(router, size: const Size(360, 800));
     return router;
   }
+
+  /// A text as the user reads it: a non-breaking space looks like a space.
+  Finder readsAs(String text) =>
+      find.byWidgetPredicate((widget) => widget is Text && widget.data?.replaceAll(' ', ' ') == text);
 
   double scrollExtent(WidgetTester tester) =>
       tester
@@ -176,8 +196,8 @@ void main() {
       expect(find.text('2 critical'), findsOneWidget);
       // Severity (the badge) and status (the detail) are told apart; the
       // rows are short enough to keep their detail even on a small phone.
-      expect(find.text('3 unresolved · 1 acknowledged'), findsOneWidget);
-      expect(find.text('2 pending · 3 in progress'), findsOneWidget);
+      expect(readsAs('3 unresolved · 1 acknowledged'), findsOneWidget);
+      expect(readsAs('2 pending · 3 in progress'), findsOneWidget);
       expect(find.text('of 2 materials'), findsOneWidget);
       // No breakdown of released or rejected batches on Home.
       expect(find.textContaining('Released'), findsNothing);
@@ -286,12 +306,12 @@ void main() {
 
   testWidgets('Home keeps the text size the user chose', (tester) async {
     await pumpHome(tester, const Size(360, 800));
-    final normal = tester.getRect(find.text('3 unresolved · 1 acknowledged')).height;
+    final normal = tester.getRect(readsAs('3 unresolved · 1 acknowledged')).height;
 
     await pumpHome(tester, const Size(360, 800), textScale: 1.3);
 
     expect(tester.takeException(), isNull);
-    expect(tester.getRect(find.text('3 unresolved · 1 acknowledged')).height / normal, closeTo(1.3, 0.05));
+    expect(tester.getRect(readsAs('3 unresolved · 1 acknowledged')).height / normal, closeTo(1.3, 0.05));
     // The rows fit 130% text (the Report supports up to sp × 1.3).
     expect(scrollExtent(tester), 0);
   });
@@ -315,6 +335,28 @@ void main() {
       expect(updated.top, greaterThanOrEqualTo(role.bottom));
       expect(updated.bottom, lessThanOrEqualTo(bar.bottom));
     }
+  });
+
+  testWidgets('a long detail wraps between its parts, never inside one', (tester) async {
+    await pumpHome(tester, const Size(360, 800));
+
+    final paragraph = tester.renderObject<RenderParagraph>(
+      find.descendant(of: readsAs('3 unresolved · 1 acknowledged'), matching: find.byType(RichText)),
+    );
+    expect(paragraph.didExceedMaxLines, isFalse);
+    // "1 acknowledged" starts the second line: the break falls after the separator.
+    final acknowledged = paragraph.getOffsetForCaret(
+      TextPosition(offset: paragraph.text.toPlainText().indexOf('1')),
+      Rect.zero,
+    );
+    expect(acknowledged.dx, lessThan(1));
+    expect(acknowledged.dy, greaterThan(0));
+  });
+
+  testWidgets('one acknowledged alert reads in the singular', (tester) async {
+    await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
+
+    expect(readsAs('3 sin resolver · 1 reconocida'), findsOneWidget);
   });
 
   // Each role sees its own Home (style guide §7).

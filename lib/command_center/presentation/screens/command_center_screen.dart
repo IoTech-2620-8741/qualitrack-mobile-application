@@ -303,7 +303,8 @@ class _StatusStrip extends StatelessWidget {
 }
 
 /// One row of the panel: the section icon, its figure, what it counts, a
-/// short detail (left out on a short screen) and a chevron to open it.
+/// short detail (two lines at most, broken only between its parts; left out on
+/// a short screen) and a chevron to open it.
 ///
 /// The color of the tone goes only to the icon and the figure; a row with
 /// nothing to review shows the success icon and "Nothing pending".
@@ -333,6 +334,10 @@ class _AttentionRow extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final color = tone == BadgeTone.brand ? AppColors.primaryDark : tone.foreground;
     final showDetail = !compact && detail != null && detail!.isNotEmpty;
+    // A detail of several parts ("3 unresolved · 1 acknowledged") wraps only
+    // between them: non-breaking spaces keep each part, and its separator, whole.
+    final parts = detail?.split(' · ') ?? const <String>[];
+    final shownDetail = parts.length < 2 ? detail : parts.map((part) => part.replaceAll(' ', ' ')).join(' · ');
     return Semantics(
       button: true,
       label: [figure, label, if (detail != null && detail!.isNotEmpty) detail].join(', '),
@@ -374,8 +379,8 @@ class _AttentionRow extends StatelessWidget {
                       ),
                       if (showDetail)
                         Text(
-                          detail!,
-                          maxLines: 1,
+                          shownDetail!,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: text.bodySmall?.copyWith(color: AppColors.textMuted),
                         ),
@@ -421,7 +426,12 @@ class _AlertsRow extends StatelessWidget {
       tone: tone,
       figure: open == null ? '—' : '$open',
       label: s == null ? _error(context, part.failure) : (open == 0 ? i18n.noOpenAlertsShort : i18n.openAlerts),
-      detail: s == null || open == 0 ? null : i18n.homeAlertsDetail(s.unresolved, s.acknowledged),
+      detail:
+          s == null || open == 0
+              ? null
+              : s.acknowledged == 1
+              ? i18n.homeAlertsDetailOneAcknowledged(s.unresolved)
+              : i18n.homeAlertsDetail(s.unresolved, s.acknowledged),
       badge: critical > 0 ? StatusBadge(label: i18n.criticalCount(critical), tone: BadgeTone.critical) : null,
       compact: compact,
       onTap: () => context.go('/alerts'),
