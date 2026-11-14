@@ -254,6 +254,18 @@ class _StatusStrip extends StatelessWidget {
             ? (BadgeTone.warning, i18n.homeStatusPending)
             : (BadgeTone.success, i18n.homeStatusAllClear);
     final urgent = critical > 0 ? summary.alerts.value?.byPriority.firstOrNull : null;
+    final status = Row(
+      children: [
+        Icon(tone.icon, size: 20, color: tone.foreground),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Text(
+            message,
+            style: text.bodyMedium?.copyWith(color: tone.foreground, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
     return Semantics(
       container: true,
       child: Container(
@@ -268,33 +280,25 @@ class _StatusStrip extends StatelessWidget {
                   ? Border(left: _bannerEdge.copyWith(width: 4), top: _bannerEdge, right: _bannerEdge, bottom: _bannerEdge)
                   : null,
         ),
-        child: Row(
-          children: [
-            Icon(tone.icon, size: 20, color: tone.foreground),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                message,
-                style: text.bodyMedium?.copyWith(color: tone.foreground, fontWeight: FontWeight.w600),
-              ),
-            ),
-            if (urgent != null) ...[
-              const SizedBox(width: AppSpacing.sm),
-              // Flexible: with large text the label wraps instead of pushing the strip off the screen.
-              Flexible(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: tone.foreground,
-                    side: BorderSide(color: tone.foreground),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  ),
-                  onPressed: () => context.push('/alerts/${urgent.id}'),
-                  child: Text(i18n.viewDetail, textAlign: TextAlign.center),
+        // "View detail" goes under the message, which keeps the whole width on a narrow phone.
+        child:
+            urgent == null
+                ? status
+                : Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    status,
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: tone.foreground,
+                        side: BorderSide(color: tone.foreground),
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      ),
+                      onPressed: () => context.push('/alerts/${urgent.id}'),
+                      child: Text(i18n.viewDetail, textAlign: TextAlign.center),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }

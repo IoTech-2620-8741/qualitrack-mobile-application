@@ -172,6 +172,13 @@ void main() {
   Finder readsAs(String text) =>
       find.byWidgetPredicate((widget) => widget is Text && widget.data?.replaceAll(' ', ' ') == text);
 
+  /// The lines [text] takes on screen.
+  int lineCount(WidgetTester tester, Finder text) {
+    final paragraph = tester.renderObject<RenderParagraph>(find.descendant(of: text, matching: find.byType(RichText)));
+    final whole = TextSelection(baseOffset: 0, extentOffset: paragraph.text.toPlainText().length);
+    return paragraph.getBoxesForSelection(whole).map((box) => box.top).toSet().length;
+  }
+
   double scrollExtent(WidgetTester tester) =>
       tester
           .state<ScrollableState>(
@@ -295,6 +302,31 @@ void main() {
     await pumpHomeWithRouter(tester, _summary(openAlerts: false));
 
     expect(find.text('View detail'), findsNothing);
+  });
+
+  testWidgets('the critical banner keeps its message on one line, with View detail under it', (tester) async {
+    // Beside the button, the Spanish message was cut into three lines at 360 dp.
+    stubSummary(_summary(open: [alertFixture(id: 1)]));
+    await pumpHome(tester, const Size(360, 800), locale: const Locale('es'));
+
+    final message = find.text('Requiere atención: 1 alerta crítica');
+    final button = find.widgetWithText(OutlinedButton, 'Ver detalle');
+    expect(lineCount(tester, message), 1);
+    expect(tester.getRect(button).top, greaterThanOrEqualTo(tester.getRect(message).bottom));
+    expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+  });
+
+  testWidgets('a body as tall as fullHeight fits the full panel without scrolling', (tester) async {
+    for (final (locale, detail) in const [(Locale('en'), 'of 2 materials'), (Locale('es'), 'de 2 materiales')]) {
+      await pumpHome(tester, const Size(360, 800), locale: locale);
+      final chrome = 800 - tester.getSize(find.byType(CustomScrollView)).height;
+
+      await pumpHome(tester, Size(360, CommandCenterScreen.fullHeight + chrome), locale: locale);
+
+      expect(tester.takeException(), isNull);
+      expect(find.text(detail), findsOneWidget, reason: 'full rows in $locale');
+      expect(scrollExtent(tester), 0, reason: '$locale');
+    }
   });
 
   testWidgets('a short screen shows fewer latest alerts, never half a card', (tester) async {
