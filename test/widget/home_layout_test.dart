@@ -280,6 +280,16 @@ void main() {
     }
   });
 
+  testWidgets('the devices online keep the figure size and their total goes smaller, in the body size', (tester) async {
+    await pumpHome(tester, const Size(360, 800));
+
+    final figure = tester.widget<Text>(find.text('6/9'));
+    final total = (figure.textSpan! as TextSpan).children!.single as TextSpan;
+    expect(figure.style?.fontSize, 18);
+    expect(total.text, '/9');
+    expect(total.style?.fontSize, 14);
+  });
+
   testWidgets('the critical banner opens the most urgent unattended critical alert', (tester) async {
     final now = DateTime.now();
     await pumpHomeWithRouter(

@@ -320,6 +320,7 @@ class _AttentionRow extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.compact,
+    this.total,
     this.detail,
     this.badge,
   });
@@ -327,6 +328,10 @@ class _AttentionRow extends StatelessWidget {
   final IconData icon;
   final BadgeTone tone;
   final String figure;
+
+  /// What the figure counts out of ("/3"), smaller after it, so it does not
+  /// outweigh the other figures nor crowd its label.
+  final String? total;
   final String label;
   final String? detail;
   final Widget? badge;
@@ -342,9 +347,14 @@ class _AttentionRow extends StatelessWidget {
     // between them: non-breaking spaces keep each part, and its separator, whole.
     final parts = detail?.split(' · ') ?? const <String>[];
     final shownDetail = parts.length < 2 ? detail : parts.map((part) => part.replaceAll(' ', ' ')).join(' · ');
+    final figureStyle = AppTypography.metric.copyWith(fontSize: 18, color: color);
     return Semantics(
       button: true,
-      label: [figure, label, if (detail != null && detail!.isNotEmpty) detail].join(', '),
+      label: [
+        total == null ? figure : '$figure/$total',
+        label,
+        if (detail != null && detail!.isNotEmpty) detail,
+      ].join(', '),
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -366,8 +376,22 @@ class _AttentionRow extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    // The style guide's H2 (18 sp), the size of a value, under the 22 sp screen title.
-                    child: Text(figure, maxLines: 1, style: AppTypography.metric.copyWith(fontSize: 18, color: color)),
+                    // The style guide's H2 (18 sp), the size of a value, under the 22 sp screen title;
+                    // the total in its body size (14 sp).
+                    child: Text.rich(
+                      TextSpan(
+                        text: figure,
+                        children: [
+                          if (total != null)
+                            TextSpan(
+                              text: '/$total',
+                              style: figureStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w500),
+                            ),
+                        ],
+                      ),
+                      maxLines: 1,
+                      style: figureStyle,
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -472,7 +496,8 @@ class _TelemetryRow extends StatelessWidget {
     return _AttentionRow(
       icon: toReview > 0 ? Icons.signal_wifi_off : Icons.monitor_heart_outlined,
       tone: none || toReview > 0 ? BadgeTone.neutral : BadgeTone.success,
-      figure: none ? '—' : '${eq.connected}/${eq.devices}',
+      figure: none ? '—' : '${eq.connected}',
+      total: none ? null : '${eq.devices}',
       label: eq == null ? _error(context, part.failure) : (none ? i18n.noIotDevices : i18n.iotDevicesOnline),
       detail: none ? null : (toReview > 0 ? i18n.homeDevicesToReview(toReview) : i18n.homeNothingPending),
       compact: compact,
