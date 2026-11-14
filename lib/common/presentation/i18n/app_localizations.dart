@@ -174,13 +174,17 @@ class AppLocalizations {
   String get openAlerts => _t('openAlerts');
   String criticalCount(int count) => _t('criticalCount')
       .replaceAll('{count}', '$count');
+  String get criticalCountOne => _t('criticalCountOne');
   String get liveTelemetryHint => _t('liveTelemetryHint');
   String get equipmentTitle => _t('equipmentTitle');
   String get equipmentDetail => _t('equipmentDetail');
   String get equipmentEmpty => _t('equipmentEmpty');
-  String equipmentSummary(int total, int attention) => _t('equipmentSummary')
-      .replaceAll('{total}', '$total')
-      .replaceAll('{attention}', '$attention');
+  String equipmentRegisteredCount(int count) => _t('equipmentRegisteredCount')
+      .replaceAll('{count}', '$count');
+  String get equipmentRegisteredCountOne => _t('equipmentRegisteredCountOne');
+  String equipmentAttentionCount(int count) => _t('equipmentAttentionCount')
+      .replaceAll('{count}', '$count');
+  String get equipmentAttentionCountOne => _t('equipmentAttentionCountOne');
   String get searchEquipment => _t('searchEquipment');
   String get needsAttention => _t('needsAttention');
   String get equipmentOperational => _t('equipmentOperational');
@@ -208,6 +212,7 @@ class AppLocalizations {
   String get connectionStatus => _t('connectionStatus');
   String eventsCount(int count) => _t('eventsCount')
       .replaceAll('{count}', '$count');
+  String get eventsCountOne => _t('eventsCountOne');
   String get liveTelemetryStream => _t('liveTelemetryStream');
   String get window15m => _t('window15m');
   String get window1h => _t('window1h');
@@ -216,6 +221,8 @@ class AppLocalizations {
   String get noHistoryInRange => _t('noHistoryInRange');
   String chartSemantics(int count, String unit) => _t('chartSemantics')
       .replaceAll('{count}', '$count')
+      .replaceAll('{unit}', unit);
+  String chartSemanticsOne(String unit) => _t('chartSemanticsOne')
       .replaceAll('{unit}', unit);
   String get currentReadings => _t('currentReadings');
   String get rawTelemetryLog => _t('rawTelemetryLog');
@@ -300,6 +307,7 @@ class AppLocalizations {
   String get inventoryEmpty => _t('inventoryEmpty');
   String materialsCount(int count) => _t('materialsCount')
       .replaceAll('{count}', '$count');
+  String get materialsCountOne => _t('materialsCountOne');
   String get searchMaterials => _t('searchMaterials');
   String get belowMinimum => _t('belowMinimum');
   String get blockedStock => _t('blockedStock');
@@ -325,6 +333,7 @@ class AppLocalizations {
   String get productsEmpty => _t('productsEmpty');
   String productsCount(int count) => _t('productsCount')
       .replaceAll('{count}', '$count');
+  String get productsCountOne => _t('productsCountOne');
   String get searchProducts => _t('searchProducts');
   String get productDetail => _t('productDetail');
   String get bpmSpecifications => _t('bpmSpecifications');
@@ -385,11 +394,9 @@ class AppLocalizations {
   String get deviations24h => _t('deviations24h');
   String deviationsCount(int count) => _t('deviationsCount')
       .replaceAll('{count}', '$count');
+  String get deviationsCountOne => _t('deviationsCountOne');
   String get deviationsHint => _t('deviationsHint');
   String get deviationsLabel => _t('deviationsLabel');
-  String deviationsSummary(int deviations, int critical) => _t('deviationsSummary')
-      .replaceAll('{deviations}', '$deviations')
-      .replaceAll('{critical}', '$critical');
   String get deviceIdentifier => _t('deviceIdentifier');
   String get digitalSignature => _t('digitalSignature');
   String get dni => _t('dni');
@@ -551,6 +558,7 @@ class AppLocalizations {
   String get seeAll => _t('seeAll');
   String totalReadings(int count) => _t('totalReadings')
       .replaceAll('{count}', '$count');
+  String get totalReadingsOne => _t('totalReadingsOne');
   String eventCount(int count) => _t('eventCount')
       .replaceAll('{count}', '$count');
   String eventCountPlural(int count) => _t('eventCountPlural')
@@ -761,11 +769,15 @@ const Map<String, String> _en = {
   'regulations': 'Applicable regulations',
   'openAlerts': 'Open alerts',
   'criticalCount': '{count} critical',
+  'criticalCountOne': '1 critical',
   'liveTelemetryHint': 'Readings of the last 24 hours',
   'equipmentTitle': 'Equipment',
   'equipmentDetail': 'Equipment detail',
   'equipmentEmpty': 'No equipment has been registered in QualiTrack Web yet.',
-  'equipmentSummary': '{total} registered · {attention} need attention',
+  'equipmentRegisteredCount': '{count} registered',
+  'equipmentRegisteredCountOne': '1 registered',
+  'equipmentAttentionCount': '{count} need attention',
+  'equipmentAttentionCountOne': '1 needs attention',
   'searchEquipment': 'Search by name, model or serial',
   'needsAttention': 'Needs attention',
   'equipmentOperational': 'Operational',
@@ -791,6 +803,7 @@ const Map<String, String> _en = {
   'telemetryUnavailable': 'Telemetry unavailable',
   'connectionStatus': 'Connection status',
   'eventsCount': '{count} events',
+  'eventsCountOne': '1 event',
   'liveTelemetryStream': 'Live telemetry stream',
   'window15m': '15 min',
   'window1h': '1 h',
@@ -798,6 +811,7 @@ const Map<String, String> _en = {
   'window24h': '24 h',
   'noHistoryInRange': 'No telemetry history for this range',
   'chartSemantics': 'Telemetry chart with {count} readings {unit}',
+  'chartSemanticsOne': 'Telemetry chart with 1 reading {unit}',
   'currentReadings': 'Current sensor readings',
   'rawTelemetryLog': 'Raw telemetry data log',
   'rawTelemetrySubtitle': 'Sensory logs and BPM deviation records',
@@ -870,6 +884,7 @@ const Map<String, String> _en = {
   'inventoryTitle': 'Raw Materials Inventory',
   'inventoryEmpty': 'No raw materials have been registered in QualiTrack Web yet.',
   'materialsCount': '{count} materials',
+  'materialsCountOne': '1 material',
   'searchMaterials': 'Search by name or code',
   'belowMinimum': 'Below minimum',
   'blockedStock': 'Blocked stock',
@@ -894,6 +909,7 @@ const Map<String, String> _en = {
   'productsTitle': 'Pharmaceutical Product Catalog',
   'productsEmpty': 'No products have been registered in QualiTrack Web yet.',
   'productsCount': '{count} registered products',
+  'productsCountOne': '1 registered product',
   'searchProducts': 'Search by code or name',
   'productDetail': 'Product detail',
   'bpmSpecifications': 'BPM specifications',
@@ -949,9 +965,9 @@ const Map<String, String> _en = {
   'deviationIndicators7d': 'Deviation indicators (7 days)',
   'deviations24h': 'Deviations (24 h)',
   'deviationsCount': '{count} deviations',
+  'deviationsCountOne': '1 deviation',
   'deviationsHint': 'Readings evaluated as warning or critical',
   'deviationsLabel': 'Deviations',
-  'deviationsSummary': '{deviations} deviations · {critical} critical',
   'deviceIdentifier': 'Device identifier',
   'digitalSignature': 'Digital signature',
   'dni': 'DNI',
@@ -1082,6 +1098,7 @@ const Map<String, String> _en = {
   'noData': 'No data',
   'seeAll': 'See all',
   'totalReadings': '{count} readings per variable',
+  'totalReadingsOne': '1 reading per variable',
   'eventCount': '{count} event',
   'eventCountPlural': '{count} events',
   'seeLast31Days': 'See last 31 days',
@@ -1278,11 +1295,15 @@ const Map<String, String> _es = {
   'regulations': 'Normativas aplicables',
   'openAlerts': 'Alertas abiertas',
   'criticalCount': '{count} críticas',
+  'criticalCountOne': '1 crítica',
   'liveTelemetryHint': 'Lecturas de las últimas 24 horas',
   'equipmentTitle': 'Equipos',
   'equipmentDetail': 'Detalle del equipo',
   'equipmentEmpty': 'Aún no se han registrado equipos en QualiTrack Web.',
-  'equipmentSummary': '{total} registrados · {attention} requieren atención',
+  'equipmentRegisteredCount': '{count} registrados',
+  'equipmentRegisteredCountOne': '1 registrado',
+  'equipmentAttentionCount': '{count} requieren atención',
+  'equipmentAttentionCountOne': '1 requiere atención',
   'searchEquipment': 'Buscar por nombre, modelo o serie',
   'needsAttention': 'Requiere atención',
   'equipmentOperational': 'Operativo',
@@ -1308,6 +1329,7 @@ const Map<String, String> _es = {
   'telemetryUnavailable': 'Telemetría no disponible',
   'connectionStatus': 'Estado de conexión',
   'eventsCount': '{count} eventos',
+  'eventsCountOne': '1 evento',
   'liveTelemetryStream': 'Flujo de telemetría en vivo',
   'window15m': '15 min',
   'window1h': '1 h',
@@ -1315,6 +1337,7 @@ const Map<String, String> _es = {
   'window24h': '24 h',
   'noHistoryInRange': 'Sin historial de telemetría para este rango',
   'chartSemantics': 'Gráfico de telemetría con {count} lecturas {unit}',
+  'chartSemanticsOne': 'Gráfico de telemetría con 1 lectura {unit}',
   'currentReadings': 'Lecturas actuales de sensores',
   'rawTelemetryLog': 'Registro de telemetría',
   'rawTelemetrySubtitle': 'Registros sensoriales y desviaciones BPM',
@@ -1387,6 +1410,7 @@ const Map<String, String> _es = {
   'inventoryTitle': 'Inventario de Materias Primas',
   'inventoryEmpty': 'Aún no se han registrado materias primas en QualiTrack Web.',
   'materialsCount': '{count} materiales',
+  'materialsCountOne': '1 material',
   'searchMaterials': 'Buscar por nombre o código',
   'belowMinimum': 'Bajo el mínimo',
   'blockedStock': 'Stock bloqueado',
@@ -1411,6 +1435,7 @@ const Map<String, String> _es = {
   'productsTitle': 'Catálogo de Productos Farmacéuticos',
   'productsEmpty': 'Aún no se han registrado productos en QualiTrack Web.',
   'productsCount': '{count} productos registrados',
+  'productsCountOne': '1 producto registrado',
   'searchProducts': 'Buscar por código o nombre',
   'productDetail': 'Detalle del producto',
   'bpmSpecifications': 'Especificaciones BPM',
@@ -1466,9 +1491,9 @@ const Map<String, String> _es = {
   'deviationIndicators7d': 'Indicadores de desviaciones (7 días)',
   'deviations24h': 'Desviaciones (24 h)',
   'deviationsCount': '{count} desviaciones',
+  'deviationsCountOne': '1 desviación',
   'deviationsHint': 'Lecturas evaluadas como advertencia o críticas',
   'deviationsLabel': 'Desviaciones',
-  'deviationsSummary': '{deviations} desviaciones · {critical} críticas',
   'deviceIdentifier': 'Identificador del dispositivo',
   'digitalSignature': 'Firma digital',
   'dni': 'DNI',
@@ -1599,6 +1624,7 @@ const Map<String, String> _es = {
   'noData': 'Sin datos',
   'seeAll': 'Ver todos',
   'totalReadings': '{count} lecturas por variable',
+  'totalReadingsOne': '1 lectura por variable',
   'eventCount': '{count} evento',
   'eventCountPlural': '{count} eventos',
   'seeLast31Days': 'Ver últimos 31 días',

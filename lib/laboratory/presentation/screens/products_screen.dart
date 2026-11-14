@@ -31,7 +31,12 @@ class ProductsScreen extends StatelessWidget {
             final products = state.remote.data?.products;
             return AppBarTitle(
               title: i18n.productsTitle,
-              subtitle: products == null ? null : i18n.productsCount(products.length),
+              subtitle:
+                  products == null
+                      ? null
+                      : products.length == 1
+                      ? i18n.productsCountOne
+                      : i18n.productsCount(products.length),
             );
           },
         ),

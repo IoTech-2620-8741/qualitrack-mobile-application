@@ -84,7 +84,7 @@ class MeasurementsTab extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                i18n.totalReadings(data.totalReadings),
+                data.totalReadings == 1 ? i18n.totalReadingsOne : i18n.totalReadings(data.totalReadings),
                 style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
               ),
             ),

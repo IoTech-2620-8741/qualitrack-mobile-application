@@ -50,4 +50,17 @@ void main() {
     await tester.pumpAndSettle();
     verify(() => bloc.add(const InventoryFilterChanged(InventoryFilter.belowMinimum))).called(1);
   });
+
+  testWidgets('counts a single material in the singular', (tester) async {
+    when(() => bloc.state).thenReturn(
+      InventoryState(remote: RemoteState(status: ViewStatus.success, data: [materialFixture()])),
+    );
+    final screen = BlocProvider<InventoryBloc>.value(value: bloc, child: const InventoryScreen());
+
+    await tester.pumpLocalized(screen);
+    expect(find.text('1 material'), findsOneWidget);
+
+    await tester.pumpLocalized(screen, locale: const Locale('es'));
+    expect(find.text('1 material'), findsOneWidget);
+  });
 }

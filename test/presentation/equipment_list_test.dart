@@ -7,6 +7,7 @@ import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/equipment/presentation/bloc/equipment_list_bloc.dart';
 import 'package:qualitrack_mobile/equipment/presentation/screens/equipment_list_screen.dart';
+import 'package:qualitrack_mobile/tracking/api/index.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/pump_app.dart';
@@ -65,6 +66,29 @@ void main() {
     expect(find.text('Edge Gateway'), findsOneWidget);
     expect(find.textContaining('EDGE_GATEWAY'), findsNothing);
     expect(find.byIcon(Icons.router_outlined), findsWidgets);
+  });
+
+  testWidgets('counts a single piece of equipment in the singular', (tester) async {
+    when(() => bloc.state).thenReturn(
+      EquipmentListState(
+        remote: RemoteState(
+          status: ViewStatus.success,
+          data: [
+            EquipmentOverview(
+              equipment: equipmentFixture(),
+              connection: const DeviceConnection(deviceId: 10, status: ConnectionStatus.requiresReview),
+            ),
+          ],
+        ),
+      ),
+    );
+    final screen = BlocProvider<EquipmentListBloc>.value(value: bloc, child: const EquipmentListScreen());
+
+    await tester.pumpLocalized(screen);
+    expect(find.text('1 registered · 1 needs attention'), findsOneWidget);
+
+    await tester.pumpLocalized(screen, locale: const Locale('es'));
+    expect(find.text('1 registrado · 1 requiere atención'), findsOneWidget);
   });
 
   test('the Edge Gateways filter keeps only the gateways', () {
