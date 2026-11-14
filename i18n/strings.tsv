@@ -126,11 +126,15 @@ address	Address	Dirección
 regulations	Applicable regulations	Normativas aplicables
 openAlerts	Open alerts	Alertas abiertas
 criticalCount	{count} critical	{count} críticas	count:int
+criticalCountOne	1 critical	1 crítica
 liveTelemetryHint	Readings of the last 24 hours	Lecturas de las últimas 24 horas
 equipmentTitle	Equipment	Equipos
 equipmentDetail	Equipment detail	Detalle del equipo
 equipmentEmpty	No equipment has been registered in QualiTrack Web yet.	Aún no se han registrado equipos en QualiTrack Web.
-equipmentSummary	{total} registered · {attention} need attention	{total} registrados · {attention} requieren atención	total:int,attention:int
+equipmentRegisteredCount	{count} registered	{count} registrados	count:int
+equipmentRegisteredCountOne	1 registered	1 registrado
+equipmentAttentionCount	{count} need attention	{count} requieren atención	count:int
+equipmentAttentionCountOne	1 needs attention	1 requiere atención
 searchEquipment	Search by name, model or serial	Buscar por nombre, modelo o serie
 needsAttention	Needs attention	Requiere atención
 equipmentOperational	Operational	Operativo
@@ -156,6 +160,7 @@ telemetryHelpLog	The raw data log lists every reading, to look up a past period.
 telemetryUnavailable	Telemetry unavailable	Telemetría no disponible
 connectionStatus	Connection status	Estado de conexión
 eventsCount	{count} events	{count} eventos	count:int
+eventsCountOne	1 event	1 evento
 liveTelemetryStream	Live telemetry stream	Flujo de telemetría en vivo
 window15m	15 min	15 min
 window1h	1 h	1 h
@@ -163,6 +168,7 @@ window6h	6 h	6 h
 window24h	24 h	24 h
 noHistoryInRange	No telemetry history for this range	Sin historial de telemetría para este rango
 chartSemantics	Telemetry chart with {count} readings {unit}	Gráfico de telemetría con {count} lecturas {unit}	count:int,unit:String
+chartSemanticsOne	Telemetry chart with 1 reading {unit}	Gráfico de telemetría con 1 lectura {unit}	unit:String
 currentReadings	Current sensor readings	Lecturas actuales de sensores
 rawTelemetryLog	Raw telemetry data log	Registro de telemetría
 rawTelemetrySubtitle	Sensory logs and BPM deviation records	Registros sensoriales y desviaciones BPM
@@ -235,6 +241,7 @@ receiptNumber	Receipt #{id}	Recepción #{id}	id:int
 inventoryTitle	Raw Materials Inventory	Inventario de Materias Primas
 inventoryEmpty	No raw materials have been registered in QualiTrack Web yet.	Aún no se han registrado materias primas en QualiTrack Web.
 materialsCount	{count} materials	{count} materiales	count:int
+materialsCountOne	1 material	1 material
 searchMaterials	Search by name or code	Buscar por nombre o código
 belowMinimum	Below minimum	Bajo el mínimo
 blockedStock	Blocked stock	Stock bloqueado
@@ -259,6 +266,7 @@ movementsEmpty	No movements recorded.	No hay movimientos registrados.
 productsTitle	Pharmaceutical Product Catalog	Catálogo de Productos Farmacéuticos
 productsEmpty	No products have been registered in QualiTrack Web yet.	Aún no se han registrado productos en QualiTrack Web.
 productsCount	{count} registered products	{count} productos registrados	count:int
+productsCountOne	1 registered product	1 producto registrado
 searchProducts	Search by code or name	Buscar por código o nombre
 productDetail	Product detail	Detalle del producto
 bpmSpecifications	BPM specifications	Especificaciones BPM
@@ -314,9 +322,9 @@ currentPassword	Current password	Contraseña actual
 deviationIndicators7d	Deviation indicators (7 days)	Indicadores de desviaciones (7 días)
 deviations24h	Deviations (24 h)	Desviaciones (24 h)
 deviationsCount	{count} deviations	{count} desviaciones	count:int
+deviationsCountOne	1 deviation	1 desviación
 deviationsHint	Readings evaluated as warning or critical	Lecturas evaluadas como advertencia o críticas
 deviationsLabel	Deviations	Desviaciones
-deviationsSummary	{deviations} deviations · {critical} critical	{deviations} desviaciones · {critical} críticas	deviations:int,critical:int
 deviceIdentifier	Device identifier	Identificador del dispositivo
 digitalSignature	Digital signature	Firma digital
 dni	DNI	DNI
@@ -447,6 +455,7 @@ tabHistory	History	Historial
 noData	No data	Sin datos
 seeAll	See all	Ver todos
 totalReadings	{count} readings per variable	{count} lecturas por variable	count:int
+totalReadingsOne	1 reading per variable	1 lectura por variable
 eventCount	{count} event	{count} evento	count:int
 eventCountPlural	{count} events	{count} eventos	count:int
 seeLast31Days	See last 31 days	Ver últimos 31 días

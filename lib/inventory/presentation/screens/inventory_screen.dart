@@ -34,7 +34,7 @@ class InventoryScreen extends StatelessWidget {
             final all = state.remote.data;
             return AppBarTitle(
               title: i18n.inventoryTitle,
-              subtitle: all == null ? null : i18n.materialsCount(all.length),
+              subtitle: all == null ? null : (all.length == 1 ? i18n.materialsCountOne : i18n.materialsCount(all.length)),
             );
           },
         ),
