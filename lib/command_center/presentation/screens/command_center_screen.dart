@@ -929,7 +929,8 @@ class _RenderBannerLayout extends RenderBox
     final icon = firstChild!;
     final message = childAfter(icon)!;
     final action = lastChild!;
-    final width = constraints.maxWidth;
+    // Unbounded, the banner is as wide as everything on one line.
+    final width = constraints.hasBoundedWidth ? constraints.maxWidth : getMaxIntrinsicWidth(double.infinity);
     final iconSize = layoutChild(icon, constraints.loosen());
     final actionSize = layoutChild(action, constraints.loosen());
     final indent = iconSize.width + AppSpacing.sm;
@@ -956,6 +957,47 @@ class _RenderBannerLayout extends RenderBox
       messageConstraints: messageConstraints,
     );
   }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => _arrange(constraints, ChildLayoutHelper.dryLayoutChild).size;
+
+  @override
+  double? computeDryBaseline(BoxConstraints constraints, TextBaseline baseline) {
+    final layout = _arrange(constraints, ChildLayoutHelper.dryLayoutChild);
+    final distance = childAfter(firstChild!)!.getDryBaseline(layout.messageConstraints, baseline);
+    return distance == null ? null : distance + layout.message.dy;
+  }
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) {
+    final message = childAfter(firstChild!)!;
+    final distance = message.getDistanceToActualBaseline(baseline);
+    return distance == null ? null : distance + (message.parentData! as _BannerParentData).offset.dy;
+  }
+
+  // Narrowest: the action under the message. Widest: everything on one line.
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    final icon = firstChild!;
+    final message = childAfter(icon)!;
+    final text = icon.getMinIntrinsicWidth(height) + AppSpacing.sm + message.getMinIntrinsicWidth(height);
+    return math.max(text, lastChild!.getMinIntrinsicWidth(height));
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    final icon = firstChild!;
+    final message = childAfter(icon)!;
+    final text = icon.getMaxIntrinsicWidth(height) + AppSpacing.sm + message.getMaxIntrinsicWidth(height);
+    return text + AppSpacing.sm + lastChild!.getMaxIntrinsicWidth(height);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _arrange(BoxConstraints(maxWidth: width), ChildLayoutHelper.dryLayoutChild).size.height;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) => computeMinIntrinsicHeight(width);
 
   @override
   void paint(PaintingContext context, Offset offset) => defaultPaint(context, offset);

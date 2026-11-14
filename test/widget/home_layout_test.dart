@@ -360,6 +360,34 @@ void main() {
     });
   }
 
+  // An IntrinsicHeight, a baseline-aligned row or a dry layout around it get the size it really takes.
+  testWidgets('the critical banner answers the sizes and baseline other layouts ask for', (tester) async {
+    // Flutter then checks each box's intrinsic sizes and dry baseline against its real layout.
+    debugCheckIntrinsicSizes = true;
+    try {
+      stubSummary(_summary(open: [alertFixture(id: 1)]));
+      for (final width in [320.0, 360.0]) {
+        await pumpHome(tester, Size(width, 800), locale: const Locale('es'));
+
+        expect(tester.takeException(), isNull, reason: 'at $width dp');
+        final banner = tester.renderObject<RenderBox>(
+          find.ancestor(
+            of: readsAs('Requiere atención: 1 alerta crítica'),
+            matching: find.byWidgetPredicate((widget) => '${widget.runtimeType}' == '_BannerLayout'),
+          ),
+        );
+        expect(banner.getDryLayout(BoxConstraints(maxWidth: banner.size.width)), banner.size, reason: 'at $width dp');
+        expect(banner.getMinIntrinsicHeight(banner.size.width), banner.size.height);
+        expect(banner.getMaxIntrinsicHeight(banner.size.width), banner.size.height);
+        // At its widest the message takes one line beside the button, as tall as the button.
+        final button = tester.getSize(find.widgetWithText(OutlinedButton, 'Ver detalle'));
+        expect(banner.getMinIntrinsicHeight(banner.getMaxIntrinsicWidth(double.infinity)), button.height);
+      }
+    } finally {
+      debugCheckIntrinsicSizes = false;
+    }
+  });
+
   // On a narrower phone or with larger text two lines beside the button are not enough: it goes under.
   for (final (width, scale) in const [(320.0, 1.0), (360.0, 1.3)]) {
     testWidgets('the critical banner puts View detail under the message at $width dp, text x$scale', (tester) async {
