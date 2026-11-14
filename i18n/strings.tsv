@@ -413,6 +413,7 @@ photoTypeNotAllowed	Choose a JPG, PNG or WebP image.	Elige una imagen JPG, PNG o
 photoUpdated	Your photo was updated.	Se actualizó tu foto.
 preferencesSaved	Preferences saved.	Preferencias guardadas.
 profileSaved	Your data was saved.	Se guardaron tus datos.
+readOnly	Read only	Solo lectura
 removePhoto	Remove photo	Quitar foto
 removePhotoConfirm	Your initials will be shown instead of the photo.	Se mostrarán tus iniciales en lugar de la foto.
 renewalCancelled	Renewal cancelled: access until {date}	Renovación cancelada: acceso hasta el {date}	date:String
@@ -510,6 +511,7 @@ homeStatusAllClear	All in order	Todo en orden
 homeAlertsDetail	{unresolved} unresolved · {acknowledged} acknowledged	{unresolved} sin resolver · {acknowledged} reconocidas	unresolved:int,acknowledged:int
 homeDevicesToReview	{count} to review	{count} por revisar	count:int
 homeBatchesDetail	{pending} pending · {inProgress} in progress	{pending} pendientes · {inProgress} en progreso	pending:int,inProgress:int
+homeBatchesInProgress	Batches in progress	Lotes en proceso
 homeMaterialsTotal	of {count} materials	de {count} materiales	count:int
 homeNothingPending	Nothing pending	Sin pendientes
 homeMostUrgent	Most urgent	Lo más urgente

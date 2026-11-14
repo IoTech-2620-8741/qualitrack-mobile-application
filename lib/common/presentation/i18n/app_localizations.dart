@@ -512,6 +512,7 @@ class AppLocalizations {
   String get photoUpdated => _t('photoUpdated');
   String get preferencesSaved => _t('preferencesSaved');
   String get profileSaved => _t('profileSaved');
+  String get readOnly => _t('readOnly');
   String get removePhoto => _t('removePhoto');
   String get removePhotoConfirm => _t('removePhotoConfirm');
   String renewalCancelled(String date) => _t('renewalCancelled')
@@ -629,6 +630,7 @@ class AppLocalizations {
   String homeBatchesDetail(int pending, int inProgress) => _t('homeBatchesDetail')
       .replaceAll('{pending}', '$pending')
       .replaceAll('{inProgress}', '$inProgress');
+  String get homeBatchesInProgress => _t('homeBatchesInProgress');
   String homeMaterialsTotal(int count) => _t('homeMaterialsTotal')
       .replaceAll('{count}', '$count');
   String get homeNothingPending => _t('homeNothingPending');
@@ -1055,6 +1057,7 @@ const Map<String, String> _en = {
   'photoUpdated': 'Your photo was updated.',
   'preferencesSaved': 'Preferences saved.',
   'profileSaved': 'Your data was saved.',
+  'readOnly': 'Read only',
   'removePhoto': 'Remove photo',
   'removePhotoConfirm': 'Your initials will be shown instead of the photo.',
   'renewalCancelled': 'Renewal cancelled: access until {date}',
@@ -1152,6 +1155,7 @@ const Map<String, String> _en = {
   'homeAlertsDetail': '{unresolved} unresolved · {acknowledged} acknowledged',
   'homeDevicesToReview': '{count} to review',
   'homeBatchesDetail': '{pending} pending · {inProgress} in progress',
+  'homeBatchesInProgress': 'Batches in progress',
   'homeMaterialsTotal': 'of {count} materials',
   'homeNothingPending': 'Nothing pending',
   'homeMostUrgent': 'Most urgent',
@@ -1577,6 +1581,7 @@ const Map<String, String> _es = {
   'photoUpdated': 'Se actualizó tu foto.',
   'preferencesSaved': 'Preferencias guardadas.',
   'profileSaved': 'Se guardaron tus datos.',
+  'readOnly': 'Solo lectura',
   'removePhoto': 'Quitar foto',
   'removePhotoConfirm': 'Se mostrarán tus iniciales en lugar de la foto.',
   'renewalCancelled': 'Renovación cancelada: acceso hasta el {date}',
@@ -1674,6 +1679,7 @@ const Map<String, String> _es = {
   'homeAlertsDetail': '{unresolved} sin resolver · {acknowledged} reconocidas',
   'homeDevicesToReview': '{count} por revisar',
   'homeBatchesDetail': '{pending} pendientes · {inProgress} en progreso',
+  'homeBatchesInProgress': 'Lotes en proceso',
   'homeMaterialsTotal': 'de {count} materiales',
   'homeNothingPending': 'Sin pendientes',
   'homeMostUrgent': 'Lo más urgente',

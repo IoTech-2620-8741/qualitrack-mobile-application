@@ -162,8 +162,10 @@ whose View detail opens the most urgent one. Below it, four rows read by
 importance top to bottom:
 open alerts (the critical ones as a badge, unresolved and acknowledged as the
 detail), IoT devices online, batches awaiting the QA decision, and materials
-below the minimum stock. Each row has its figure, a short detail and a chevron
-to the screen that acts on it; the color of a state goes only to its icon and
+below the minimum stock. An operator sees only the open alerts and the batches
+in progress, and the strip counts only those; an auditor sees the whole panel,
+marked read only after the role (style guide §7). Each row has its figure, a
+short detail and a chevron to the screen that acts on it; the color of a state goes only to its icon and
 figure. The most urgent open alerts fill the rest of the screen, only as many
 as fit whole. The Home does not scroll; on a short screen each row leaves out
 its detail instead of shrinking, and only when the user's larger text does not

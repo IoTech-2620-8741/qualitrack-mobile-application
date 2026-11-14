@@ -21,7 +21,7 @@ import '../helpers/pump_app.dart';
 class _MockHomeBloc extends MockBloc<CommandCenterRequested, RemoteState<CommandCenterSummary>>
     implements CommandCenterBloc {}
 
-CommandCenterSummary _summary({bool openAlerts = true, List<DeviationAlert>? open}) {
+CommandCenterSummary _summary({bool openAlerts = true, List<DeviationAlert>? open, int inProgress = 3}) {
   final now = DateTime.now();
   final equipments = [for (var i = 1; i <= 9; i++) equipmentFixture(id: i, name: 'Device $i')];
   return CommandCenterSummary(
@@ -37,7 +37,7 @@ CommandCenterSummary _summary({bool openAlerts = true, List<DeviationAlert>? ope
     ),
     batches: Part.ok(
       BatchOverview(
-        summary: const BatchSummary(total: 9, pending: 2, inProgress: 3, released: 4, rejected: 0),
+        summary: BatchSummary(total: 6 + inProgress, pending: 2, inProgress: inProgress, released: 4, rejected: 0),
         recent: [batchFixture(id: 9, batchNumber: 'LOT-2026-0009')],
       ),
     ),
@@ -85,13 +85,16 @@ CommandCenterViews _views() => CommandCenterViews(
 void main() {
   late _MockHomeBloc bloc;
 
+  /// The bloc holding [summary], as after a successful load.
+  void stubSummary(CommandCenterSummary summary) => whenListen(
+    bloc,
+    const Stream<RemoteState<CommandCenterSummary>>.empty(),
+    initialState: const RemoteState<CommandCenterSummary>().success(summary),
+  );
+
   setUp(() {
     bloc = _MockHomeBloc();
-    whenListen(
-      bloc,
-      const Stream<RemoteState<CommandCenterSummary>>.empty(),
-      initialState: const RemoteState<CommandCenterSummary>().success(_summary()),
-    );
+    stubSummary(_summary());
   });
 
   /// The Home inside the navigation bar of the shell.
@@ -110,9 +113,9 @@ void main() {
 
   /// The Home as the app shows it: under the status bar and above the
   /// navigation bar of the shell.
-  Future<void> pumpHome(WidgetTester tester, Size size, {double textScale = 1}) async {
+  Future<void> pumpHome(WidgetTester tester, Size size, {double textScale = 1, UserSession? session}) async {
     await tester.pumpLocalized(
-      MediaQuery.withClampedTextScaling(minScaleFactor: textScale, maxScaleFactor: textScale, child: home()),
+      MediaQuery.withClampedTextScaling(minScaleFactor: textScale, maxScaleFactor: textScale, child: home(session: session)),
       size: size,
     );
     tester.view.padding = const FakeViewPadding(top: 24, bottom: 24);
@@ -122,11 +125,7 @@ void main() {
   /// The Home with [summary] inside a router, to follow where it leads: each
   /// detail screen is a text with its name and id.
   Future<GoRouter> pumpHomeWithRouter(WidgetTester tester, CommandCenterSummary summary, {UserSession? session}) async {
-    whenListen(
-      bloc,
-      const Stream<RemoteState<CommandCenterSummary>>.empty(),
-      initialState: const RemoteState<CommandCenterSummary>().success(summary),
-    );
+    stubSummary(summary);
     final router = GoRouter(
       initialLocation: '/home',
       routes: [
@@ -216,11 +215,7 @@ void main() {
   });
 
   testWidgets('without open alerts the latest alerts are left out, not repeated', (tester) async {
-    whenListen(
-      bloc,
-      const Stream<RemoteState<CommandCenterSummary>>.empty(),
-      initialState: const RemoteState<CommandCenterSummary>().success(_summary(openAlerts: false)),
-    );
+    stubSummary(_summary(openAlerts: false));
     await pumpHome(tester, const Size(412, 915));
 
     expect(tester.takeException(), isNull);
@@ -305,5 +300,40 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(scrollExtent(tester), greaterThan(0));
+  });
+
+  // Each role sees its own Home (style guide §7).
+  testWidgets('an operator sees open alerts and batches in progress only', (tester) async {
+    await pumpHome(tester, const Size(360, 800), session: sessionFixture(roles: [UserRole.labOperator]));
+
+    expect(find.text('Batches in progress'), findsOneWidget);
+    expect(find.text('Awaiting QA release'), findsNothing);
+    expect(find.byIcon(Icons.signal_wifi_off), findsNothing);
+    expect(find.textContaining(RegExp('material', caseSensitive: false)), findsNothing);
+  });
+
+  testWidgets('the operator strip counts only alerts and batches in progress', (tester) async {
+    stubSummary(_summary(openAlerts: false, inProgress: 0));
+    await pumpHome(tester, const Size(360, 800), session: sessionFixture(roles: [UserRole.labOperator]));
+
+    expect(find.text('All in order'), findsOneWidget);
+  });
+
+  testWidgets('an auditor sees the full panel marked read only', (tester) async {
+    await pumpHome(tester, const Size(360, 800), session: sessionFixture(roles: [UserRole.auditor]));
+
+    expect(find.textContaining('Read only'), findsOneWidget);
+    expect(find.text('Awaiting QA release'), findsOneWidget);
+  });
+
+  testWidgets('with several roles the highest one decides the Home', (tester) async {
+    await pumpHome(
+      tester,
+      const Size(360, 800),
+      session: sessionFixture(roles: [UserRole.labOperator, UserRole.auditor]),
+    );
+
+    expect(find.text('Batches in progress'), findsOneWidget);
+    expect(find.textContaining('Read only'), findsNothing);
   });
 }

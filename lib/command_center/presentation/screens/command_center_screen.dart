@@ -35,6 +35,8 @@ import '../command_center_views.dart';
 ///   it: compliance alerts, IoT devices online, batches awaiting the QA
 ///   decision and materials below the minimum stock;
 /// - the most urgent open alerts, in the rest of the screen.
+/// An operator's panel keeps only the alerts and the batches in progress, and
+/// an auditor's is marked read only (style guide §7).
 /// The color of a state goes only to its icon and figure. The panel never
 /// scrolls at the normal text size: on a short screen each row leaves out its
 /// detail instead of shrinking. Only when the user's larger text does not fit
@@ -54,6 +56,7 @@ class CommandCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void reload() => context.read<CommandCenterBloc>().add(const CommandCenterRequested(refresh: true));
+    final forOperator = session.primaryRole == UserRole.labOperator;
     return Scaffold(
       appBar: AppBar(
         title: BlocBuilder<CommandCenterBloc, RemoteState<CommandCenterSummary>>(
@@ -84,7 +87,9 @@ class CommandCenterScreen extends StatelessWidget {
                           slivers: [
                             SliverPadding(
                               padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
-                              sliver: SliverToBoxAdapter(child: _Panel(summary: summary, compact: compact)),
+                              sliver: SliverToBoxAdapter(
+                                child: _Panel(summary: summary, compact: compact, forOperator: forOperator),
+                              ),
                             ),
                             SliverLayoutBuilder(
                               builder: (context, sliver) {
@@ -120,9 +125,10 @@ String _error(BuildContext context, Failure? failure) =>
 
 const _gap = SizedBox.square(dimension: AppSpacing.md);
 
-/// The laboratory as the title and "role · updated 2 min ago" below it: a
-/// sober header for a compliance panel, which says how current the figures
-/// are. The user is the avatar of the profile button.
+/// The laboratory as the title and "role · updated 2 min ago" below it (with
+/// "read only" after an auditor's role): a sober header for a compliance
+/// panel, which says how current the figures are. The user is the avatar of
+/// the profile button.
 class _PanelTitle extends StatefulWidget {
   const _PanelTitle({required this.session, required this.views, required this.summary});
 
@@ -158,6 +164,7 @@ class _PanelTitleState extends State<_PanelTitle> {
     final fetchedAt = widget.summary?.fetchedAt;
     final subtitle = [
       if (role != null) widget.views.roleLabel(role, i18n),
+      if (widget.session.isAuditor) i18n.readOnly,
       if (fetchedAt != null) updatedText(context, fetchedAt),
     ].join(' · ');
     return AppBarTitle(
@@ -167,19 +174,21 @@ class _PanelTitleState extends State<_PanelTitle> {
   }
 }
 
-/// The state of the laboratory in one line, and the four rows to review in
-/// order of importance.
+/// The state of the laboratory in one line, and the rows to review in order of
+/// importance: all four, or for an operator the open alerts and the batches in
+/// progress.
 class _Panel extends StatelessWidget {
-  const _Panel({required this.summary, required this.compact});
+  const _Panel({required this.summary, required this.compact, required this.forOperator});
 
   final CommandCenterSummary summary;
   final bool compact;
+  final bool forOperator;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      _StatusStrip(summary: summary),
+      _StatusStrip(summary: summary, forOperator: forOperator),
       _gap,
       Material(
         color: AppColors.surface,
@@ -189,11 +198,15 @@ class _Panel extends StatelessWidget {
           children: [
             _AlertsRow(summary: summary, compact: compact),
             const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
-            _TelemetryRow(summary: summary, compact: compact),
-            const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
-            _BatchesRow(summary: summary, compact: compact),
-            const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
-            _InventoryRow(summary: summary, compact: compact),
+            if (forOperator)
+              _BatchesRow(summary: summary, compact: compact, inProgressOnly: true)
+            else ...[
+              _TelemetryRow(summary: summary, compact: compact),
+              const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+              _BatchesRow(summary: summary, compact: compact),
+              const Divider(height: 1, indent: AppSpacing.lg, endIndent: AppSpacing.lg),
+              _InventoryRow(summary: summary, compact: compact),
+            ],
           ],
         ),
       ),
@@ -206,11 +219,13 @@ class _Panel extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 /// What the laboratory needs now, read from the data (not a score): critical
-/// alerts, anything else to review, or all in order.
+/// alerts, anything else to review, or all in order. An operator's strip
+/// counts only what their Home shows: open alerts and batches in progress.
 class _StatusStrip extends StatelessWidget {
-  const _StatusStrip({required this.summary});
+  const _StatusStrip({required this.summary, required this.forOperator});
 
   final CommandCenterSummary summary;
+  final bool forOperator;
 
   @override
   Widget build(BuildContext context) {
@@ -222,9 +237,12 @@ class _StatusStrip extends StatelessWidget {
     final batches = summary.batches.value?.summary;
     final pending = [
       alerts?.open ?? 0,
-      equipment == null ? 0 : equipment.devices - equipment.connected,
-      batches == null ? 0 : batches.pending + batches.inProgress,
-      summary.materials.value?.where((m) => m.isBelowMinimum).length ?? 0,
+      batches?.inProgress ?? 0,
+      if (!forOperator) ...[
+        equipment == null ? 0 : equipment.devices - equipment.connected,
+        batches?.pending ?? 0,
+        summary.materials.value?.where((m) => m.isBelowMinimum).length ?? 0,
+      ],
     ].any((count) => count > 0);
     final (tone, message) =
         critical > 0
@@ -443,25 +461,35 @@ class _TelemetryRow extends StatelessWidget {
 // 3 · Production batches
 // ---------------------------------------------------------------------------
 
-/// Batches awaiting the QA decision: pending and in progress.
+/// Batches awaiting the QA decision: pending and in progress. An operator sees
+/// only the ones in progress.
 class _BatchesRow extends StatelessWidget {
-  const _BatchesRow({required this.summary, required this.compact});
+  const _BatchesRow({required this.summary, required this.compact, this.inProgressOnly = false});
 
   final CommandCenterSummary summary;
   final bool compact;
+  final bool inProgressOnly;
 
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     final part = summary.batches;
     final s = part.value?.summary;
-    final awaiting = s == null ? null : s.pending + s.inProgress;
+    final awaiting = s == null ? null : (inProgressOnly ? s.inProgress : s.pending + s.inProgress);
     return _AttentionRow(
       icon: Icons.inventory_2_outlined,
       tone: s == null ? BadgeTone.neutral : (awaiting == 0 ? BadgeTone.success : BadgeTone.brand),
       figure: awaiting == null ? '—' : '$awaiting',
-      label: s == null ? _error(context, part.failure) : i18n.awaitingQaRelease,
-      detail: s == null ? null : (awaiting == 0 ? i18n.homeNothingPending : i18n.homeBatchesDetail(s.pending, s.inProgress)),
+      label:
+          s == null
+              ? _error(context, part.failure)
+              : (inProgressOnly ? i18n.homeBatchesInProgress : i18n.awaitingQaRelease),
+      detail:
+          s == null
+              ? null
+              : awaiting == 0
+              ? i18n.homeNothingPending
+              : (inProgressOnly ? null : i18n.homeBatchesDetail(s.pending, s.inProgress)),
       compact: compact,
       onTap: () => context.go('/batches'),
     );
