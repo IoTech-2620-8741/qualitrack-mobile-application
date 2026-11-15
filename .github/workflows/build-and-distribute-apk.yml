@@ -1,0 +1,64 @@
+# Builds the release APK on every `v*` tag and distributes it to the
+# `qa-testers` group of Firebase App Distribution (project qualitrack-iotech).
+# Secrets:
+#   FIREBASE_APP_ID           -> Android app id (1:...:android:...)
+#   FIREBASE_SERVICE_ACCOUNT  -> JSON key of a service account with the
+#                                "Firebase App Distribution Admin" role
+# Variable:
+#   API_BASE_URL              -> base URL of the QualiTrack platform API
+name: Build APK and distribute
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # The `secrets` context is not available in step-level `if`, so it is
+      # exposed through `env`, which is.
+      FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # A `v1.0.0-rc.1` tag must match `version: 1.0.0+N` in the pubspec.
+      - name: Check tag matches pubspec version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          grep -q "^version: ${v%%-*}+" pubspec.yaml
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.3
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      - name: Build release APK
+        run: flutter build apk --release --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qualitrack-mobile-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Distribute to testers
+        if: ${{ env.FIREBASE_APP_ID != '' }}
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: qa-testers
+          file: build/app/outputs/flutter-apk/app-release.apk
+          releaseNotes: ${{ github.ref_name }}

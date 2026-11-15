@@ -117,7 +117,13 @@ Localized strings are edited in `i18n/strings.tsv`, then regenerated with
 flutter build apk --release --dart-define=API_BASE_URL=https://<host>
 ```
 
-The APK is generated in `build/app/outputs/flutter-apk/app-release.apk`. There
-is no automatic deployment workflow; distribute it manually (for example with
-Firebase App Distribution). Notifications are shown inside
+The APK is generated in `build/app/outputs/flutter-apk/app-release.apk`.
+
+Releases are distributed automatically: pushing a `v*` tag (for example
+`v1.0.0` on `main`, or `v1.0.0-rc.1` on a `release/*` branch) runs
+`.github/workflows/build-and-distribute-apk.yml`, which builds the APK and
+sends it to the `qa-testers` group of Firebase App Distribution. The tag must
+match the `version` in `pubspec.yaml`. The workflow needs the secrets
+`FIREBASE_APP_ID` and `FIREBASE_SERVICE_ACCOUNT` and the variable
+`API_BASE_URL`. Notifications are shown inside
 the app (bell); push notifications with Firebase are pending.
