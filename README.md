@@ -119,8 +119,9 @@ flutter build apk --release --dart-define=API_BASE_URL=https://<host>
 
 The APK is generated in `build/app/outputs/flutter-apk/app-release.apk`.
 
-Releases are distributed automatically: pushing a `v*` tag (for example
-`v1.0.0` on `main`, or `v1.0.0-rc.1` on a `release/*` branch) runs
+Releases are distributed automatically: pushing a stable `vX.Y.Z` tag on
+`main` (for example `v1.0.0`; pre-release tags such as `v1.0.0-rc.1` are
+ignored) runs
 `.github/workflows/build-and-distribute-apk.yml`, which builds the APK and
 sends it to the `qa-testers` group of Firebase App Distribution. The tag must
 match the `version` in `pubspec.yaml`. The workflow needs the secrets
