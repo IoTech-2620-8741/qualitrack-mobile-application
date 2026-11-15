@@ -1,18 +1,15 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../shared/domain/failure.dart';
-import '../../application/profile_use_cases.dart';
-import '../../domain/profile.dart';
+import '../../../common/domain/failure.dart';
+import '../../application/profile_facade_service.dart';
+import '../../domain/entities/user_profile.dart';
 
 /// Name and photo of the signed-in user shown outside the profile screen
 /// (the menu header), as the Web toolbar does.
 class CurrentProfileController extends ChangeNotifier {
-  CurrentProfileController({required GetMyProfile getProfile, required GetMyPhoto getPhoto})
-    : _getProfile = getProfile,
-      _getPhoto = getPhoto;
+  CurrentProfileController({required ProfileFacadeService profileService}) : _profileService = profileService;
 
-  final GetMyProfile _getProfile;
-  final GetMyPhoto _getPhoto;
+  final ProfileFacadeService _profileService;
 
   UserProfile? _profile;
   Uint8List? _photo;
@@ -23,8 +20,8 @@ class CurrentProfileController extends ChangeNotifier {
 
   Future<void> load() async {
     try {
-      final profile = await _getProfile();
-      final photo = profile.hasPhoto ? await _getPhoto() : null;
+      final profile = await _profileService.getMyProfile();
+      final photo = profile.hasPhoto ? await _profileService.getMyPhoto() : null;
       _set(profile, photo);
     } on Failure {
       // The menu falls back to the username of the session.
@@ -38,7 +35,7 @@ class CurrentProfileController extends ChangeNotifier {
       return;
     }
     try {
-      _set(profile, profile.hasPhoto ? await _getPhoto() : null);
+      _set(profile, profile.hasPhoto ? await _profileService.getMyPhoto() : null);
     } on Failure {
       _set(profile, null);
     }

@@ -1,15 +1,17 @@
+import '../../../common/domain/failure.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../equipment/application/equipment_queries.dart';
-import '../../../equipment/domain/equipment.dart';
-import '../../../laboratory/application/laboratory_queries.dart';
-import '../../../laboratory/domain/laboratory.dart';
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../shared/presentation/remote_state.dart';
-import '../../application/telemetry_queries.dart';
-import '../../domain/telemetry.dart';
+import '../../../equipment/api/index.dart';
+import '../../../laboratory/api/index.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
+import '../../application/telemetry_facade_service.dart';
+import '../../application/telemetry_targets.dart';
+import '../../domain/entities/measurement.dart';
+import '../../domain/entities/monitored_metric.dart';
+import '../../domain/entities/telemetry_target.dart';
+import '../../domain/logic/telemetry_analysis.dart';
 import 'telemetry_dashboard_bloc.dart';
 
 /// Period sent to the backend (`from`/`to`), at most 31 days.
@@ -161,14 +163,14 @@ final class TelemetryHistoryState extends Equatable {
 
 class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryState> {
   TelemetryHistoryBloc({
-    required GetEquipments getEquipments,
-    required GetEnvironments getEnvironments,
-    required GetMeasurements getMeasurements,
+    required EquipmentApi equipmentApi,
+    required LaboratoryApi laboratoryApi,
+    required TelemetryFacadeService telemetryService,
     required LaboratoryId Function() laboratoryId,
     DateTime Function()? clock,
-  }) : _getEquipments = getEquipments,
-       _getEnvironments = getEnvironments,
-       _getMeasurements = getMeasurements,
+  }) : _equipmentApi = equipmentApi,
+       _laboratoryApi = laboratoryApi,
+       _telemetryService = telemetryService,
        _laboratoryId = laboratoryId,
        super(TelemetryHistoryState(range: HistoryRange.last(const Duration(hours: 24), (clock ?? DateTime.now)()))) {
     on<TelemetryHistoryStarted>(_onStarted);
@@ -190,16 +192,16 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
     });
   }
 
-  final GetEquipments _getEquipments;
-  final GetEnvironments _getEnvironments;
-  final GetMeasurements _getMeasurements;
+  final EquipmentApi _equipmentApi;
+  final LaboratoryApi _laboratoryApi;
+  final TelemetryFacadeService _telemetryService;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onStarted(TelemetryHistoryStarted event, Emitter<TelemetryHistoryState> emit) async {
     emit(state.copyWith(catalog: state.catalog.loading()));
     try {
       final laboratoryId = _laboratoryId();
-      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _getEnvironments(laboratoryId)]);
+      final results = await Future.wait<Object>([_equipmentApi.getEquipments(laboratoryId), _laboratoryApi.getEnvironments(laboratoryId)]);
       final catalog = DeviceCatalog(
         devices: telemetryDevices(results[0] as List<Equipment>),
         environments: results[1] as List<LabEnvironment>,
@@ -211,7 +213,7 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
       emit(state.copyWith(selectedDeviceId: id));
       await _load(emit);
     } catch (error) {
-      emit(state.copyWith(catalog: state.catalog.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(catalog: state.catalog.failed(Failure.from(error))));
     }
   }
 
@@ -225,11 +227,11 @@ class TelemetryHistoryBloc extends Bloc<TelemetryHistoryEvent, TelemetryHistoryS
     emit(state.copyWith(points: state.points.loading(), page: 0));
     try {
       final range = state.range;
-      final points = await _getMeasurements(_laboratoryId(), target, from: range.from, to: range.to);
+      final points = await _telemetryService.getMeasurements(_laboratoryId(), target, from: range.from, to: range.to);
       if (state.selectedDeviceId != deviceId) return;
       emit(state.copyWith(points: state.points.success(points, empty: points.isEmpty)));
     } catch (error) {
-      emit(state.copyWith(points: state.points.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(points: state.points.failed(Failure.from(error))));
     }
   }
 }

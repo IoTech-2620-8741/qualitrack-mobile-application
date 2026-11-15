@@ -3,25 +3,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:qualitrack_mobile/compliance/application/compliance_queries.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alert_detail_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/alerts_bloc.dart';
+import 'package:qualitrack_mobile/compliance/presentation/bloc/notifications_bloc.dart';
 import 'package:qualitrack_mobile/compliance/presentation/bloc/unread_notifications_controller.dart';
-import 'package:qualitrack_mobile/compliance/presentation/pages/alert_detail_page.dart';
-import 'package:qualitrack_mobile/compliance/presentation/pages/alerts_page.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/alert_detail_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/alerts_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/screens/notifications_screen.dart';
+import 'package:qualitrack_mobile/compliance/presentation/widgets/alert_widgets.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/app_notification.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.dart';
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
+import 'package:qualitrack_mobile/inventory/presentation/widgets/inventory_labels.dart';
+import 'package:qualitrack_mobile/common/presentation/labels.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
-import 'package:qualitrack_mobile/iam/presentation/pages/change_password_page.dart';
-import 'package:qualitrack_mobile/iam/presentation/pages/sign_in_page.dart';
-import 'package:qualitrack_mobile/shared/domain/failure.dart';
-import 'package:qualitrack_mobile/shared/presentation/l10n/app_localizations.dart';
-import 'package:qualitrack_mobile/shared/presentation/remote_state.dart';
-import 'package:qualitrack_mobile/shared/presentation/view_status.dart';
-import 'package:qualitrack_mobile/shared/presentation/widgets/state_views.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
-import 'package:qualitrack_mobile/tracking/presentation/pages/telemetry_dashboard_page.dart';
+import 'package:qualitrack_mobile/iam/presentation/screens/change_password_screen.dart';
+import 'package:qualitrack_mobile/iam/presentation/screens/sign_in_screen.dart';
+import 'package:qualitrack_mobile/common/domain/failure.dart';
+import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
+import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
+import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
+import 'package:qualitrack_mobile/common/presentation/formatting/formatters.dart';
+import 'package:qualitrack_mobile/common/presentation/formatting/relative_time.dart';
+import 'package:qualitrack_mobile/common/presentation/view_status.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/state_views.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/metric_threshold.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
+import 'package:qualitrack_mobile/tracking/presentation/screens/telemetry_dashboard_screen.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/mocks.dart';
@@ -35,6 +47,8 @@ class MockChangePasswordBloc extends MockBloc<PasswordChangeSubmitted, ChangePas
 class MockAlertsBloc extends MockBloc<AlertsEvent, AlertsState> implements AlertsBloc {}
 
 class MockAlertDetailBloc extends MockBloc<AlertDetailEvent, AlertDetailState> implements AlertDetailBloc {}
+
+class MockNotificationsBloc extends MockBloc<NotificationsEvent, NotificationsState> implements NotificationsBloc {}
 
 void main() {
   setUpAll(() {
@@ -53,7 +67,7 @@ void main() {
     });
 
     Future<void> pump(WidgetTester tester, {Locale locale = const Locale('en')}) => tester.pumpLocalized(
-      BlocProvider<SignInBloc>.value(value: bloc, child: const SignInPage()),
+      BlocProvider<SignInBloc>.value(value: bloc, child: const SignInScreen()),
       locale: locale,
     );
 
@@ -109,7 +123,7 @@ void main() {
     Future<void> pump(WidgetTester tester) => tester.pumpLocalized(
       BlocProvider<ChangePasswordBloc>.value(
         value: bloc,
-        child: ChangePasswordPage(forced: true, onChanged: () async {}, onSignOut: () async {}),
+        child: ChangePasswordScreen(forced: true, onChanged: () async {}, onSignOut: () async {}),
       ),
       size: const Size(390, 844),
     );
@@ -155,8 +169,8 @@ void main() {
         ),
       );
 
-      expect(equipmentFixture().typeLabel(context.l10n), 'Container monitor');
-      expect(equipmentFixture(deviceType: null).typeLabel(context.l10n), 'Chamber');
+      expect(equipmentFixture().typeLabel(context.i18n), 'Container monitor');
+      expect(equipmentFixture(deviceType: null).typeLabel(context.i18n), 'Chamber');
       expect(
         rangeText(
           context,
@@ -175,6 +189,56 @@ void main() {
         'normal ≥ 2 °C',
       );
     });
+
+    test('Formatters.range writes a closed or an open range', () {
+      expect(Formatters.range(2, 8, '°C', 'en'), '2–8 °C');
+      expect(Formatters.range(null, 800, 'ppm', 'en'), '≤ 800 ppm');
+      expect(Formatters.range(2, null, '°C', 'en'), '≥ 2 °C');
+    });
+  });
+
+  testWidgets('backend codes read in the language of the app, never raw', (tester) async {
+    late BuildContext context;
+    await tester.pumpLocalized(
+      Builder(
+        builder: (c) {
+          context = c;
+          return const SizedBox();
+        },
+      ),
+      locale: const Locale('es'),
+    );
+    final i18n = context.i18n;
+    expect(codeLabel(i18n, 'ACTIVE'), 'Activo');
+    expect(codeLabel(i18n, 'MONTHLY'), 'Mensual');
+    expect(codeLabel(i18n, 'PENDING_PAYMENT'), 'Pago pendiente');
+    expect(codeLabel(i18n, 'PREVENTIVE'), 'Preventivo');
+    // An unknown code is humanized, not shown as it arrives.
+    expect(codeLabel(i18n, 'SOME_NEW_CODE'), 'Some new code');
+    expect(regulationLabel('BPM_DIGEMID'), 'BPM DIGEMID');
+    // Below the minimum is a warning (amber), as on the Home.
+    expect(materialFixture().stockTone, BadgeTone.warning);
+  });
+
+  testWidgets('the telemetry help explains the states, the chart and the connection', (tester) async {
+    await tester.pumpLocalized(
+      Scaffold(
+        body: Builder(
+          builder: (context) => TextButton(onPressed: () => showTelemetryHelp(context), child: const Text('help')),
+        ),
+      ),
+      locale: const Locale('es'),
+      // A tall phone shows the whole sheet; a short one scrolls it.
+      size: const Size(412, 915),
+    );
+    await tester.tap(find.text('help'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cómo leer la telemetría'), findsOneWidget);
+    for (final state in ['Normal', 'Advertencia', 'Crítico', 'Requiere revisión']) {
+      expect(find.text(state), findsOneWidget, reason: state);
+    }
+    expect(find.textContaining('franja verde'), findsOneWidget);
   });
 
   group('State views', () {
@@ -193,20 +257,54 @@ void main() {
       await tester.tap(find.text('Retry'));
       expect(retried, isTrue);
     });
+
+    testWidgets('the error title names the cause', (tester) async {
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: NetworkFailure())), locale: const Locale('es'));
+      expect(find.text('Sin conexión'), findsOneWidget);
+      expect(find.text('Algo salió mal'), findsNothing);
+
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: ForbiddenFailure())));
+      expect(find.text('Access restricted'), findsOneWidget);
+      expect(find.byIcon(Icons.lock_outline_rounded), findsOneWidget);
+
+      await tester.pumpLocalized(const Scaffold(body: ErrorView(failure: ParsingFailure())));
+      expect(find.text('The information could not be loaded'), findsOneWidget);
+    });
+
+    testWidgets('recent times read as elapsed time, older ones as a date', (tester) async {
+      late BuildContext context;
+      await tester.pumpLocalized(
+        Builder(
+          builder: (c) {
+            context = c;
+            return const SizedBox();
+          },
+        ),
+        locale: const Locale('es'),
+      );
+      final now = DateTime(2026, 11, 12, 10);
+      expect(relativeTime(context, now.subtract(const Duration(seconds: 20)), now: now), 'Hace un momento');
+      // A device clock ahead of the phone is still "just now".
+      expect(relativeTime(context, now.add(const Duration(seconds: 30)), now: now), 'Hace un momento');
+      expect(relativeTime(context, now.subtract(const Duration(minutes: 5)), now: now), 'Hace 5 min');
+      expect(relativeTime(context, now.subtract(const Duration(hours: 3)), now: now), 'Hace 3 h');
+      expect(relativeTime(context, now.subtract(const Duration(days: 2)), now: now), isNot(startsWith('Hace')));
+      expect(relativeTime(context, null, now: now), '—');
+    });
   });
 
   group('Alerts', () {
     late UnreadNotificationsController bell;
 
     setUp(() {
-      final repo = MockNotificationRepository();
+      final repo = MockComplianceRepository();
       when(() => repo.getUnreadCount()).thenAnswer((_) async => 2);
-      bell = UnreadNotificationsController(getUnreadCount: GetUnreadNotificationCount(repo));
+      bell = UnreadNotificationsController(complianceService: complianceFacade(repo));
     });
 
     tearDown(() => bell.dispose());
 
-    testWidgets('renders counters, names and the bell without overflow at 360x640', (tester) async {
+    testWidgets('renders the summary and the names without a bell or overflow at 360x640', (tester) async {
       await bell.refresh();
       final bloc = MockAlertsBloc();
       when(() => bloc.state).thenReturn(
@@ -223,13 +321,101 @@ void main() {
         ),
       );
 
-      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: AlertsPage(notifications: bell)));
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
 
       expect(find.text('Temperature'), findsWidgets);
-      expect(find.text('Cold storage'), findsWidgets);
+      expect(find.textContaining('Cold storage'), findsWidgets);
       expect(find.textContaining('38.6'), findsWidgets);
-      expect(find.text('2'), findsWidgets);
+      expect(find.bySemanticsLabel('Showing: All, 2 of 2'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(
+          RegExp(
+            r'^Critical, Temperature, 38\.6 °C, Limit 30 °C, '
+            r'Stability Chamber with a very long descriptive name · Cold storage, Unresolved, ',
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.notifications_outlined), findsNothing);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the FAB menu lists the filters with their counts and applies the chosen one', (tester) async {
+      await bell.refresh();
+      final bloc = MockAlertsBloc();
+      when(() => bloc.state).thenReturn(
+        AlertsState(
+          filter: AlertFilter.open,
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: AlertsData(
+              alerts: [alertFixture(id: 1), alertFixture(id: 2, status: AlertStatus.resolved, severity: AlertSeverity.low)],
+              deviceNames: const {},
+              environmentNames: const {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
+      expect(find.text('SHOWING: OPEN'), findsOneWidget);
+      expect(find.text('Resolved'), findsNothing);
+
+      await tester.tap(find.byTooltip('Filter alerts'));
+      await tester.pumpAndSettle();
+      expect(find.text('Resolved'), findsOneWidget);
+      expect(find.bySemanticsLabel('Resolved, 1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Resolved'));
+      await tester.pumpAndSettle();
+      verify(() => bloc.add(const AlertsFilterChanged(AlertFilter.resolved))).called(1);
+      expect(find.text('Resolved'), findsNothing);
+    });
+
+    testWidgets('the search matches the variable, the device and the area', (tester) async {
+      await bell.refresh();
+      final bloc = MockAlertsBloc();
+      AlertsState withQuery(String query) => AlertsState(
+        filter: AlertFilter.all,
+        query: query,
+        remote: RemoteState(
+          status: ViewStatus.success,
+          data: AlertsData(
+            alerts: [alertFixture(id: 1)],
+            deviceNames: const {10: 'Stability Chamber'},
+            environmentNames: const {3: 'Cold storage'},
+          ),
+        ),
+      );
+
+      for (final query in ['temperat', 'chamber', 'COLD']) {
+        when(() => bloc.state).thenReturn(withQuery(query));
+        await tester.pumpWidget(const SizedBox());
+        await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
+        expect(find.bySemanticsLabel('Showing: All, 1 of 1'), findsOneWidget, reason: query);
+      }
+
+      when(() => bloc.state).thenReturn(withQuery('humidity'));
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
+      expect(find.bySemanticsLabel('Showing: All, 0 of 1'), findsOneWidget);
+      expect(find.text('No results match the current filters'), findsOneWidget);
+    });
+
+    testWidgets('an alert card shows its value against the limit', (tester) async {
+      await tester.pumpLocalized(Scaffold(body: AlertCard(alert: alertFixture())));
+
+      expect(find.text('Limit ${formatAlertValue(30, '°C', 'en')}'), findsOneWidget);
+      // Screen readers hear the limit right after the value.
+      expect(find.bySemanticsLabel(RegExp(r'38\.6 °C, Limit 30 °C, ')), findsOneWidget);
+    });
+
+    testWidgets('an alert without a limit leaves the limit out', (tester) async {
+      await tester.pumpLocalized(Scaffold(body: AlertCard(alert: alertFixture(thresholdValue: null))));
+
+      expect(find.textContaining('Limit'), findsNothing);
+      expect(find.bySemanticsLabel(RegExp('Limit')), findsNothing);
     });
   });
 
@@ -247,13 +433,13 @@ void main() {
     });
 
     Future<void> pump(WidgetTester tester, {required bool canAttend}) => tester.pumpLocalized(
-      BlocProvider<AlertDetailBloc>.value(value: bloc, child: AlertDetailPage(canAttend: canAttend, currentUserId: 42)),
+      BlocProvider<AlertDetailBloc>.value(value: bloc, child: AlertDetailScreen(canAttend: canAttend, currentUserId: 42)),
       size: const Size(390, 844),
     );
 
     testWidgets('operators and quality managers acknowledge after confirming', (tester) async {
       await pump(tester, canAttend: true);
-      await tester.scrollUntilVisible(find.byKey(const Key('alert.acknowledge')), 200, scrollable: find.byType(Scrollable).first);
+      // The actions live in the bottom bar: no scrolling needed.
       await tester.tap(find.byKey(const Key('alert.acknowledge')));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Acknowledge'));
@@ -261,15 +447,33 @@ void main() {
       verify(() => bloc.add(const AlertAcknowledgeSubmitted())).called(1);
     });
 
-    testWidgets('resolve requires notes', (tester) async {
+    testWidgets('resolve asks for the notes in a sheet and requires them', (tester) async {
       await pump(tester, canAttend: true);
-      await tester.scrollUntilVisible(find.byKey(const Key('alert.resolve')), 200, scrollable: find.byType(Scrollable).first);
-      await tester.ensureVisible(find.byKey(const Key('alert.resolve')));
-      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('alert.resolve')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('alert.resolveSubmit')));
       await tester.pump();
       expect(find.text('Resolution notes are required'), findsOneWidget);
       verifyNever(() => bloc.add(any(that: isA<AlertResolveSubmitted>())));
+    });
+
+    testWidgets('resolve sends the notes after confirming', (tester) async {
+      await pump(tester, canAttend: true);
+      await tester.tap(find.byKey(const Key('alert.resolve')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('alert.resolutionNotes')), 'Door closed, temperature back in range');
+      await tester.tap(find.byKey(const Key('alert.resolveSubmit')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Mark as resolved').last);
+      await tester.pumpAndSettle();
+      verify(() => bloc.add(const AlertResolveSubmitted('Door closed, temperature back in range'))).called(1);
+    });
+
+    testWidgets('titles the alert and links the device as a row', (tester) async {
+      await pump(tester, canAttend: false);
+      expect(find.text('Alert #1'), findsOneWidget);
+      expect(find.byKey(const Key('alert.deviceLink')), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('alert.deviceLink')), matching: find.byIcon(Icons.chevron_right)), findsOneWidget);
     });
 
     testWidgets('auditors only read', (tester) async {
@@ -282,6 +486,71 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       expect(find.textContaining('Auditors consult alerts'), findsOneWidget);
+    });
+  });
+
+  group('Notifications', () {
+    testWidgets('alert notices use the same icon as the alerts', (tester) async {
+      final bloc = MockNotificationsBloc();
+      when(() => bloc.state).thenReturn(
+        NotificationsState(
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: [
+              AppNotification(
+                id: 1,
+                type: NotificationType.alertOpened,
+                subjectType: 'ALERT',
+                subjectId: 1,
+                severity: AlertSeverity.critical,
+                environmentName: 'Cold storage',
+                parameterName: 'TEMPERATURE',
+                recordedValue: 9,
+                unit: '°C',
+                occurredAt: DateTime(2026, 11, 10, 12),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<NotificationsBloc>.value(value: bloc, child: const NotificationsScreen()));
+
+      expect(find.text('Notifications'), findsOneWidget);
+      expect(find.byIcon(Icons.report_problem_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    });
+
+    testWidgets('unread notices are marked by the badge and bold text only', (tester) async {
+      final bloc = MockNotificationsBloc();
+      when(() => bloc.state).thenReturn(
+        const NotificationsState(
+          remote: RemoteState(
+            status: ViewStatus.success,
+            data: [
+              AppNotification(
+                id: 1,
+                type: NotificationType.alertResolved,
+                subjectType: 'ALERT',
+                subjectId: 1,
+                parameterName: 'TEMPERATURE',
+                actorName: 'Ana',
+              ),
+            ],
+          ),
+        ),
+      );
+
+      await tester.pumpLocalized(BlocProvider<NotificationsBloc>.value(value: bloc, child: const NotificationsScreen()));
+
+      expect(find.text('Unread'), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(ListTile),
+          matching: find.byWidgetPredicate((w) => w is Material && w.color == AppColors.primaryContainer.withValues(alpha: 0.35)),
+        ),
+        findsNothing,
+      );
     });
   });
 }

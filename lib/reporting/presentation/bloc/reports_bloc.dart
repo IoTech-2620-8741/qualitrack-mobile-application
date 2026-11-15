@@ -1,71 +1,56 @@
+/// This file contains the Events, State, and BLoC for the Reports screen.
+///
+library;
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../common/domain/failure.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
+import '../../application/reporting_facade_service.dart';
+import '../../domain/entities/reporting_enums.dart';
 
-import '../../../equipment/application/equipment_queries.dart';
-import '../../../equipment/domain/equipment.dart';
-import '../../../laboratory/application/laboratory_queries.dart';
-import '../../../laboratory/domain/laboratory.dart';
-import '../../../shared/domain/failure.dart';
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../shared/presentation/remote_state.dart';
-import '../../../shared/presentation/section.dart';
-import '../../application/reporting_queries.dart';
-import '../../domain/reporting.dart';
-
-final class ReportsData extends Equatable {
-  const ReportsData({
-    required this.kpi,
-    required this.trends,
-    required this.reports,
-    this.environmentNames = const {},
-    this.deviceNames = const {},
-    this.kpiFailure,
-  });
-
-  /// Null when the indicators could not be calculated ([kpiFailure]).
-  final KpiDashboard? kpi;
-  final Failure? kpiFailure;
-  final Section<DeviationTrend> trends;
-  final Section<AuditReport> reports;
-  final Map<int, String> environmentNames;
-  final Map<int, String> deviceNames;
-
-  bool get everythingFailed => kpiFailure != null && trends.failed && reports.failed;
-
-  @override
-  List<Object?> get props => [kpi, kpiFailure, trends, reports, environmentNames, deviceNames];
-}
-
+/// Base class for all Reports events.
 sealed class ReportsEvent extends Equatable {
   const ReportsEvent();
-
   @override
   List<Object?> get props => [];
 }
 
+/// Event triggered when the user requests to load or refresh the reports data.
 final class ReportsRequested extends ReportsEvent {
   const ReportsRequested({this.refresh = false});
 
+  /// If true, shows a refreshing indicator instead of a full loading screen.
   final bool refresh;
 
   @override
   List<Object?> get props => [refresh];
 }
 
+/// Event triggered when the user picks another period (24 hours, 7 days or
+/// 31 days).
 final class ReportsPeriodChanged extends ReportsEvent {
   const ReportsPeriodChanged(this.period);
 
+  /// The period the user picked.
   final ReportPeriod period;
 
   @override
   List<Object?> get props => [period];
 }
 
-final class ReportsState extends Equatable {
-  const ReportsState({this.remote = const RemoteState(), this.period = ReportPeriod.last24Hours});
+/// Represents the current state of the Reports screen.
+class ReportsState extends Equatable {
+  const ReportsState({
+    this.remote = const RemoteState(),
+    this.period = ReportPeriod.last24Hours,
+  });
 
+  /// The reports data (indicators, trends, history) and the state of its request.
   final RemoteState<ReportsData> remote;
+
+  /// The period currently selected.
   final ReportPeriod period;
 
   ReportsState copyWith({RemoteState<ReportsData>? remote, ReportPeriod? period}) =>
@@ -75,78 +60,60 @@ final class ReportsState extends Equatable {
   List<Object?> get props => [remote, period];
 }
 
-/// Indicators and report history. It is read-only: reports are generated in
-/// QualiTrack Web.
+/// BLoC that manages the state of the Reports screen.
 class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   ReportsBloc({
-    required GetKpiDashboard getKpiDashboard,
-    required GetDeviationTrends getDeviationTrends,
-    required GetReportHistory getReportHistory,
-    required GetEnvironments getEnvironments,
-    required GetEquipments getEquipments,
+    required this.reportingService,
     required LaboratoryId Function() laboratoryId,
-  }) : _getKpi = getKpiDashboard,
-       _getTrends = getDeviationTrends,
-       _getReports = getReportHistory,
-       _getEnvironments = getEnvironments,
-       _getEquipments = getEquipments,
-       _laboratoryId = laboratoryId,
-       super(const ReportsState()) {
+  }) : _laboratoryId = laboratoryId,
+        super(const ReportsState()) {
+
     on<ReportsRequested>((event, emit) => _load(emit, refresh: event.refresh));
+
     on<ReportsPeriodChanged>((event, emit) async {
       if (event.period == state.period) return;
+
       emit(state.copyWith(period: event.period));
+
       await _load(emit, refresh: true);
     });
   }
 
-  final GetKpiDashboard _getKpi;
-  final GetDeviationTrends _getTrends;
-  final GetReportHistory _getReports;
-  final GetEnvironments _getEnvironments;
-  final GetEquipments _getEquipments;
+  /// The facade that gathers the reports data.
+  final ReportingFacadeService reportingService;
+
+  /// The laboratory of the session.
   final LaboratoryId Function() _laboratoryId;
 
+  /// Number of the latest request: the answer of an earlier one (another
+  /// period, or a refresh that took longer) is ignored, so a slow answer never
+  /// replaces the data of the period on screen.
+  int _latestRequest = 0;
+
+  /// Loads the reports data of the selected period.
   Future<void> _load(Emitter<ReportsState> emit, {required bool refresh}) async {
+    final request = ++_latestRequest;
     final current = state.remote;
-    emit(state.copyWith(remote: refresh && current.hasData ? current.refreshingState() : current.loading()));
+
+    emit(state.copyWith(
+      remote: refresh && current.hasData
+          ? current.refreshingState()
+          : current.loading(),
+    ));
+
     try {
-      final lab = _laboratoryId();
-      final period = state.period;
-      final results = await Future.wait<Object>([_getEnvironments(lab), _getEquipments(lab)]);
-      final environments = results[0] as List<LabEnvironment>;
-      final equipments = results[1] as List<Equipment>;
-      // Each part loads independently: one failing indicator must not hide the rest.
-      KpiDashboard? kpi;
-      Failure? kpiFailure;
-      try {
-        kpi = await _getKpi(lab, period);
-      } on UnauthorizedFailure {
-        rethrow;
-      } on OnboardingRequiredFailure {
-        rethrow;
-      } on Failure catch (failure) {
-        kpiFailure = failure;
-      }
-      final sections = await Future.wait<Object>([
-        Section.load(() => _getTrends(lab, environments.map((e) => e.id), period)),
-        Section.load(() => _getReports(lab)),
-      ]);
-      final data = ReportsData(
-        kpi: kpi,
-        kpiFailure: kpiFailure,
-        trends: sections[0] as Section<DeviationTrend>,
-        reports: sections[1] as Section<AuditReport>,
-        environmentNames: {for (final e in environments) e.id: e.name},
-        deviceNames: {for (final e in equipments) e.id: e.name},
-      );
+      final data = await reportingService.loadReportsData(_laboratoryId(), state.period);
+      if (request != _latestRequest) return;
+
       if (data.everythingFailed) {
-        emit(state.copyWith(remote: state.remote.failed(kpiFailure!)));
+        emit(state.copyWith(remote: state.remote.failed(data.kpiFailure!)));
         return;
       }
+
       emit(state.copyWith(remote: state.remote.success(data)));
     } catch (error) {
-      emit(state.copyWith(remote: state.remote.failed(ApiExceptionMapper.map(error))));
+      if (request != _latestRequest) return;
+      emit(state.copyWith(remote: state.remote.failed(Failure.from(error))));
     }
   }
 }

@@ -1,15 +1,24 @@
 import 'dart:convert';
 
-import 'package:qualitrack_mobile/batch/domain/batch.dart';
-import 'package:qualitrack_mobile/compliance/domain/compliance.dart';
-import 'package:qualitrack_mobile/equipment/domain/equipment.dart';
-import 'package:qualitrack_mobile/iam/domain/access_token.dart';
-import 'package:qualitrack_mobile/iam/domain/user_role.dart';
-import 'package:qualitrack_mobile/iam/domain/user_session.dart';
-import 'package:qualitrack_mobile/inventory/domain/inventory.dart';
-import 'package:qualitrack_mobile/laboratory/domain/laboratory.dart';
-import 'package:qualitrack_mobile/shared/domain/value_objects.dart';
-import 'package:qualitrack_mobile/tracking/domain/telemetry.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/batch_status.dart';
+import 'package:qualitrack_mobile/batch/domain/entities/production_batch.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_origin.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/deviation_alert.dart';
+import 'package:qualitrack_mobile/equipment/domain/entities/equipment.dart';
+import 'package:qualitrack_mobile/equipment/domain/entities/equipment_status.dart';
+import 'package:qualitrack_mobile/equipment/domain/entities/iot_device_type.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/access_token.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_role.dart';
+import 'package:qualitrack_mobile/iam/domain/entities/user_session.dart';
+import 'package:qualitrack_mobile/inventory/domain/entities/inventory_material.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/environment_usage.dart';
+import 'package:qualitrack_mobile/laboratory/domain/entities/lab_environment.dart';
+import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/environmental_state.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/measurement.dart';
+import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart';
 
 /// Test-only fixtures. Production code never uses hardcoded data.
 String fakeJwt({required DateTime expiresAt}) {
@@ -48,14 +57,16 @@ DeviationAlert alertFixture({
   AlertStatus status = AlertStatus.unresolved,
   AlertSeverity severity = AlertSeverity.critical,
   DateTime? timestamp,
+  double? recordedValue = 38.6,
+  double? thresholdValue = 30,
 }) => DeviationAlert(
   id: id,
   environmentId: environmentId,
   origin: AlertOrigin.container,
   equipmentId: equipmentId,
   parameterName: 'TEMPERATURE',
-  recordedValue: 38.6,
-  thresholdValue: 30,
+  recordedValue: recordedValue,
+  thresholdValue: thresholdValue,
   unit: '°C',
   status: status,
   severity: severity,
@@ -67,12 +78,13 @@ Equipment equipmentFixture({
   String name = 'Stability Chamber',
   int? environmentId = 3,
   IotDeviceType? deviceType = IotDeviceType.containerMonitor,
+  String type = 'Chamber',
 }) => Equipment(
   id: id,
   laboratoryId: 7,
   environmentId: environmentId,
   name: name,
-  type: 'Chamber',
+  type: type,
   model: 'SC-1',
   serialNumber: 'SN-$id',
   status: EquipmentStatus.operational,

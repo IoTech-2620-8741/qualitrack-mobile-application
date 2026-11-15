@@ -14,7 +14,7 @@ production batches, inventory, equipment, indicators and the subscription.
 
 - Secure sign-in (JWT in Keychain/Keystore), session restore, expiry handling and logout
 - Forced password change on the first sign-in of staff members (temporary password)
-- Control panel with the same cards as the Web dashboard (equipment, batches in progress, open alerts, low stock, subscription for quality managers)
+- Home with four cards ordered by importance: open and critical alerts, IoT devices connected, batches awaiting the QA decision and materials below the minimum stock; it never scrolls nor shrinks at the normal text size
 - Monitoring of environments and containers: connection, readings with their state, normal and critical ranges, deviations, automatic actions, live polling (15 s); reading history of up to 31 days
 - Alerts of every environment with filters and detail; **acknowledge** and **resolve** (operators and quality managers)
 - In-app notifications (bell) and notification preferences
@@ -24,12 +24,12 @@ production batches, inventory, equipment, indicators and the subscription.
 - Product catalog, measurement summary and deviation indicators per period, report history, subscription
 - Profile: personal data, photo and password
 - Auditors only read
-- English / Spanish, accessible badges (icon + text), responsive from 360×640
+- English / Spanish, accessible badges (icon + text), portrait from 360×640 (the telemetry history also turns to landscape), text size up to 130% without scrolling
 
 ## Architecture
 
 Domain-Driven Design, one module per Bounded Context, each with
-`domain / application / infrastructure / presentation` layers. State management
+`api / application / domain / infrastructure / presentation` layers. State management
 with BLoC, DI with get_it, navigation with go_router, HTTP with a single Dio
 client. See [`docs/architecture.md`](docs/architecture.md) and the endpoint
 mapping in [`docs/mobile-api-mapping.md`](docs/mobile-api-mapping.md). The
@@ -38,8 +38,8 @@ initial analysis is in [`docs/analysis.md`](docs/analysis.md).
 ```
 lib/
 ├── main.dart
-├── app/            # composition root: theme, router, DI, MaterialApp
-├── shared/         # failures, ApiClient, secure storage, l10n, widgets
+├── app/            # composition root: router, DI, MaterialApp
+├── common/         # failures, ApiClient, secure storage, i18n, theme, widgets
 ├── iam/            # Identity & Access Management
 ├── laboratory/     # Laboratory Management (lab, products)
 ├── equipment/      # Equipment Management
@@ -96,8 +96,20 @@ On Windows you can run everything at once and keep a log in `tool/logs/verify.lo
 powershell -ExecutionPolicy Bypass -File tool\verify.ps1
 ```
 
-Localized strings are edited in `l10n/strings.tsv`, then regenerated with
-`dart run tool/generate_l10n.dart`.
+Localized strings are edited in `i18n/strings.tsv`, then regenerated with
+`dart run tool/generate_i18n.dart`.
+
+## Contributing
+
+- Gitflow: branch `feature/<name>` from `develop` and open a pull request back
+  into `develop`; releases go through `release/<version>` into `main`.
+- Conventional Commits (`feat`, `fix`, `refactor`, `test`, `docs`, `ci`…) and
+  SemVer for versions.
+- CI runs `flutter analyze` and `flutter test` on every pull request from a
+  `feature/*` branch into `develop`.
+- The layer and bounded-context rules in
+  [`docs/architecture.md`](docs/architecture.md) are checked by
+  `test/architecture/architecture_test.dart`.
 
 ## Build APK
 
@@ -105,6 +117,14 @@ Localized strings are edited in `l10n/strings.tsv`, then regenerated with
 flutter build apk --release --dart-define=API_BASE_URL=https://<host>
 ```
 
-The APK is generated in `build/app/outputs/flutter-apk/app-release.apk` and can
-be distributed with Firebase App Distribution. Notifications are shown inside
+The APK is generated in `build/app/outputs/flutter-apk/app-release.apk`.
+
+Releases are distributed automatically: pushing a stable `vX.Y.Z` tag on
+`main` (for example `v1.0.0`; pre-release tags such as `v1.0.0-rc.1` are
+ignored) runs
+`.github/workflows/build-and-distribute-apk.yml`, which builds the APK and
+sends it to the `qa-testers` group of Firebase App Distribution. The tag must
+match the `version` in `pubspec.yaml`. The workflow needs the secrets
+`FIREBASE_APP_ID` and `FIREBASE_SERVICE_ACCOUNT` and the variable
+`API_BASE_URL`. Notifications are shown inside
 the app (bell); push notifications with Firebase are pending.

@@ -1,6 +1,6 @@
 # QualiTrack Mobile — API Mapping
 
-Fuente de verdad: `qualitrack-platform` v0.13.2 (rama `develop`).
+Fuente de verdad: `qualitrack-platform` v1.1.0 (rama `main`); todas las rutas de esta tabla existen en esa versión.
 Todas las rutas son relativas a `API_BASE_URL` (p. ej. `http://10.0.2.2:8080`) y comienzan con `/api/v1`.
 `{lab}` = laboratorio de la sesión, `{env}` = ambiente.
 

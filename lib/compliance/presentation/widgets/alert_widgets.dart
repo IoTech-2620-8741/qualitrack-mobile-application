@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
-import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/app_typography.dart';
-import '../../../shared/presentation/formatting/context_locale.dart';
-import '../../../shared/presentation/formatting/formatters.dart';
-import '../../../shared/presentation/l10n/app_localizations.dart';
-import '../../../shared/presentation/widgets/status_badge.dart';
-import '../../../tracking/domain/telemetry.dart';
-import '../../../tracking/presentation/widgets/telemetry_labels.dart';
-import '../../domain/compliance.dart';
+import '../../../common/presentation/labels.dart';
+import '../../../common/presentation/theme/app_colors.dart';
+import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/formatting/context_locale.dart';
+import '../../../common/presentation/formatting/formatters.dart';
+import '../../../common/presentation/formatting/relative_time.dart';
+import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/status_badge.dart';
+import '../../domain/entities/alert_severity.dart';
+import '../../domain/entities/alert_status.dart';
+import '../../domain/entities/deviation_alert.dart';
 
 extension AlertStatusPresentation on AlertStatus {
   BadgeTone get tone => switch (this) {
@@ -26,11 +27,11 @@ extension AlertStatusPresentation on AlertStatus {
     AlertStatus.unknown => Icons.help_outline,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    AlertStatus.unresolved => l10n.alertUnresolved,
-    AlertStatus.acknowledged => l10n.alertAcknowledged,
-    AlertStatus.resolved => l10n.alertResolved,
-    AlertStatus.unknown => l10n.unknown,
+  String label(AppLocalizations i18n) => switch (this) {
+    AlertStatus.unresolved => i18n.alertUnresolved,
+    AlertStatus.acknowledged => i18n.alertAcknowledged,
+    AlertStatus.resolved => i18n.alertResolved,
+    AlertStatus.unknown => i18n.unknown,
   };
 }
 
@@ -42,23 +43,21 @@ extension AlertSeverityPresentation on AlertSeverity {
     AlertSeverity.unknown => BadgeTone.neutral,
   };
 
-  String label(AppLocalizations l10n) => switch (this) {
-    AlertSeverity.low => l10n.severityLow,
-    AlertSeverity.warning => l10n.severityWarning,
-    AlertSeverity.critical => l10n.severityCritical,
-    AlertSeverity.unknown => l10n.unknown,
+  String label(AppLocalizations i18n) => switch (this) {
+    AlertSeverity.low => i18n.severityLow,
+    AlertSeverity.warning => i18n.severityWarning,
+    AlertSeverity.critical => i18n.severityCritical,
+    AlertSeverity.unknown => i18n.unknown,
   };
 }
-
-/// Localized name of the monitored variable of an alert (e.g. `TEMPERATURE`).
-String alertVariable(AppLocalizations l10n, String parameterName) =>
-    MonitoredMetric.fromCode(parameterName).label(l10n, raw: Formatters.humanize(parameterName));
 
 String formatAlertValue(double? value, String? unit, String locale) {
   if (value == null) return '—';
   return '${Formatters.number(value, locale)} ${unit ?? ''}'.trim();
 }
 
+/// An alert as a mobile list item: severity icon, variable and recorded value
+/// on the first line, device · area below, then status and time.
 class AlertCard extends StatelessWidget {
   const AlertCard({super.key, required this.alert, this.deviceName, this.environmentName, this.onTap});
 
@@ -69,93 +68,129 @@ class AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
+    final i18n = context.i18n;
     final locale = context.localeName;
-    final theme = Theme.of(context);
-    final highlight = alert.isOpen && alert.isCritical;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      color: highlight ? AppColors.criticalContainer.withValues(alpha: 0.45) : null,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: highlight ? AppColors.critical.withValues(alpha: 0.4) : AppColors.border),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l10n.parameter.toUpperCase(), style: AppTypography.overline),
-                        Text(alertVariable(l10n, alert.parameterName), style: theme.textTheme.titleSmall),
-                      ],
-                    ),
-                  ),
-                  StatusBadge(label: alert.severity.label(l10n), tone: alert.severity.tone),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.xs,
-                children: [
-                  StatusBadge(
-                    label: alert.status.label(l10n),
-                    tone: alert.status.tone,
-                    icon: alert.status.icon,
-                  ),
-                  if (environmentName != null)
-                    StatusBadge(label: environmentName!, tone: BadgeTone.neutral, icon: Icons.meeting_room_outlined),
-                  StatusBadge(
-                    label: deviceName ?? l10n.equipmentNumber(alert.equipmentId),
-                    tone: BadgeTone.neutral,
-                    icon: alert.origin == AlertOrigin.container ? Icons.kitchen_outlined : Icons.sensors_outlined,
-                  ),
-                  if (alert.deviationCount > 1)
-                    StatusBadge(
-                      label: l10n.deviationsCount(alert.deviationCount),
-                      tone: BadgeTone.neutral,
-                      icon: Icons.repeat,
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Text(
-                      Formatters.dateTime(alert.lastDetectedAt ?? alert.timestamp, locale),
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+    final text = Theme.of(context).textTheme;
+    final severity = alert.severity.tone;
+    final where = [
+      deviceName ?? i18n.equipmentNumber(alert.equipmentId),
+      environmentName,
+    ].whereType<String>().join(' · ');
+    final at = alert.lastDetectedAt ?? alert.timestamp;
+    // Elapsed time on the card ("5 min ago"); the exact moment in a tooltip.
+    final when = relativeTime(context, at);
+    final limit =
+        alert.thresholdValue == null
+            ? null
+            : i18n.alertLimitValue(formatAlertValue(alert.thresholdValue, alert.unit, locale));
+    // One label for screen readers, in the order the card is read visually.
+    final semanticLabel = [
+      alert.severity.label(i18n),
+      alertVariable(i18n, alert.parameterName),
+      formatAlertValue(alert.recordedValue, alert.unit, locale),
+      if (limit != null) limit,
+      where,
+      alert.status.label(i18n),
+      if (alert.deviationCount > 1) i18n.deviationsCount(alert.deviationCount),
+      when,
+    ].where((part) => part.isNotEmpty).join(', ');
+    return Semantics(
+      button: onTap != null,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: severity.background, shape: BoxShape.circle),
+                  child: Icon(severity.icon, size: 22, color: severity.foreground, semanticLabel: alert.severity.label(i18n)),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(l10n.recordedValue, style: theme.textTheme.bodySmall),
-                      Text(
-                        formatAlertValue(alert.recordedValue, alert.unit, locale),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          color: alert.isOpen ? AppColors.critical : AppColors.textPrimary,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              alertVariable(i18n, alert.parameterName),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.titleMedium?.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            formatAlertValue(alert.recordedValue, alert.unit, locale),
+                            style: text.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: alert.isOpen ? severity.foreground : AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      // Device · area on the left, the limit on the right under the
+                      // value; when both do not fit, the limit drops to the next line.
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        spacing: AppSpacing.sm,
+                        children: [
+                          Text(where, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall),
+                          if (limit != null) Text(limit, style: text.bodySmall),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      // Status on the left, time on the right; on narrow screens
+                      // or long translations the time drops to the next line.
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              StatusBadge(
+                                label: alert.status.label(i18n),
+                                tone: alert.status.tone,
+                                icon: alert.status.icon,
+                              ),
+                              if (alert.deviationCount > 1) ...[
+                                const SizedBox(width: AppSpacing.sm),
+                                const Icon(Icons.repeat, size: 14, color: AppColors.textMuted),
+                                const SizedBox(width: AppSpacing.xxs),
+                                Text('${alert.deviationCount}', style: text.bodySmall),
+                              ],
+                            ],
+                          ),
+                          Tooltip(message: Formatters.dateTime(at, locale), child: Text(when, style: text.bodySmall)),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ],
+                ),
+                if (onTap != null) const Padding(
+                  padding: EdgeInsets.only(left: AppSpacing.xs, top: AppSpacing.sm),
+                  child: Icon(Icons.chevron_right, color: AppColors.textMuted),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
+    ),
     );
   }
 }

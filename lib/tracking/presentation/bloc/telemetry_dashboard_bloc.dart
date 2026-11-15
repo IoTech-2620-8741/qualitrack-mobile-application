@@ -3,17 +3,24 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../equipment/application/equipment_queries.dart';
-import '../../../equipment/domain/equipment.dart';
-import '../../../laboratory/application/laboratory_queries.dart';
-import '../../../laboratory/domain/laboratory.dart';
-import '../../../shared/domain/failure.dart';
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../shared/presentation/remote_state.dart';
-import '../../../shared/presentation/view_status.dart';
-import '../../application/telemetry_queries.dart';
-import '../../domain/telemetry.dart';
+import '../../../equipment/api/index.dart';
+import '../../../laboratory/api/index.dart';
+import '../../../common/domain/failure.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
+import '../../../common/presentation/view_status.dart';
+import '../../application/telemetry_facade_service.dart';
+import '../../application/telemetry_targets.dart';
+import '../../domain/entities/actuation_event.dart';
+import '../../domain/entities/device_connection.dart';
+import '../../domain/entities/environmental_profile.dart';
+import '../../domain/entities/measurement.dart';
+import '../../domain/entities/metric_reading.dart';
+import '../../domain/entities/metric_threshold.dart';
+import '../../domain/entities/monitored_metric.dart';
+import '../../domain/entities/telemetry_target.dart';
+import '../../domain/entities/telemetry_window.dart';
+import '../../domain/logic/telemetry_analysis.dart';
 
 /// IoT devices of the laboratory with the environments where they are located.
 final class DeviceCatalog extends Equatable {
@@ -228,24 +235,18 @@ final class TelemetryState extends Equatable {
 /// the BLoC is closed or polling is paused (app in background).
 class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
   TelemetryDashboardBloc({
-    required GetEquipments getEquipments,
-    required GetEnvironments getEnvironments,
-    required GetDeviceConnection getConnection,
-    required GetMeasurements getMeasurements,
-    required GetEnvironmentalProfile getProfile,
-    required GetActuationEvents getActuations,
+    required EquipmentApi equipmentApi,
+    required LaboratoryApi laboratoryApi,
+    required TelemetryFacadeService telemetryService,
     required LaboratoryId Function() laboratoryId,
     DateTime Function()? clock,
     this.pollInterval = const Duration(seconds: 15),
     this.pollOverlap = const Duration(minutes: 5),
     this.actuationsEveryTicks = 4,
     this.lookback = const Duration(hours: 24),
-  }) : _getEquipments = getEquipments,
-       _getEnvironments = getEnvironments,
-       _getConnection = getConnection,
-       _getMeasurements = getMeasurements,
-       _getProfile = getProfile,
-       _getActuations = getActuations,
+  }) : _equipmentApi = equipmentApi,
+       _laboratoryApi = laboratoryApi,
+       _telemetryService = telemetryService,
        _laboratoryId = laboratoryId,
        _clock = clock ?? DateTime.now,
        super(const TelemetryState()) {
@@ -271,12 +272,9 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
     on<TelemetryWindowSelected>((e, emit) => emit(state.copyWith(window: e.window)));
   }
 
-  final GetEquipments _getEquipments;
-  final GetEnvironments _getEnvironments;
-  final GetDeviceConnection _getConnection;
-  final GetMeasurements _getMeasurements;
-  final GetEnvironmentalProfile _getProfile;
-  final GetActuationEvents _getActuations;
+  final EquipmentApi _equipmentApi;
+  final LaboratoryApi _laboratoryApi;
+  final TelemetryFacadeService _telemetryService;
   final LaboratoryId Function() _laboratoryId;
   final DateTime Function() _clock;
   final Duration pollInterval;
@@ -293,7 +291,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
     emit(state.copyWith(catalog: state.catalog.loading()));
     try {
       final laboratoryId = _laboratoryId();
-      final results = await Future.wait<Object>([_getEquipments(laboratoryId), _getEnvironments(laboratoryId)]);
+      final results = await Future.wait<Object>([_equipmentApi.getEquipments(laboratoryId), _laboratoryApi.getEnvironments(laboratoryId)]);
       final catalog = DeviceCatalog(
         devices: telemetryDevices(results[0] as List<Equipment>),
         environments: results[1] as List<LabEnvironment>,
@@ -304,7 +302,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       final initial = catalog.devices.any((e) => e.id == requested) ? requested! : catalog.devices.first.id;
       await _select(initial, emit);
     } catch (error) {
-      emit(state.copyWith(catalog: state.catalog.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(catalog: state.catalog.failed(Failure.from(error))));
     }
   }
 
@@ -336,14 +334,14 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       final now = _clock();
       final from = now.subtract(lookback);
       final results = await Future.wait<Object?>([
-        _getConnection(laboratoryId, target),
-        _getMeasurements(laboratoryId, target, from: from, to: now),
-        _getProfile(laboratoryId, target),
+        _telemetryService.getConnection(laboratoryId, target),
+        _telemetryService.getMeasurements(laboratoryId, target, from: from, to: now),
+        _telemetryService.getProfile(laboratoryId, target),
       ]);
       Failure? actuationsFailure;
       var actuations = const <ActuationEvent>[];
       try {
-        actuations = await _getActuations(laboratoryId, target, from: from, to: now);
+        actuations = await _telemetryService.getActuationEvents(laboratoryId, target, from: from, to: now);
       } on UnauthorizedFailure {
         rethrow;
       } on Failure catch (failure) {
@@ -366,7 +364,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       if (!_paused) _startTimer();
     } catch (error) {
       if (state.selectedDeviceId != deviceId) return;
-      emit(state.copyWith(snapshot: state.snapshot.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(snapshot: state.snapshot.failed(Failure.from(error))));
     }
   }
 
@@ -380,8 +378,8 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       final laboratoryId = _laboratoryId();
       final now = _clock();
       final target = current.target;
-      final connection = await _getConnection(laboratoryId, target);
-      final recent = await _getMeasurements(laboratoryId, target, from: now.subtract(pollOverlap), to: now);
+      final connection = await _telemetryService.getConnection(laboratoryId, target);
+      final recent = await _telemetryService.getMeasurements(laboratoryId, target, from: now.subtract(pollOverlap), to: now);
       var next = current.copyWith(
         connection: connection,
         history: TelemetryAnalysis.merge(current.history, recent, now.subtract(lookback)),
@@ -389,7 +387,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       );
       if (target.containerMonitor && _ticks % actuationsEveryTicks == 0) {
         try {
-          final actuations = await _getActuations(laboratoryId, target, from: now.subtract(lookback), to: now);
+          final actuations = await _telemetryService.getActuationEvents(laboratoryId, target, from: now.subtract(lookback), to: now);
           next = next.copyWith(actuations: actuations, clearActuationsFailure: true);
         } on UnauthorizedFailure {
           rethrow;
@@ -403,7 +401,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
       ));
     } catch (error) {
       if (state.selectedDeviceId != deviceId) return;
-      emit(state.copyWith(snapshot: state.snapshot.failed(ApiExceptionMapper.map(error))));
+      emit(state.copyWith(snapshot: state.snapshot.failed(Failure.from(error))));
       if (error is UnauthorizedFailure) _stopTimer();
     } finally {
       _busy = false;

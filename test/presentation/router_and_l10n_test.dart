@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qualitrack_mobile/app/router/app_router.dart';
 import 'package:qualitrack_mobile/app/router/app_routes.dart';
 import 'package:qualitrack_mobile/iam/application/session_controller.dart';
-import 'package:qualitrack_mobile/shared/presentation/l10n/app_localizations.dart';
+import 'package:qualitrack_mobile/common/presentation/i18n/app_localizations.dart';
+import 'package:qualitrack_mobile/common/presentation/labels.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 
 void main() {
   group('route guard', () {
@@ -45,6 +47,15 @@ void main() {
       expect(AppLocalizations.resolve(const Locale('es', 'PE'), AppLocalizations.supportedLocales), const Locale('es'));
     });
 
+    test('metrics are named by code and unknown ones keep the raw text', () {
+      final en = AppLocalizations(const Locale('en'));
+      expect(metricLabel(en, 'TEMPERATURE'), en.metricTemperature);
+      expect(alertVariable(en, 'DOOR_OPEN'), 'Door open');
+      expect(timeInRangeTone(100), BadgeTone.success);
+      expect(timeInRangeTone(99.5), BadgeTone.warning);
+      expect(timeInRangeTone(null), BadgeTone.neutral);
+    });
+
     test('placeholders are replaced', () {
       final es = AppLocalizations(const Locale('es'));
       expect(es.pageOf(1, 3), 'Página 1 de 3');
@@ -53,6 +64,32 @@ void main() {
         AppLocalizations(const Locale('en')).noticeBatchReleased('Billy', 'LOT-1'),
         'Billy released batch LOT-1.',
       );
+    });
+
+    // The Home breaks its banner only after ': ' and a row detail only at ' · ': a
+    // translation without them would wrap anywhere, so it fails here instead.
+    test('every language keeps the separators the Home wraps its texts at', () {
+      for (final locale in AppLocalizations.supportedLocales) {
+        final i18n = AppLocalizations(locale);
+        for (final banner in [i18n.homeStatusCritical(2), i18n.homeStatusCriticalOne]) {
+          expect(banner, contains(': '), reason: '$locale');
+        }
+        for (final detail in [
+          i18n.homeAlertsDetail(3, 2),
+          i18n.homeAlertsDetailOneAcknowledged(3),
+          i18n.homeBatchesDetail(2, 3),
+          i18n.homeBatchesDetailOnePending(3),
+        ]) {
+          expect(detail, contains(' · '), reason: '$locale');
+        }
+      }
+    });
+
+    test('batches in progress read "En proceso", as the style guide and Web say', () {
+      final es = AppLocalizations(const Locale('es'));
+      expect(es.batchInProgress, 'En proceso');
+      expect(es.homeBatchesInProgress, 'Lotes en proceso');
+      expect(es.homeBatchesDetail(2, 3), '2 pendientes · 3 en proceso');
     });
   });
 }

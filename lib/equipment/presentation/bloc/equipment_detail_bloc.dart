@@ -1,20 +1,18 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../compliance/application/compliance_queries.dart';
-import '../../../compliance/domain/compliance.dart';
-import '../../../laboratory/application/laboratory_queries.dart';
-import '../../../reporting/application/reporting_queries.dart';
-import '../../../reporting/domain/reporting.dart';
-import '../../../shared/domain/failure.dart';
-import '../../../shared/domain/value_objects.dart';
-import '../../../shared/infrastructure/http/api_exception_mapper.dart';
-import '../../../shared/presentation/remote_state.dart';
-import '../../../shared/presentation/section.dart';
-import '../../../tracking/application/telemetry_queries.dart';
-import '../../../tracking/domain/telemetry.dart';
-import '../../application/equipment_queries.dart';
-import '../../domain/equipment.dart';
+import '../../../compliance/api/index.dart';
+import '../../../laboratory/api/index.dart';
+import '../../../reporting/api/index.dart';
+import '../../../common/domain/failure.dart';
+import '../../../common/domain/value_objects.dart';
+import '../../../common/presentation/remote_state.dart';
+import '../../../common/application/section.dart';
+import '../../../tracking/api/index.dart';
+import '../../application/equipment_facade_service.dart';
+import '../../domain/entities/bpm_parameter_config.dart';
+import '../../domain/entities/equipment.dart';
+import '../../domain/entities/maintenance_record.dart';
 
 /// Everything shown on the equipment detail screen. Secondary sections are
 /// loaded independently so one failing endpoint does not hide the others.
@@ -69,67 +67,55 @@ final class EquipmentDetailRequested extends Equatable {
 class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<EquipmentDetail>> {
   EquipmentDetailBloc({
     required this.equipmentId,
-    required GetEquipment getEquipment,
-    required GetEnvironments getEnvironments,
-    required GetDeviceConnection getConnection,
-    required GetBpmConfigs getBpmConfigs,
-    required GetMaintenanceHistory getMaintenance,
-    required GetDeviationTrends getTrends,
-    required GetEquipmentComplianceEvents getEvents,
-    required GetEquipmentAuditLogs getAuditLogs,
-    required GetUserDirectory getUserDirectory,
+    required EquipmentFacadeService equipmentService,
+    required LaboratoryApi laboratoryApi,
+    required TelemetryApi telemetryApi,
+    required ReportingApi reportingApi,
+    required ComplianceApi complianceApi,
     required LaboratoryId Function() laboratoryId,
-  }) : _getEquipment = getEquipment,
-       _getEnvironments = getEnvironments,
-       _getConnection = getConnection,
-       _getBpmConfigs = getBpmConfigs,
-       _getMaintenance = getMaintenance,
-       _getTrends = getTrends,
-       _getEvents = getEvents,
-       _getAuditLogs = getAuditLogs,
-       _getUserDirectory = getUserDirectory,
+  }) : _equipmentService = equipmentService,
+       _laboratoryApi = laboratoryApi,
+       _telemetryApi = telemetryApi,
+       _reportingApi = reportingApi,
+       _complianceApi = complianceApi,
        _laboratoryId = laboratoryId,
        super(const RemoteState()) {
     on<EquipmentDetailRequested>(_onRequested);
   }
 
   final int equipmentId;
-  final GetEquipment _getEquipment;
-  final GetEnvironments _getEnvironments;
-  final GetDeviceConnection _getConnection;
-  final GetBpmConfigs _getBpmConfigs;
-  final GetMaintenanceHistory _getMaintenance;
-  final GetDeviationTrends _getTrends;
-  final GetEquipmentComplianceEvents _getEvents;
-  final GetEquipmentAuditLogs _getAuditLogs;
-  final GetUserDirectory _getUserDirectory;
+  final EquipmentFacadeService _equipmentService;
+  final LaboratoryApi _laboratoryApi;
+  final TelemetryApi _telemetryApi;
+  final ReportingApi _reportingApi;
+  final ComplianceApi _complianceApi;
   final LaboratoryId Function() _laboratoryId;
 
   Future<void> _onRequested(EquipmentDetailRequested event, Emitter<RemoteState<EquipmentDetail>> emit) async {
     emit(event.refresh && state.hasData ? state.refreshingState() : state.loading());
     try {
       final lab = _laboratoryId();
-      final equipment = await _getEquipment(lab, equipmentId);
+      final equipment = await _equipmentService.getEquipment(lab, equipmentId);
       final target = targetOf(equipment);
       final environmentId = equipment.environmentId;
       final results = await Future.wait<Object?>([
         _optional(() async {
-          for (final environment in await _getEnvironments(lab)) {
+          for (final environment in await _laboratoryApi.getEnvironments(lab)) {
             if (environment.id == environmentId) return environment.displayName;
           }
           return null;
         }),
-        target == null ? Future<DeviceConnection?>.value() : _optional(() => _getConnection(lab, target)),
-        Section.load(() => _getBpmConfigs(lab, equipmentId)),
-        Section.load(() => _getMaintenance(lab, equipment)),
+        target == null ? Future<DeviceConnection?>.value() : _optional(() => _telemetryApi.getConnection(lab, target)),
+        Section.load(() => _equipmentService.getBpmConfigs(lab, equipmentId)),
+        Section.load(() => _equipmentService.getMaintenanceHistory(lab, equipment)),
         Section.load(() async {
           if (target == null) return const <DeviationTrend>[];
-          final trends = await _getTrends(lab, [target.environmentId], ReportPeriod.last7Days);
+          final trends = await _reportingApi.getDeviationTrends(lab, [target.environmentId], ReportPeriod.last7Days);
           return trends.where((t) => t.equipmentId == equipmentId).toList();
         }),
-        Section.load(() => _getEvents(lab, equipmentId)),
-        Section.load(() => _getAuditLogs(lab, equipmentId)),
-        _optional(() => _getUserDirectory(lab)),
+        Section.load(() => _complianceApi.getEquipmentEvents(lab, equipmentId)),
+        Section.load(() => _reportingApi.getEquipmentAuditLogs(lab, equipmentId)),
+        _optional(() => _laboratoryApi.getUserDirectory(lab)),
       ]);
       emit(state.success(EquipmentDetail(
         equipment: equipment,
@@ -143,7 +129,7 @@ class EquipmentDetailBloc extends Bloc<EquipmentDetailRequested, RemoteState<Equ
         people: (results[7] as Map<int, String>?) ?? const {},
       )));
     } catch (error) {
-      emit(state.failed(ApiExceptionMapper.map(error)));
+      emit(state.failed(Failure.from(error)));
     }
   }
 

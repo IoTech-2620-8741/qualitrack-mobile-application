@@ -1,0 +1,25 @@
+# Analyzes and tests every pull request from a feature branch into develop.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  verify:
+    if: startsWith(github.head_ref, 'feature/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pinned to the Flutter the team builds with, so a new stable release
+      # (3.50 deprecates package:flutter/material.dart) does not fail every PR.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.3
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
