@@ -311,6 +311,7 @@ changePassword	Change password	Cambiar contraseña
 changePasswordForcedHint	You signed in with a temporary password. Choose your own password to continue.	Ingresaste con una contraseña temporal. Elige tu propia contraseña para continuar.
 changePasswordTitle	Choose your password	Elige tu contraseña
 changePhoto	Change photo	Cambiar foto
+chooseDevice	Choose a device	Elegir dispositivo
 conditionNormalized	The condition returned to normal on {date}; the alert stays open until someone resolves it.	La condición volvió a la normalidad el {date}; la alerta sigue abierta hasta que alguien la resuelva.	date:String
 confirmPassword	Confirm the new password	Confirma la nueva contraseña
 connected	Connected	Conectado

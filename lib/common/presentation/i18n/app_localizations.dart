@@ -379,6 +379,7 @@ class AppLocalizations {
   String get changePasswordForcedHint => _t('changePasswordForcedHint');
   String get changePasswordTitle => _t('changePasswordTitle');
   String get changePhoto => _t('changePhoto');
+  String get chooseDevice => _t('chooseDevice');
   String conditionNormalized(String date) => _t('conditionNormalized')
       .replaceAll('{date}', date);
   String get confirmPassword => _t('confirmPassword');
@@ -978,6 +979,7 @@ const Map<String, String> _en = {
   'changePasswordForcedHint': 'You signed in with a temporary password. Choose your own password to continue.',
   'changePasswordTitle': 'Choose your password',
   'changePhoto': 'Change photo',
+  'chooseDevice': 'Choose a device',
   'conditionNormalized': 'The condition returned to normal on {date}; the alert stays open until someone resolves it.',
   'confirmPassword': 'Confirm the new password',
   'connected': 'Connected',
@@ -1521,6 +1523,7 @@ const Map<String, String> _es = {
   'changePasswordForcedHint': 'Ingresaste con una contraseña temporal. Elige tu propia contraseña para continuar.',
   'changePasswordTitle': 'Elige tu contraseña',
   'changePhoto': 'Cambiar foto',
+  'chooseDevice': 'Elegir dispositivo',
   'conditionNormalized': 'La condición volvió a la normalidad el {date}; la alerta sigue abierta hasta que alguien la resuelva.',
   'confirmPassword': 'Confirma la nueva contraseña',
   'connected': 'Conectado',
