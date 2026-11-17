@@ -14,6 +14,7 @@ import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/view_status.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
+import '../../../common/presentation/widgets/pressable_card.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
@@ -26,6 +27,7 @@ import '../../domain/entities/metric_threshold.dart';
 import '../../domain/entities/monitored_metric.dart';
 import '../../domain/entities/telemetry_window.dart';
 import '../bloc/telemetry_dashboard_bloc.dart';
+import '../widgets/reading_range_bar.dart';
 import '../widgets/telemetry_chart.dart';
 import '../widgets/telemetry_labels.dart';
 
@@ -146,117 +148,239 @@ Future<void> showTelemetryHelp(BuildContext context) {
   );
 }
 
+/// The device whose telemetry is shown, as one card with its type, name,
+/// environment and status. Tapping it opens [_DevicePickerSheet] with every
+/// device grouped by environment, so one component serves from 2 devices to
+/// the 15 an Edge Gateway can have.
 class _DeviceSelector extends StatelessWidget {
   const _DeviceSelector({required this.catalog, required this.selectedId});
 
   final DeviceCatalog catalog;
   final int? selectedId;
 
-  /// Up to this many devices are shown as chips, all at sight with their
-  /// status; with more, the dropdown keeps the screen short.
-  static const int maxChips = 6;
-
-  @override
-  Widget build(BuildContext context) {
-    if (catalog.devices.length <= maxChips) return _DeviceChips(catalog: catalog, selectedId: selectedId);
-    final i18n = context.i18n;
-    return DropdownButtonFormField<int>(
-      key: ValueKey(selectedId),
-      initialValue: selectedId,
-      isExpanded: true,
-      decoration: InputDecoration(labelText: i18n.selectDevice, prefixIcon: const Icon(Icons.sensors_outlined)),
-      items: [
-        for (final device in catalog.devices)
-          DropdownMenuItem(
-            value: device.id,
-            child: Text(
-              '${device.name} · ${catalog.environmentOf(device)?.name ?? '—'}',
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-      ],
-      onChanged: (id) {
-        if (id != null) context.read<TelemetryDashboardBloc>().add(TelemetryDeviceSelected(id));
-      },
-    );
-  }
-}
-
-/// The devices as chips in one scrollable row, each with a dot of its
-/// equipment status, so the one that needs attention is spotted without
-/// opening a menu (content-based navigation). The environment of the
-/// selected device is shown below.
-class _DeviceChips extends StatelessWidget {
-  const _DeviceChips({required this.catalog, required this.selectedId});
-
-  final DeviceCatalog catalog;
-  final int? selectedId;
-
-  static BadgeTone _tone(EquipmentStatus status) => switch (status) {
-    EquipmentStatus.operational => BadgeTone.success,
-    EquipmentStatus.maintenance => BadgeTone.warning,
-    EquipmentStatus.outOfService => BadgeTone.critical,
-    EquipmentStatus.inactive || EquipmentStatus.unknown => BadgeTone.neutral,
-  };
-
-  static String? _status(AppLocalizations i18n, EquipmentStatus status) => switch (status) {
-    EquipmentStatus.operational => i18n.equipmentOperational,
-    EquipmentStatus.maintenance => i18n.equipmentMaintenance,
-    EquipmentStatus.outOfService => i18n.equipmentOutOfService,
-    _ => null,
-  };
-
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     final text = Theme.of(context).textTheme;
-    final selected = catalog.devices.where((d) => d.id == selectedId).firstOrNull;
-    final environment = selected == null ? null : catalog.environmentOf(selected)?.name;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(i18n.selectDevice, style: text.titleSmall?.copyWith(color: AppColors.navy)),
-        const SizedBox(height: AppSpacing.xs),
-        // The chips wrap onto more lines instead of scrolling sideways, so
-        // every device, the selected one included, is always in sight.
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.xs,
+    final device = catalog.devices.where((d) => d.id == selectedId).firstOrNull;
+    final environment = device == null ? null : catalog.environmentOf(device)?.name;
+    final canChange = catalog.devices.length > 1;
+    return PressableCard(
+      key: const Key('telemetry.deviceSelector'),
+      borderRadius: AppRadius.xlAll,
+      onTap: canChange ? () => _showDevicePicker(context, catalog, selectedId) : null,
+      semanticLabel: [
+        '${i18n.selectDevice}: ${device?.name ?? '—'}',
+        if (environment != null) environment,
+        if (device != null) _deviceStatusLabel(i18n, device.status),
+      ].join(', '),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
           children: [
-            for (final device in catalog.devices)
-              Semantics(
-                  label: [device.name, _status(i18n, device.status)].whereType<String>().join(', '),
-                  excludeSemantics: true,
-                  selected: device.id == selectedId,
-                  button: true,
-                  child: ChoiceChip(
-                    key: ValueKey('telemetry.device.${device.id}'),
-                    selected: device.id == selectedId,
-                    showCheckmark: false,
-                    avatar: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: _tone(device.status) == BadgeTone.neutral
-                            ? AppColors.textMuted
-                            : _tone(device.status).foreground,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    label: Text(device.name),
-                    onSelected: (_) => context.read<TelemetryDashboardBloc>().add(TelemetryDeviceSelected(device.id)),
+            _DeviceIcon(device: device),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    device?.name ?? i18n.selectDevice,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: text.titleMedium,
                   ),
-                ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Row(
+                    children: [
+                      if (device != null) ...[
+                        _DeviceStatusIcon(status: device.status),
+                        const SizedBox(width: AppSpacing.xs),
+                      ],
+                      Expanded(
+                        child: Text(
+                          environment ?? i18n.notLocated,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (canChange) ...[
+              const SizedBox(width: AppSpacing.sm),
+              const Icon(Icons.unfold_more, color: AppColors.primaryDark),
+            ],
           ],
         ),
-        if (environment != null) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text('${i18n.environment}: $environment', style: text.bodySmall),
+      ),
+    );
+  }
+}
+
+Future<void> _showDevicePicker(BuildContext context, DeviceCatalog catalog, int? selectedId) {
+  final bloc = context.read<TelemetryDashboardBloc>();
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (sheet) => _DevicePickerSheet(
+      catalog: catalog,
+      selectedId: selectedId,
+      onSelected: (id) {
+        Navigator.of(sheet).pop();
+        bloc.add(TelemetryDeviceSelected(id));
+      },
+    ),
+  );
+}
+
+/// Every device grouped by environment, in the order of the environments, and
+/// then the devices that are not located yet.
+class _DevicePickerSheet extends StatelessWidget {
+  const _DevicePickerSheet({required this.catalog, required this.selectedId, required this.onSelected});
+
+  final DeviceCatalog catalog;
+  final int? selectedId;
+  final ValueChanged<int> onSelected;
+
+  List<(String, List<Equipment>)> _groups(AppLocalizations i18n) {
+    final groups = <(String, List<Equipment>)>[];
+    for (final environment in catalog.environments) {
+      final devices = catalog.devices.where((d) => d.environmentId == environment.id).toList();
+      if (devices.isNotEmpty) groups.add((environment.name, devices));
+    }
+    final notLocated = catalog.devices.where((d) => catalog.environmentOf(d) == null).toList();
+    if (notLocated.isNotEmpty) groups.add((i18n.notLocated, notLocated));
+    return groups;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final i18n = context.i18n;
+    return ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Text(i18n.chooseDevice, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        for (final (environment, devices) in _groups(i18n)) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xs),
+            // Read as written, not letter by letter.
+            child: Semantics(
+              header: true,
+              label: environment,
+              excludeSemantics: true,
+              child: Text(environment.toUpperCase(), style: AppTypography.overline),
+            ),
+          ),
+          for (final device in devices)
+            _DeviceOption(device: device, selected: device.id == selectedId, onTap: () => onSelected(device.id)),
         ],
       ],
     );
   }
 }
+
+class _DeviceOption extends StatelessWidget {
+  const _DeviceOption({required this.device, required this.selected, required this.onTap});
+
+  final Equipment device;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final i18n = context.i18n;
+    // The status is written only when it needs attention; the icon shows it always.
+    final details = [
+      _deviceTypeLabel(i18n, device),
+      if (device.status != EquipmentStatus.operational) _deviceStatusLabel(i18n, device.status),
+    ].whereType<String>().join(' · ');
+    return ListTile(
+      key: ValueKey('telemetry.device.${device.id}'),
+      selected: selected,
+      selectedTileColor: AppColors.primaryContainer,
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      leading: Icon(_deviceIcon(device), color: AppColors.primaryDark),
+      title: Text(device.name),
+      subtitle: details.isEmpty ? null : Text(details),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _DeviceStatusIcon(status: device.status),
+          if (selected) ...[
+            const SizedBox(width: AppSpacing.sm),
+            const Icon(Icons.check, color: AppColors.primaryDark),
+          ],
+        ],
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+/// The type of the device on a tinted square: a container or the environment.
+class _DeviceIcon extends StatelessWidget {
+  const _DeviceIcon({required this.device});
+
+  final Equipment? device;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: const BoxDecoration(color: AppColors.primaryContainer, borderRadius: AppRadius.lgAll),
+      child: Icon(_deviceIcon(device), color: AppColors.primaryDark),
+    );
+  }
+}
+
+/// The equipment status as an icon of its tone, so it is not told by color
+/// alone; screen readers get the status in the label of the card or the row.
+class _DeviceStatusIcon extends StatelessWidget {
+  const _DeviceStatusIcon({required this.status});
+
+  final EquipmentStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = _deviceStatusTone(status);
+    return Icon(tone.icon, size: 16, color: tone == BadgeTone.neutral ? AppColors.textMuted : tone.foreground);
+  }
+}
+
+IconData _deviceIcon(Equipment? device) =>
+    (device?.isContainerMonitor ?? false) ? Icons.kitchen_outlined : Icons.sensors_outlined;
+
+String? _deviceTypeLabel(AppLocalizations i18n, Equipment device) => switch (device.deviceType) {
+  IotDeviceType.containerMonitor => i18n.containerMonitor,
+  IotDeviceType.environmentalDevice => i18n.environmentalDevice,
+  null => null,
+};
+
+BadgeTone _deviceStatusTone(EquipmentStatus status) => switch (status) {
+  EquipmentStatus.operational => BadgeTone.success,
+  EquipmentStatus.maintenance => BadgeTone.warning,
+  EquipmentStatus.outOfService => BadgeTone.critical,
+  EquipmentStatus.inactive || EquipmentStatus.unknown => BadgeTone.neutral,
+};
+
+String _deviceStatusLabel(AppLocalizations i18n, EquipmentStatus status) => switch (status) {
+  EquipmentStatus.operational => i18n.equipmentOperational,
+  EquipmentStatus.maintenance => i18n.equipmentMaintenance,
+  EquipmentStatus.outOfService => i18n.equipmentOutOfService,
+  EquipmentStatus.inactive => i18n.inactive,
+  EquipmentStatus.unknown => i18n.unknown,
+};
 
 class _SnapshotSection extends StatelessWidget {
   const _SnapshotSection({required this.state, required this.onOpenHistory});
@@ -277,7 +401,6 @@ class _SnapshotSection extends StatelessWidget {
       return SizedBox(height: 320, child: ErrorView(failure: remote.failure!, onRetry: retry));
     }
     final readings = data.readings;
-    final deviations = data.deviations;
     final profile = data.profile;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -293,26 +416,16 @@ class _SnapshotSection extends StatelessWidget {
         ] else ...[
           // The profile version is a technical detail; only a missing profile
           // matters to the user.
-          SectionHeader(title: i18n.currentReadings, subtitle: profile == null ? i18n.noProfileConfigured : null),
-          ResponsiveGrid(
-            minItemWidth: 160,
-            children: [
-              for (final reading in readings)
-                _ReadingCard(reading: reading, threshold: data.thresholdFor(reading.latest.metric)),
-            ],
+          SectionHeader(
+            title: i18n.currentReadings,
+            subtitle: profile == null ? i18n.noProfileConfigured : null,
+            trailing: _ReadingsTime(readings: readings),
           ),
+          _ReadingsList(snapshot: data),
           if (data.chartMetrics.isNotEmpty) ...[
             SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
             _ChartCard(state: state, snapshot: data),
           ],
-          SectionHeader(title: i18n.deviations24h, subtitle: i18n.deviationsHint),
-          if (deviations.isEmpty)
-            InfoCard(child: Text(i18n.noDeviations))
-          else
-            for (final measurement in deviations.take(5)) ...[
-              _DeviationTile(measurement: measurement),
-              const SizedBox(height: AppSpacing.sm),
-            ],
         ],
         // Automatic actions show up without readings only when there are some.
         if (data.target.containerMonitor && (readings.isNotEmpty || data.actuations.isNotEmpty)) ...[
@@ -522,110 +635,153 @@ String? rangeText(BuildContext context, MetricThreshold? threshold) {
   return parts.isEmpty ? null : parts.join(' · ');
 }
 
-class _ReadingCard extends StatelessWidget {
-  const _ReadingCard({required this.reading, this.threshold});
+/// When the newest reading was taken, once for the whole list.
+class _ReadingsTime extends StatelessWidget {
+  const _ReadingsTime({required this.readings});
+
+  final List<MetricReading> readings;
+
+  @override
+  Widget build(BuildContext context) {
+    final newest = _newestTime(readings);
+    if (newest == null) return const SizedBox.shrink();
+    return Tooltip(
+      message: Formatters.dateTime(newest, context.localeName),
+      child: Text(relativeTime(context, newest), style: Theme.of(context).textTheme.bodySmall),
+    );
+  }
+}
+
+DateTime? _newestTime(List<MetricReading> readings) {
+  DateTime? newest;
+  for (final reading in readings) {
+    final at = reading.latest.measuredAt;
+    if (at != null && (newest == null || at.isAfter(newest))) newest = at;
+  }
+  return newest;
+}
+
+/// The latest reading of every metric in one card, a row each.
+class _ReadingsList extends StatelessWidget {
+  const _ReadingsList({required this.snapshot});
+
+  final TelemetrySnapshot snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    final readings = snapshot.readings;
+    final newest = _newestTime(readings);
+    final sharedTime = newest == null ? null : relativeTime(context, newest);
+    return InfoCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (index, reading) in readings.indexed) ...[
+            if (index > 0) const Divider(height: 1),
+            _ReadingRow(
+              reading: reading,
+              threshold: snapshot.thresholdFor(reading.latest.metric),
+              sharedTime: sharedTime,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// One metric: its name, value and state, a bar with its zones and the mark of
+/// the reading, and its ranges written below. A reading out of range tints its
+/// row, as the card did before.
+class _ReadingRow extends StatelessWidget {
+  const _ReadingRow({required this.reading, required this.threshold, required this.sharedTime});
 
   final MetricReading reading;
   final MetricThreshold? threshold;
+
+  /// Time shown next to the title of the list; the row repeats its own time
+  /// only when it is a different one.
+  final String? sharedTime;
 
   @override
   Widget build(BuildContext context) {
     final i18n = context.i18n;
     final theme = Theme.of(context);
     final m = reading.latest;
-    final range = rangeText(context, threshold);
     final name = m.metric.label(i18n, raw: m.rawMetric);
-    // A reading out of range stands out at a glance: the card takes the tint
-    // of its state and the figure its text tone (contrast by colour + value).
+    final value = readingText(context, m);
+    final range = rangeText(context, threshold);
+    final evaluated = m.state != EnvironmentalState.unknown;
     final outOfRange = m.state.isDeviation;
     final tone = m.state.tone;
+    final limits = threshold;
+    final scale = limits != null && m.isNumeric ? ReadingRangeScale.of(limits, m.value!) : null;
+    final time = m.measuredAt == null ? null : relativeTime(context, m.measuredAt);
+    final ownTime = time == sharedTime ? null : time;
     return Semantics(
-      label: [name, readingText(context, m), if (m.state != EnvironmentalState.unknown) m.state.label(i18n)].join(': '),
-      child: InfoCard(
-        color: outOfRange ? tone.background : null,
-        borderColor: outOfRange ? tone.foreground.withValues(alpha: 0.3) : null,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(m.metric.icon, size: 18, color: AppColors.primary),
-                const SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium),
+      label: [name, value, if (evaluated) m.state.label(i18n), if (range != null) range, if (ownTime != null) ownTime]
+          .join(', '),
+      excludeSemantics: true,
+      child: ColoredBox(
+        color: outOfRange ? tone.background : Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(m.metric.icon, size: 20, color: outOfRange ? tone.foreground : AppColors.primaryDark),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.titleSmall),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  // A long text value, such as an RFID tag, shrinks instead of
+                  // pushing the name out.
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 140),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        value,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: outOfRange ? tone.foreground : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (evaluated) ...[
+                    const SizedBox(width: AppSpacing.sm),
+                    StateBadge(state: m.state),
+                  ],
+                ],
+              ),
+              if (scale != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                ReadingRangeBar(
+                  key: ValueKey('telemetry.rangeBar.${m.rawMetric}'),
+                  scale: scale,
+                  state: m.state,
                 ),
               ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                readingText(context, m),
-                style: AppTypography.metric.copyWith(color: outOfRange ? tone.foreground : null),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            if (m.state != EnvironmentalState.unknown) StateBadge(state: m.state),
-            if (range != null) ...[
-              const SizedBox(height: AppSpacing.xs),
-              Text(range, style: theme.textTheme.bodySmall),
-            ],
-            const SizedBox(height: AppSpacing.xs),
-            Tooltip(
-              message: Formatters.dateTime(m.measuredAt, context.localeName),
-              child: Text(relativeTime(context, m.measuredAt), style: theme.textTheme.bodySmall),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DeviationTile extends StatelessWidget {
-  const _DeviationTile({required this.measurement});
-
-  final Measurement measurement;
-
-  @override
-  Widget build(BuildContext context) {
-    final i18n = context.i18n;
-    final locale = context.localeName;
-    final m = measurement;
-    final critical = m.state == EnvironmentalState.critical;
-    final color = critical ? AppColors.critical : AppColors.warning;
-    return InfoCard(
-      color: (critical ? AppColors.criticalContainer : AppColors.warningContainer).withValues(alpha: 0.5),
-      borderColor: color.withValues(alpha: 0.3),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(m.metric.label(i18n, raw: m.rawMetric), style: Theme.of(context).textTheme.titleSmall),
-                if (m.thresholdValue != null)
-                  Text(
-                    i18n.thresholdExceeded('${Formatters.number(m.thresholdValue, locale)} ${m.unit ?? ''}'.trim()),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                Text(Formatters.dateTime(m.measuredAt, locale), style: Theme.of(context).textTheme.bodySmall),
+              if (range != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(range, style: theme.textTheme.bodySmall),
               ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              StateBadge(state: m.state),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                readingText(context, m),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color, fontWeight: FontWeight.w700),
-              ),
+              if (ownTime != null) ...[
+                const SizedBox(height: AppSpacing.xxs),
+                Tooltip(
+                  message: Formatters.dateTime(m.measuredAt, context.localeName),
+                  child: Text(ownTime, style: theme.textTheme.bodySmall),
+                ),
+              ],
             ],
           ),
-        ],
+        ),
       ),
     );
   }
