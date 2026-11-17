@@ -325,7 +325,6 @@ deviationIndicators7d	Deviation indicators (7 days)	Indicadores de desviaciones 
 deviations24h	Deviations (24 h)	Desviaciones (24 h)
 deviationsCount	{count} deviations	{count} desviaciones	count:int
 deviationsCountOne	1 deviation	1 desviación
-deviationsHint	Readings evaluated as warning or critical	Lecturas evaluadas como advertencia o críticas
 deviationsLabel	Deviations	Desviaciones
 deviceIdentifier	Device identifier	Identificador del dispositivo
 digitalSignature	Digital signature	Firma digital
@@ -379,7 +378,6 @@ newPassword	New password	Nueva contraseña
 noAutomaticActions	No automatic actions in the last 24 hours.	Sin acciones automáticas en las últimas 24 horas.
 noBatchesUsedIt	No batch has used this material.	Ningún lote ha usado este material.
 noContainerAssigned	The batch has no container assigned.	El lote no tiene contenedor asignado.
-noDeviations	No deviations in the last 24 hours.	Sin desviaciones en las últimas 24 horas.
 noEquipmentUsed	No equipment registered for this batch.	No hay equipos registrados para este lote.
 noParticipatingStaff	No staff registered for this batch.	No hay personal registrado para este lote.
 noProfileConfigured	No ranges configured yet	Aún no hay rangos configurados
@@ -443,7 +441,6 @@ stateCritical	Critical	Crítico
 stateNormal	Normal	Normal
 stateWarning	Warning	Advertencia
 telemetryNoDevices	There are no IoT devices located in an environment yet.	Aún no hay dispositivos IoT ubicados en un ambiente.
-thresholdExceeded	Limit exceeded: {value}	Límite superado: {value}	value:String
 timeInRange	{value} in range	{value} en rango	value:String
 unread	Unread	Sin leer
 until	until {date}	hasta el {date}	date:String

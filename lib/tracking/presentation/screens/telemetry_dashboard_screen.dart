@@ -401,7 +401,6 @@ class _SnapshotSection extends StatelessWidget {
       return SizedBox(height: 320, child: ErrorView(failure: remote.failure!, onRetry: retry));
     }
     final readings = data.readings;
-    final deviations = data.deviations;
     final profile = data.profile;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -427,14 +426,6 @@ class _SnapshotSection extends StatelessWidget {
             SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
             _ChartCard(state: state, snapshot: data),
           ],
-          SectionHeader(title: i18n.deviations24h, subtitle: i18n.deviationsHint),
-          if (deviations.isEmpty)
-            InfoCard(child: Text(i18n.noDeviations))
-          else
-            for (final measurement in deviations.take(5)) ...[
-              _DeviationTile(measurement: measurement),
-              const SizedBox(height: AppSpacing.sm),
-            ],
         ],
         // Automatic actions show up without readings only when there are some.
         if (data.target.containerMonitor && (readings.isNotEmpty || data.actuations.isNotEmpty)) ...[
@@ -791,54 +782,6 @@ class _ReadingRow extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DeviationTile extends StatelessWidget {
-  const _DeviationTile({required this.measurement});
-
-  final Measurement measurement;
-
-  @override
-  Widget build(BuildContext context) {
-    final i18n = context.i18n;
-    final locale = context.localeName;
-    final m = measurement;
-    final critical = m.state == EnvironmentalState.critical;
-    final color = critical ? AppColors.critical : AppColors.warning;
-    return InfoCard(
-      color: (critical ? AppColors.criticalContainer : AppColors.warningContainer).withValues(alpha: 0.5),
-      borderColor: color.withValues(alpha: 0.3),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(m.metric.label(i18n, raw: m.rawMetric), style: Theme.of(context).textTheme.titleSmall),
-                if (m.thresholdValue != null)
-                  Text(
-                    i18n.thresholdExceeded('${Formatters.number(m.thresholdValue, locale)} ${m.unit ?? ''}'.trim()),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                Text(Formatters.dateTime(m.measuredAt, locale), style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              StateBadge(state: m.state),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                readingText(context, m),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

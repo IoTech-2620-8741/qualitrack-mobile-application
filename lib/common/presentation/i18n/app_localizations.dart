@@ -398,7 +398,6 @@ class AppLocalizations {
   String deviationsCount(int count) => _t('deviationsCount')
       .replaceAll('{count}', '$count');
   String get deviationsCountOne => _t('deviationsCountOne');
-  String get deviationsHint => _t('deviationsHint');
   String get deviationsLabel => _t('deviationsLabel');
   String get deviceIdentifier => _t('deviceIdentifier');
   String get digitalSignature => _t('digitalSignature');
@@ -454,7 +453,6 @@ class AppLocalizations {
   String get noAutomaticActions => _t('noAutomaticActions');
   String get noBatchesUsedIt => _t('noBatchesUsedIt');
   String get noContainerAssigned => _t('noContainerAssigned');
-  String get noDeviations => _t('noDeviations');
   String get noEquipmentUsed => _t('noEquipmentUsed');
   String get noParticipatingStaff => _t('noParticipatingStaff');
   String get noProfileConfigured => _t('noProfileConfigured');
@@ -542,8 +540,6 @@ class AppLocalizations {
   String get stateNormal => _t('stateNormal');
   String get stateWarning => _t('stateWarning');
   String get telemetryNoDevices => _t('telemetryNoDevices');
-  String thresholdExceeded(String value) => _t('thresholdExceeded')
-      .replaceAll('{value}', value);
   String timeInRange(String value) => _t('timeInRange')
       .replaceAll('{value}', value);
   String get unread => _t('unread');
@@ -993,7 +989,6 @@ const Map<String, String> _en = {
   'deviations24h': 'Deviations (24 h)',
   'deviationsCount': '{count} deviations',
   'deviationsCountOne': '1 deviation',
-  'deviationsHint': 'Readings evaluated as warning or critical',
   'deviationsLabel': 'Deviations',
   'deviceIdentifier': 'Device identifier',
   'digitalSignature': 'Digital signature',
@@ -1047,7 +1042,6 @@ const Map<String, String> _en = {
   'noAutomaticActions': 'No automatic actions in the last 24 hours.',
   'noBatchesUsedIt': 'No batch has used this material.',
   'noContainerAssigned': 'The batch has no container assigned.',
-  'noDeviations': 'No deviations in the last 24 hours.',
   'noEquipmentUsed': 'No equipment registered for this batch.',
   'noParticipatingStaff': 'No staff registered for this batch.',
   'noProfileConfigured': 'No ranges configured yet',
@@ -1111,7 +1105,6 @@ const Map<String, String> _en = {
   'stateNormal': 'Normal',
   'stateWarning': 'Warning',
   'telemetryNoDevices': 'There are no IoT devices located in an environment yet.',
-  'thresholdExceeded': 'Limit exceeded: {value}',
   'timeInRange': '{value} in range',
   'unread': 'Unread',
   'until': 'until {date}',
@@ -1537,7 +1530,6 @@ const Map<String, String> _es = {
   'deviations24h': 'Desviaciones (24 h)',
   'deviationsCount': '{count} desviaciones',
   'deviationsCountOne': '1 desviación',
-  'deviationsHint': 'Lecturas evaluadas como advertencia o críticas',
   'deviationsLabel': 'Desviaciones',
   'deviceIdentifier': 'Identificador del dispositivo',
   'digitalSignature': 'Firma digital',
@@ -1591,7 +1583,6 @@ const Map<String, String> _es = {
   'noAutomaticActions': 'Sin acciones automáticas en las últimas 24 horas.',
   'noBatchesUsedIt': 'Ningún lote ha usado este material.',
   'noContainerAssigned': 'El lote no tiene contenedor asignado.',
-  'noDeviations': 'Sin desviaciones en las últimas 24 horas.',
   'noEquipmentUsed': 'No hay equipos registrados para este lote.',
   'noParticipatingStaff': 'No hay personal registrado para este lote.',
   'noProfileConfigured': 'Aún no hay rangos configurados',
@@ -1655,7 +1646,6 @@ const Map<String, String> _es = {
   'stateNormal': 'Normal',
   'stateWarning': 'Advertencia',
   'telemetryNoDevices': 'Aún no hay dispositivos IoT ubicados en un ambiente.',
-  'thresholdExceeded': 'Límite superado: {value}',
   'timeInRange': '{value} en rango',
   'unread': 'Sin leer',
   'until': 'hasta el {date}',
