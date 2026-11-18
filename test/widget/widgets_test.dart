@@ -386,6 +386,48 @@ void main() {
       expect(find.text('Resolved'), findsNothing);
     });
 
+    testWidgets('the variable buttons narrow the list and its counts to one variable', (tester) async {
+      await bell.refresh();
+      final bloc = MockAlertsBloc();
+      final alerts = [
+        alertFixture(id: 1),
+        alertFixture(id: 2, parameterName: 'HUMIDITY', unit: '%RH', recordedValue: 71, thresholdValue: 70),
+      ];
+      AlertsState withVariable(MonitoredMetric? variable) => AlertsState(
+        variable: variable,
+        remote: RemoteState(
+          status: ViewStatus.success,
+          data: AlertsData(alerts: alerts, deviceNames: const {}, environmentNames: const {}),
+        ),
+      );
+      final screen = BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen());
+      when(() => bloc.state).thenReturn(withVariable(null));
+
+      await tester.pumpLocalized(screen);
+
+      final buttons = find.byKey(const Key('alerts.variables'));
+      for (final label in ['All', 'Air quality', 'Humidity', 'Temperature']) {
+        expect(find.descendant(of: buttons, matching: find.text(label)), findsOneWidget, reason: label);
+      }
+      expect(find.bySemanticsLabel('Showing: Open, 2 of 2'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      // The buttons scroll sideways on a small phone.
+      final humidity = find.descendant(of: buttons, matching: find.text('Humidity'));
+      await tester.ensureVisible(humidity);
+      await tester.pumpAndSettle();
+      await tester.tap(humidity);
+      verify(() => bloc.add(const AlertsVariableChanged(MonitoredMetric.humidity))).called(1);
+
+      when(() => bloc.state).thenReturn(withVariable(MonitoredMetric.humidity));
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpLocalized(screen);
+
+      expect(find.bySemanticsLabel('Showing: Open · Humidity, 1 of 1'), findsOneWidget);
+      expect(find.byType(AlertCard), findsOneWidget);
+      expect(find.text('71 %RH'), findsOneWidget);
+    });
+
     testWidgets('the search matches the variable, the device and the area', (tester) async {
       await bell.refresh();
       final bloc = MockAlertsBloc();

@@ -26,6 +26,7 @@ import 'package:qualitrack_mobile/laboratory/application/laboratory_facade_servi
 import 'package:qualitrack_mobile/reporting/api/index.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
+import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
 import 'package:qualitrack_mobile/tracking/api/index.dart'
     show EnvironmentalProfile, MetricThreshold, MonitoredMetric, TelemetryApi;
@@ -239,6 +240,40 @@ void main() {
         expect(bloc.state.remote.data?.environmentNames[3], 'Cold storage');
         expect(bloc.state.visible.map((a) => a.id), [2]);
       },
+    );
+
+    test('a variable narrows the alerts and their counts', () {
+      final state = AlertsState(
+        variable: MonitoredMetric.humidity,
+        remote: RemoteState(
+          status: ViewStatus.success,
+          data: AlertsData(
+            alerts: [
+              alertFixture(id: 1),
+              alertFixture(id: 2, parameterName: 'HUMIDITY', unit: '%RH'),
+              alertFixture(id: 3, parameterName: 'HUMIDITY', unit: '%RH', status: AlertStatus.resolved),
+            ],
+            deviceNames: const {},
+            environmentNames: const {},
+          ),
+        ),
+      );
+
+      expect(state.visible.map((a) => a.id), [2]);
+      expect(state.summary.total, 2);
+      expect(state.summary.open, 1);
+      expect(state.copyWith(everyVariable: true).visible.map((a) => a.id), [1, 2]);
+      // Another change keeps the variable.
+      expect(state.copyWith(filter: AlertFilter.all).visible.map((a) => a.id), [2, 3]);
+    });
+
+    blocTest<AlertsBloc, AlertsState>(
+      'chooses a variable and goes back to every variable',
+      build: build,
+      act: (bloc) => bloc
+        ..add(const AlertsVariableChanged(MonitoredMetric.humidity))
+        ..add(const AlertsVariableChanged(null)),
+      expect: () => [const AlertsState(variable: MonitoredMetric.humidity), const AlertsState()],
     );
 
     blocTest<AlertsBloc, AlertsState>(

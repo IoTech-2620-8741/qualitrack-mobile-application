@@ -13,16 +13,21 @@ import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
+import '../../../tracking/api/index.dart' show MonitoredMetric;
 import '../../domain/entities/alert_summary.dart';
 import '../../domain/entities/deviation_alert.dart';
 import '../bloc/alerts_bloc.dart';
 import '../widgets/alert_widgets.dart';
 
+/// The variables the alerts can be narrowed to, below the search bar.
+const _variables = [MonitoredMetric.airQuality, MonitoredMetric.humidity, MonitoredMetric.temperature];
+
 /// Deviation alerts of the laboratory.
 ///
-/// A compact summary card for the filter in use, a search bar and the
-/// matching alerts. The filter is chosen from a FAB menu at the bottom-right
-/// corner, where each option shows how many alerts it has.
+/// A compact summary card for the filter in use, a search bar, buttons to
+/// narrow the list to one variable and the matching alerts. The status filter
+/// is chosen from a FAB menu at the bottom-right corner, where each option
+/// shows how many alerts of the chosen variable it has.
 class AlertsScreen extends StatelessWidget {
   const AlertsScreen({super.key});
 
@@ -55,9 +60,14 @@ class AlertsScreen extends StatelessWidget {
           emptyTitle: i18n.alertsEmptyTitle,
           emptyMessage: i18n.alertsEmptyMessage,
           builder: (context, data) {
-            final summary = data.summary;
+            final summary = state.summary;
             final items = state.visible.where((a) => _matches(a, state.query, data, i18n)).toList();
             final style = _FilterStyle.of(state.filter);
+            final variable = state.variable;
+            // "Open · Temperature": the card counts the alerts of that variable.
+            final filterLabel = variable == null
+                ? style.label(i18n)
+                : '${style.label(i18n)} · ${alertVariable(i18n, variable.code)}';
             return FabMenuHost<AlertFilter>(
               icon: Icons.filter_list,
               tooltip: i18n.filterAlerts,
@@ -83,7 +93,7 @@ class AlertsScreen extends StatelessWidget {
                   ),
                   children: [
                     FilterSummaryCard(
-                      filterLabel: style.label(i18n),
+                      filterLabel: filterLabel,
                       icon: style.icon,
                       tone: style.tone,
                       count: items.length,
@@ -91,6 +101,14 @@ class AlertsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     SearchField(hint: i18n.searchAlerts, onChanged: (q) => bloc.add(AlertsQueryChanged(q))),
+                    const SizedBox(height: AppSpacing.sm),
+                    FilterChipBar<MonitoredMetric?>(
+                      key: const Key('alerts.variables'),
+                      options: const [null, ..._variables],
+                      selected: variable,
+                      labelOf: (m) => m == null ? i18n.filterAll : alertVariable(i18n, m.code),
+                      onSelected: (m) => bloc.add(AlertsVariableChanged(m)),
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     if (items.isEmpty)
                       SizedBox(height: 200, child: EmptyView(title: i18n.noResults))
