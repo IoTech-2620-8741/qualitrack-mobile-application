@@ -18,6 +18,7 @@ import 'package:qualitrack_mobile/compliance/domain/entities/notification_type.d
 import 'package:qualitrack_mobile/equipment/presentation/widgets/equipment_labels.dart';
 import 'package:qualitrack_mobile/inventory/presentation/widgets/inventory_labels.dart';
 import 'package:qualitrack_mobile/common/presentation/labels.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/range_bar.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/change_password_bloc.dart';
 import 'package:qualitrack_mobile/iam/presentation/bloc/sign_in_bloc.dart';
@@ -295,6 +296,15 @@ void main() {
 
   group('Alerts', () {
     late UnreadNotificationsController bell;
+    // The temperature range of the profile of the alert fixtures' device.
+    const range = MetricThreshold(
+      metric: MonitoredMetric.temperature,
+      unit: '°C',
+      normalMin: 15,
+      normalMax: 30,
+      criticalMin: 10,
+      criticalMax: 36,
+    );
 
     setUp(() {
       final repo = MockComplianceRepository();
@@ -316,6 +326,8 @@ void main() {
               alerts: [alertFixture(id: 1), alertFixture(id: 2, status: AlertStatus.resolved, severity: AlertSeverity.low)],
               deviceNames: const {10: 'Stability Chamber with a very long descriptive name'},
               environmentNames: const {3: 'Cold storage'},
+              // Only the first alert's device profile was read.
+              thresholds: const {1: range},
             ),
           ),
         ),
@@ -323,6 +335,7 @@ void main() {
 
       await tester.pumpLocalized(BlocProvider<AlertsBloc>.value(value: bloc, child: const AlertsScreen()));
 
+      expect(find.byType(RangeBar), findsOneWidget);
       expect(find.text('Temperature'), findsWidgets);
       expect(find.textContaining('Cold storage'), findsWidgets);
       expect(find.textContaining('38.6'), findsWidgets);
@@ -330,7 +343,7 @@ void main() {
       expect(
         find.bySemanticsLabel(
           RegExp(
-            r'^Critical, Temperature, 38\.6 °C, Limit 30 °C, '
+            r'^Critical, Temperature, 38\.6 °C, Limit 30 °C, normal 15–30 °C, '
             r'Stability Chamber with a very long descriptive name · Cold storage, Unresolved, ',
           ),
         ),
@@ -409,6 +422,40 @@ void main() {
       expect(find.text('Limit ${formatAlertValue(30, '°C', 'en')}'), findsOneWidget);
       // Screen readers hear the limit right after the value.
       expect(find.bySemanticsLabel(RegExp(r'38\.6 °C, Limit 30 °C, ')), findsOneWidget);
+      // Without the profile of its device there are no zones to draw.
+      expect(find.byType(RangeBar), findsNothing);
+    });
+
+    testWidgets("an alert card draws its value against the zones of its device's profile", (tester) async {
+      await tester.pumpLocalized(Scaffold(body: AlertCard(alert: alertFixture(), threshold: range)));
+
+      final bar = tester.widget<RangeBar>(find.byType(RangeBar));
+      expect([for (final zone in bar.scale.zones) zone.kind], [
+        RangeZoneKind.critical,
+        RangeZoneKind.warning,
+        RangeZoneKind.normal,
+        RangeZoneKind.warning,
+        RangeZoneKind.critical,
+      ]);
+      expect(bar.markTone, BadgeTone.critical);
+      // The limit stays in text; screen readers also hear the normal range the bar shows.
+      expect(find.text('Limit 30 °C'), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r'38\.6 °C, Limit 30 °C, normal 15–30 °C, ')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      // A resolved alert marks its value in navy, as it writes it in the text color.
+      await tester.pumpLocalized(
+        Scaffold(body: AlertCard(alert: alertFixture(status: AlertStatus.resolved), threshold: range)),
+      );
+      expect(tester.widget<RangeBar>(find.byType(RangeBar)).markTone, isNull);
+    });
+
+    testWidgets('an alert card draws no bar for a profile without a normal range', (tester) async {
+      const onlyCritical = MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', criticalMax: 36);
+      await tester.pumpLocalized(Scaffold(body: AlertCard(alert: alertFixture(), threshold: onlyCritical)));
+
+      expect(find.byType(RangeBar), findsNothing);
+      expect(find.bySemanticsLabel(RegExp('normal')), findsNothing);
     });
 
     testWidgets('an alert without a limit leaves the limit out', (tester) async {

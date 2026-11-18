@@ -103,7 +103,7 @@ in by `app/router/command_center_views.dart`).
 | `batch` | `BatchApi` | `command_center` |
 | `laboratory` | `LaboratoryApi` | `batch`, `command_center`, `compliance`, `equipment`, `inventory`, `profile`, `reporting`, `tracking` |
 | `equipment` | `EquipmentApi` | `command_center`, `compliance`, `reporting`, `tracking` |
-| `tracking` | `TelemetryApi` | `command_center`, `equipment` |
+| `tracking` | `TelemetryApi` | `command_center`, `compliance`, `equipment` |
 | `compliance` | `ComplianceApi` | `batch`, `command_center`, `equipment` |
 | `inventory` | `InventoryApi` | `command_center` |
 | `subscription` | `SubscriptionApi` | `command_center` |

@@ -37,7 +37,7 @@ Todas las rutas son relativas a `API_BASE_URL` (p. ej. `http://10.0.2.2:8080`) y
 | tracking | Monitoreo, equipos, panel | Tracking | `/laboratories/{lab}/environments/{env}/devices/{id}/telemetry-status` | GET | Cualquiera |
 | tracking | Monitoreo e historial (dispositivo ambiental) | Tracking | `/laboratories/{lab}/environments/{env}/telemetry-measurements?from&to` | GET | Cualquiera |
 | tracking | Monitoreo e historial (monitor de contenedor) | Tracking | `/laboratories/{lab}/environments/{env}/container-monitors/{id}/telemetry-measurements?from&to` | GET | Cualquiera |
-| tracking | Monitoreo → rangos normal y crítico vigentes | Tracking | `/laboratories/{lab}/environments/{env}/devices/{id}/environmental-profile` | GET | Cualquiera |
+| tracking | Monitoreo, panel y alertas → rangos normal y crítico vigentes | Tracking | `/laboratories/{lab}/environments/{env}/devices/{id}/environmental-profile` | GET | Cualquiera |
 | tracking | Monitoreo → acciones automáticas del contenedor | Tracking | `/laboratories/{lab}/environments/{env}/container-monitors/{id}/actuation-events?from&to` | GET | Cualquiera |
 | compliance | Alertas (todas las de cada ambiente) | Compliance & Alerting | `/laboratories/{lab}/environments/{env}/deviation-alerts` | GET | Cualquiera |
 | compliance | Detalle de alerta | Compliance & Alerting | `/deviation-alerts/{id}` | GET | Cualquiera |

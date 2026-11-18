@@ -240,7 +240,13 @@ void _registerBlocs() {
     ),
   );
   sl.registerFactory(
-    () => AlertsBloc(laboratoryApi: sl(), equipmentApi: sl(), complianceService: sl(), laboratoryId: _laboratoryId),
+    () => AlertsBloc(
+      laboratoryApi: sl(),
+      equipmentApi: sl(),
+      telemetryApi: sl(),
+      complianceService: sl(),
+      laboratoryId: _laboratoryId,
+    ),
   );
   sl.registerFactoryParam<AlertDetailBloc, int, void>(
     (id, _) => AlertDetailBloc(
