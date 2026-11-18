@@ -6,7 +6,7 @@ import '../../../equipment/api/index.dart';
 import '../../../laboratory/api/index.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
-import '../../../tracking/api/index.dart' show MetricThreshold, TelemetryApi;
+import '../../../tracking/api/index.dart' show MetricThreshold, MonitoredMetric, TelemetryApi;
 import '../../application/alert_thresholds.dart';
 import '../../application/compliance_facade_service.dart';
 import '../../domain/entities/alert_status.dart';
@@ -72,8 +72,24 @@ final class AlertsQueryChanged extends AlertsEvent {
   List<Object?> get props => [query];
 }
 
+/// Only the alerts of one variable (temperature, humidity…); null shows the
+/// alerts of every variable.
+final class AlertsVariableChanged extends AlertsEvent {
+  const AlertsVariableChanged(this.variable);
+
+  final MonitoredMetric? variable;
+
+  @override
+  List<Object?> get props => [variable];
+}
+
 final class AlertsState extends Equatable {
-  const AlertsState({this.remote = const RemoteState(), this.filter = AlertFilter.open, this.query = ''});
+  const AlertsState({
+    this.remote = const RemoteState(),
+    this.filter = AlertFilter.open,
+    this.query = '',
+    this.variable,
+  });
 
   final RemoteState<AlertsData> remote;
   final AlertFilter filter;
@@ -82,9 +98,23 @@ final class AlertsState extends Equatable {
   /// variable labels depend on the language.
   final String query;
 
-  List<DeviationAlert> get visible {
+  /// The variable the list is narrowed to; null for every variable.
+  final MonitoredMetric? variable;
+
+  /// The alerts of the chosen variable, whatever their status.
+  List<DeviationAlert> get ofVariable {
     final alerts = remote.data?.alerts ?? const <DeviationAlert>[];
-    return alerts
+    final only = variable;
+    if (only == null) return alerts;
+    return alerts.where((a) => MonitoredMetric.fromCode(a.parameterName) == only).toList(growable: false);
+  }
+
+  /// How many alerts of the chosen variable each status has, for the filter
+  /// menu and the summary card.
+  AlertSummary get summary => AlertSummary.of(ofVariable);
+
+  List<DeviationAlert> get visible {
+    return ofVariable
         .where(
           (a) => switch (filter) {
             AlertFilter.open => a.isOpen,
@@ -98,11 +128,22 @@ final class AlertsState extends Equatable {
         .toList(growable: false);
   }
 
-  AlertsState copyWith({RemoteState<AlertsData>? remote, AlertFilter? filter, String? query}) =>
-      AlertsState(remote: remote ?? this.remote, filter: filter ?? this.filter, query: query ?? this.query);
+  /// [everyVariable] clears the variable, which a null [variable] keeps.
+  AlertsState copyWith({
+    RemoteState<AlertsData>? remote,
+    AlertFilter? filter,
+    String? query,
+    MonitoredMetric? variable,
+    bool everyVariable = false,
+  }) => AlertsState(
+    remote: remote ?? this.remote,
+    filter: filter ?? this.filter,
+    query: query ?? this.query,
+    variable: everyVariable ? null : variable ?? this.variable,
+  );
 
   @override
-  List<Object?> get props => [remote, filter, query];
+  List<Object?> get props => [remote, filter, query, variable];
 }
 
 /// Alerts of the areas and containers of the laboratory (US: consult alerts
@@ -123,6 +164,9 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
     on<AlertsRequested>(_onRequested);
     on<AlertsFilterChanged>((e, emit) => emit(state.copyWith(filter: e.filter)));
     on<AlertsQueryChanged>((e, emit) => emit(state.copyWith(query: e.query)));
+    on<AlertsVariableChanged>(
+      (e, emit) => emit(state.copyWith(variable: e.variable, everyVariable: e.variable == null)),
+    );
   }
 
   final LaboratoryApi _laboratoryApi;
