@@ -18,6 +18,7 @@ import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart
 import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
 import 'package:qualitrack_mobile/tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 import 'package:qualitrack_mobile/tracking/presentation/screens/telemetry_dashboard_screen.dart';
+import 'package:qualitrack_mobile/tracking/presentation/widgets/telemetry_chart.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/pump_app.dart';
@@ -29,7 +30,9 @@ TelemetryState telemetryState(
   List<Equipment> devices, {
   List<Measurement>? history,
   EnvironmentalProfile? profile,
+  TelemetryView view = TelemetryView.readings,
 }) => TelemetryState(
+  view: view,
   catalog: RemoteState(
     status: ViewStatus.success,
     data: DeviceCatalog(devices: devices, environments: const [storage, production]),
@@ -80,6 +83,7 @@ void main() {
             fetchedAt: DateTime.now(),
           ),
         ),
+        view: TelemetryView.stream,
       ),
     );
     final screen = BlocProvider<TelemetryDashboardBloc>.value(value: bloc, child: const TelemetryDashboardScreen());
@@ -97,6 +101,56 @@ void main() {
     await tester.pumpLocalized(screen, locale: const Locale('es'), size: tall);
     expect(find.text('1 evento'), findsOneWidget);
     expect(chartLabel('Gráfico de telemetría con 1 lectura °C'), findsOneWidget);
+  });
+
+  testWidgets('switches between the current readings and their live stream', (tester) async {
+    final bloc = MockTelemetryDashboardBloc();
+    final screen = BlocProvider<TelemetryDashboardBloc>.value(value: bloc, child: const TelemetryDashboardScreen());
+    const tall = Size(360, 1600);
+    when(() => bloc.state).thenReturn(telemetryState([equipmentFixture()]));
+
+    await tester.pumpLocalized(screen, size: tall);
+
+    // The readings come first, and the switch offers their stream instead.
+    expect(find.text('Current sensor readings'), findsOneWidget);
+    expect(find.text('6.5 °C'), findsOneWidget);
+    expect(find.byType(TelemetryChart), findsNothing);
+    await tester.tap(find.byTooltip('Live telemetry stream'));
+    verify(() => bloc.add(const TelemetryViewSelected(TelemetryView.stream))).called(1);
+
+    when(() => bloc.state).thenReturn(telemetryState([equipmentFixture()], view: TelemetryView.stream));
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpLocalized(screen, size: tall);
+
+    expect(find.text('Live telemetry stream'), findsOneWidget);
+    expect(find.byType(TelemetryChart), findsOneWidget);
+    expect(find.text('Current sensor readings'), findsNothing);
+
+    // The title and the switch share a line on a small phone.
+    await tester.pumpLocalized(screen, size: const Size(320, 1600), locale: const Locale('es'));
+    expect(find.text('Flujo de telemetría en vivo'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('offers no switch when no reading can be charted', (tester) async {
+    final bloc = MockTelemetryDashboardBloc();
+    when(() => bloc.state).thenReturn(
+      telemetryState(
+        [equipmentFixture()],
+        history: [measurementFixture(metric: MonitoredMetric.rfidTag, value: null)],
+        // The stream chosen for another device does not apply to this one.
+        view: TelemetryView.stream,
+      ),
+    );
+
+    await tester.pumpLocalized(
+      BlocProvider<TelemetryDashboardBloc>.value(value: bloc, child: const TelemetryDashboardScreen()),
+      size: const Size(360, 1600),
+    );
+
+    expect(find.text('Current sensor readings'), findsOneWidget);
+    expect(find.byKey(const Key('telemetry.viewSwitch')), findsNothing);
+    expect(find.byType(TelemetryChart), findsNothing);
   });
 
   testWidgets('shows the device in a card and changes it from a sheet grouped by environment', (tester) async {

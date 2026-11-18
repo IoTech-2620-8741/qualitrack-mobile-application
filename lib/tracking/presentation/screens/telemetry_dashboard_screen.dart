@@ -402,6 +402,13 @@ class _SnapshotSection extends StatelessWidget {
     }
     final readings = data.readings;
     final profile = data.profile;
+    // When the newest reading was taken, once for the whole list. The profile
+    // version is a technical detail; only a missing profile matters to the user.
+    final newest = _newestTime(readings);
+    final readingsNote = [
+      if (newest != null) relativeTime(context, newest),
+      if (profile == null) i18n.noProfileConfigured,
+    ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -413,19 +420,21 @@ class _SnapshotSection extends StatelessWidget {
         if (readings.isEmpty) ...[
           SectionHeader(title: i18n.currentReadings),
           EmptyNotice(icon: Icons.sensors_off_outlined, message: i18n.noReadings24h),
+        ] else if (state.shownView == TelemetryView.stream) ...[
+          SectionHeader(
+            title: i18n.liveTelemetryStream,
+            subtitle: i18n.liveTelemetryHint,
+            trailing: const _ViewSwitch(view: TelemetryView.stream),
+          ),
+          _ChartCard(state: state, snapshot: data),
         ] else ...[
-          // The profile version is a technical detail; only a missing profile
-          // matters to the user.
           SectionHeader(
             title: i18n.currentReadings,
-            subtitle: profile == null ? i18n.noProfileConfigured : null,
-            trailing: _ReadingsTime(readings: readings),
+            subtitle: readingsNote.isEmpty ? null : readingsNote,
+            // Without a numeric metric there is no stream to switch to.
+            trailing: state.canChart ? const _ViewSwitch(view: TelemetryView.readings) : null,
           ),
           _ReadingsList(snapshot: data),
-          if (data.chartMetrics.isNotEmpty) ...[
-            SectionHeader(title: i18n.liveTelemetryStream, subtitle: i18n.liveTelemetryHint),
-            _ChartCard(state: state, snapshot: data),
-          ],
         ],
         // Automatic actions show up without readings only when there are some.
         if (data.target.containerMonitor && (readings.isNotEmpty || data.actuations.isNotEmpty)) ...[
@@ -635,19 +644,35 @@ String? rangeText(BuildContext context, MetricThreshold? threshold) {
   return parts.isEmpty ? null : parts.join(' · ');
 }
 
-/// When the newest reading was taken, once for the whole list.
-class _ReadingsTime extends StatelessWidget {
-  const _ReadingsTime({required this.readings});
+/// Switches the readings of the device between the latest of every metric
+/// and their stream in the chart, as the Home switches its layout. The icons
+/// carry a tooltip, which TalkBack reads as their name.
+class _ViewSwitch extends StatelessWidget {
+  const _ViewSwitch({required this.view});
 
-  final List<MetricReading> readings;
+  final TelemetryView view;
 
   @override
   Widget build(BuildContext context) {
-    final newest = _newestTime(readings);
-    if (newest == null) return const SizedBox.shrink();
-    return Tooltip(
-      message: Formatters.dateTime(newest, context.localeName),
-      child: Text(relativeTime(context, newest), style: Theme.of(context).textTheme.bodySmall),
+    final i18n = context.i18n;
+    return SegmentedButton<TelemetryView>(
+      key: const Key('telemetry.viewSwitch'),
+      showSelectedIcon: false,
+      segments: [
+        ButtonSegment(
+          value: TelemetryView.readings,
+          icon: const Icon(Icons.format_list_bulleted),
+          tooltip: i18n.currentReadings,
+        ),
+        ButtonSegment(
+          value: TelemetryView.stream,
+          icon: const Icon(Icons.show_chart),
+          tooltip: i18n.liveTelemetryStream,
+        ),
+      ],
+      selected: {view},
+      onSelectionChanged: (selection) =>
+          context.read<TelemetryDashboardBloc>().add(TelemetryViewSelected(selection.single)),
     );
   }
 }

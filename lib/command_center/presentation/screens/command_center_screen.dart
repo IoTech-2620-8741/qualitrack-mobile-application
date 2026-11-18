@@ -86,14 +86,17 @@ class CommandCenterScreen extends StatelessWidget {
               alignment: AlignmentDirectional.centerEnd,
               child: SegmentedButton<HomeLayout>(
                 showSelectedIcon: false,
+                // Icons only; the tooltip names each one, and TalkBack reads it.
                 segments: [
-                  const ButtonSegment(
+                  ButtonSegment(
                     value: HomeLayout.list,
-                    icon: Icon(Icons.view_agenda_outlined),
+                    icon: const Icon(Icons.view_agenda_outlined),
+                    tooltip: context.i18n.homeLayoutList,
                   ),
-                  const ButtonSegment(
+                  ButtonSegment(
                     value: HomeLayout.cards,
-                    icon: Icon(Icons.grid_view_outlined),
+                    icon: const Icon(Icons.grid_view_outlined),
+                    tooltip: context.i18n.homeLayoutDashboard,
                   ),
                 ],
                 selected: {layout.value},
