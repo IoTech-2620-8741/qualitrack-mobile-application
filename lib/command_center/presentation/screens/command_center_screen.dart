@@ -87,15 +87,13 @@ class CommandCenterScreen extends StatelessWidget {
               child: SegmentedButton<HomeLayout>(
                 showSelectedIcon: false,
                 segments: [
-                  ButtonSegment(
+                  const ButtonSegment(
                     value: HomeLayout.list,
-                    icon: const Icon(Icons.view_agenda_outlined),
-                    label: Text(context.i18n.homeLayoutList),
+                    icon: Icon(Icons.view_agenda_outlined),
                   ),
-                  ButtonSegment(
+                  const ButtonSegment(
                     value: HomeLayout.cards,
-                    icon: const Icon(Icons.grid_view_outlined),
-                    label: Text(context.i18n.homeLayoutDashboard),
+                    icon: Icon(Icons.grid_view_outlined),
                   ),
                 ],
                 selected: {layout.value},
