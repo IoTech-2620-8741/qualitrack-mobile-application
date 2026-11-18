@@ -700,7 +700,7 @@ void main() {
       expect(find.descendant(of: find.byType(AppBar), matching: segments), findsNothing);
       expect(tester.getRect(segments).top, greaterThanOrEqualTo(tester.getRect(find.byType(AppBar)).bottom));
 
-      await tester.tap(find.text('Dashboard'));
+      await tester.tap(find.byTooltip('Dashboard'));
       await tester.pump();
       await tester.pump();
 
@@ -708,7 +708,7 @@ void main() {
       expect(find.text('View detail'), findsNothing);
       expect(find.byType(HomeAlertCard), findsWidgets);
 
-      await tester.tap(find.text('List'));
+      await tester.tap(find.byTooltip('List'));
       await tester.pump();
       await tester.pump();
 
