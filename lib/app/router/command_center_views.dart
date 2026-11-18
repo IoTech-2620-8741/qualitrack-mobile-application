@@ -33,7 +33,12 @@ CommandCenterViews commandCenterViews({
     ),
   ),
   roleLabel: (role, i18n) => role.label(i18n),
-  alertCard: (alert, {deviceName, environmentName, onTap}) =>
-      AlertCard(alert: alert, deviceName: deviceName, environmentName: environmentName, onTap: onTap),
+  alertCard: (alert, {deviceName, environmentName, threshold, onTap}) => AlertCard(
+    alert: alert,
+    deviceName: deviceName,
+    environmentName: environmentName,
+    threshold: threshold,
+    onTap: onTap,
+  ),
   batchStatusBadge: (status) => BatchStatusBadge(status: status),
 );

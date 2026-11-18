@@ -7,10 +7,10 @@ import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/labels.dart';
 import '../../../common/presentation/theme/app_colors.dart';
 import '../../../common/presentation/theme/app_spacing.dart';
+import '../../../common/presentation/widgets/range_bar.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
 import '../../../compliance/api/index.dart';
 import '../../../tracking/api/index.dart';
-import 'range_bar.dart';
 
 /// How far [value] lies outside [low]..[high] (a null side is open), or null inside.
 ({double amount, bool above})? outOfLimit(double? value, {double? low, double? high}) {
@@ -37,8 +37,10 @@ String _reading(double? value, String? unit, String locale) =>
 /// edge in the color of its severity, the metric and its value over the device
 /// and the time, and under them its limit and how far past it the value is.
 /// The icon and the color give the severity, and TalkBack reads it.
-/// With the normal range of the device's profile, the card draws the range and
-/// the value on a bar and measures the value against the range instead.
+/// With the normal range of the device's profile, the card draws the value on
+/// a bar with the normal, warning and critical zones of the profile, as the
+/// readings of Telemetry, and measures the value against the normal range
+/// instead.
 class HomeAlertCard extends StatelessWidget {
   const HomeAlertCard({super.key, required this.alert, this.deviceName, this.threshold, required this.onTap});
 
@@ -62,6 +64,16 @@ class HomeAlertCard extends StatelessWidget {
     final normalMin = threshold?.normalMin;
     final normalMax = threshold?.normalMax;
     final ranged = normalMin != null || normalMax != null;
+    final recorded = alert.recordedValue;
+    final scale = recorded == null
+        ? null
+        : RangeScale.of(
+            normalMin: normalMin,
+            normalMax: normalMax,
+            criticalMin: threshold?.criticalMin,
+            criticalMax: threshold?.criticalMax,
+            value: recorded,
+          );
     final limit =
         ranged
             ? i18n.normalRangeValue(Formatters.range(normalMin, normalMax, unit, locale))
@@ -162,14 +174,9 @@ class HomeAlertCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (ranged && alert.recordedValue != null) ...[
+                  if (scale != null) ...[
                     const SizedBox(height: AppSpacing.md),
-                    RangeBar(
-                      normalMin: normalMin,
-                      normalMax: normalMax,
-                      value: alert.recordedValue!,
-                      color: tone.foreground,
-                    ),
+                    RangeBar(scale: scale, markTone: tone),
                   ],
                   if (limit != null || distance != null) ...[
                     const SizedBox(height: AppSpacing.sm),
