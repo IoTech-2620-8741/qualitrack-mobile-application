@@ -727,7 +727,10 @@ class _ReadingRow extends StatelessWidget {
         : null;
     final time = m.measuredAt == null ? null : relativeTime(context, m.measuredAt);
     final ownTime = time == sharedTime ? null : time;
+    // Its own node: the card would otherwise merge every row into one label,
+    // and TalkBack would read the whole list at once.
     return Semantics(
+      container: true,
       label: [name, value, if (evaluated) m.state.label(i18n), if (range != null) range, if (ownTime != null) ownTime]
           .join(', '),
       excludeSemantics: true,
