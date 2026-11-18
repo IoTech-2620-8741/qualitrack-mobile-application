@@ -7,7 +7,9 @@ import '../../../common/presentation/formatting/context_locale.dart';
 import '../../../common/presentation/formatting/formatters.dart';
 import '../../../common/presentation/formatting/relative_time.dart';
 import '../../../common/presentation/i18n/app_localizations.dart';
+import '../../../common/presentation/widgets/range_bar.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
+import '../../../tracking/api/index.dart' show MetricThreshold;
 import '../../domain/entities/alert_severity.dart';
 import '../../domain/entities/alert_status.dart';
 import '../../domain/entities/deviation_alert.dart';
@@ -57,13 +59,26 @@ String formatAlertValue(double? value, String? unit, String locale) {
 }
 
 /// An alert as a mobile list item: severity icon, variable and recorded value
-/// on the first line, device · area below, then status and time.
+/// on the first line, device · area below, then status and time. With the
+/// range of the metric in its device's profile, the recorded value is drawn
+/// on a bar with the normal, warning and critical zones of that range, as the
+/// readings of Telemetry.
 class AlertCard extends StatelessWidget {
-  const AlertCard({super.key, required this.alert, this.deviceName, this.environmentName, this.onTap});
+  const AlertCard({
+    super.key,
+    required this.alert,
+    this.deviceName,
+    this.environmentName,
+    this.threshold,
+    this.onTap,
+  });
 
   final DeviationAlert alert;
   final String? deviceName;
   final String? environmentName;
+
+  /// The range of the alert's metric in its device's profile, when it was read.
+  final MetricThreshold? threshold;
   final VoidCallback? onTap;
 
   @override
@@ -83,12 +98,28 @@ class AlertCard extends StatelessWidget {
         alert.thresholdValue == null
             ? null
             : i18n.alertLimitValue(formatAlertValue(alert.thresholdValue, alert.unit, locale));
+    final range = threshold;
+    final recorded = alert.recordedValue;
+    final scale = range == null || recorded == null
+        ? null
+        : RangeScale.of(
+            normalMin: range.normalMin,
+            normalMax: range.normalMax,
+            criticalMin: range.criticalMin,
+            criticalMax: range.criticalMax,
+            value: recorded,
+          );
+    // The bar shows the normal range without figures; screen readers hear it.
+    final normalRange = range == null || scale == null
+        ? null
+        : i18n.normalRangeValue(Formatters.range(range.normalMin, range.normalMax, alert.unit ?? range.unit, locale));
     // One label for screen readers, in the order the card is read visually.
     final semanticLabel = [
       alert.severity.label(i18n),
       alertVariable(i18n, alert.parameterName),
       formatAlertValue(alert.recordedValue, alert.unit, locale),
       if (limit != null) limit,
+      if (normalRange != null) normalRange,
       where,
       alert.status.label(i18n),
       if (alert.deviationCount > 1) i18n.deviationsCount(alert.deviationCount),
@@ -151,6 +182,12 @@ class AlertCard extends StatelessWidget {
                           if (limit != null) Text(limit, style: text.bodySmall),
                         ],
                       ),
+                      if (scale != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        // An open alert marks its value in the color of its
+                        // severity, as the value above.
+                        RangeBar(scale: scale, markTone: alert.isOpen ? severity : null),
+                      ],
                       const SizedBox(height: AppSpacing.sm),
                       // Status on the left, time on the right; on narrow screens
                       // or long translations the time drops to the next line.

@@ -6,6 +6,8 @@ import '../../../equipment/api/index.dart';
 import '../../../laboratory/api/index.dart';
 import '../../../common/domain/value_objects.dart';
 import '../../../common/presentation/remote_state.dart';
+import '../../../tracking/api/index.dart' show MetricThreshold, TelemetryApi;
+import '../../application/alert_thresholds.dart';
 import '../../application/compliance_facade_service.dart';
 import '../../domain/entities/alert_status.dart';
 import '../../domain/entities/alert_summary.dart';
@@ -15,16 +17,24 @@ enum AlertFilter { open, all, unresolved, acknowledged, resolved, critical }
 
 /// Alerts of the laboratory plus device and environment names for display.
 final class AlertsData extends Equatable {
-  const AlertsData({required this.alerts, required this.deviceNames, required this.environmentNames});
+  const AlertsData({
+    required this.alerts,
+    required this.deviceNames,
+    required this.environmentNames,
+    this.thresholds = const {},
+  });
 
   final List<DeviationAlert> alerts;
   final Map<int, String> deviceNames;
   final Map<int, String> environmentNames;
 
+  /// The range of each alert's metric in its device's profile, by alert id.
+  final Map<int, MetricThreshold> thresholds;
+
   AlertSummary get summary => AlertSummary.of(alerts);
 
   @override
-  List<Object?> get props => [alerts, deviceNames, environmentNames];
+  List<Object?> get props => [alerts, deviceNames, environmentNames, thresholds];
 }
 
 sealed class AlertsEvent extends Equatable {
@@ -101,10 +111,12 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
   AlertsBloc({
     required LaboratoryApi laboratoryApi,
     required EquipmentApi equipmentApi,
+    required TelemetryApi telemetryApi,
     required ComplianceFacadeService complianceService,
     required LaboratoryId Function() laboratoryId,
   }) : _laboratoryApi = laboratoryApi,
        _equipmentApi = equipmentApi,
+       _telemetryApi = telemetryApi,
        _complianceService = complianceService,
        _laboratoryId = laboratoryId,
        super(const AlertsState()) {
@@ -115,6 +127,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
 
   final LaboratoryApi _laboratoryApi;
   final EquipmentApi _equipmentApi;
+  final TelemetryApi _telemetryApi;
   final ComplianceFacadeService _complianceService;
   final LaboratoryId Function() _laboratoryId;
 
@@ -131,6 +144,7 @@ class AlertsBloc extends Bloc<AlertsEvent, AlertsState> {
         alerts: alerts,
         deviceNames: {for (final e in equipments) e.id: e.name},
         environmentNames: {for (final e in environments) e.id: e.name},
+        thresholds: await loadAlertThresholds(_telemetryApi, laboratoryId, alerts),
       );
       emit(state.copyWith(remote: state.remote.success(data, empty: alerts.isEmpty)));
     } catch (error) {

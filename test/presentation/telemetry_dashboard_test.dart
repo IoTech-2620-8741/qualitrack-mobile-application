@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/range_bar.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/equipment.dart';
 import 'package:qualitrack_mobile/equipment/domain/entities/iot_device_type.dart';
 import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
@@ -17,7 +18,6 @@ import 'package:qualitrack_mobile/tracking/domain/entities/monitored_metric.dart
 import 'package:qualitrack_mobile/tracking/domain/entities/telemetry_target.dart';
 import 'package:qualitrack_mobile/tracking/presentation/bloc/telemetry_dashboard_bloc.dart';
 import 'package:qualitrack_mobile/tracking/presentation/screens/telemetry_dashboard_screen.dart';
-import 'package:qualitrack_mobile/tracking/presentation/widgets/reading_range_bar.dart';
 
 import '../helpers/fixtures.dart';
 import '../helpers/pump_app.dart';
@@ -174,7 +174,7 @@ void main() {
       size: const Size(360, 1600),
     );
 
-    expect(find.byType(ReadingRangeBar), findsNWidgets(2));
+    expect(find.byType(RangeBar), findsNWidgets(2));
     expect(find.text('normal 15–30 °C · critical 10–36 °C'), findsOneWidget);
     expect(find.text('normal 35–60 %RH · critical 25–70 %RH'), findsOneWidget);
     // Both were taken at the same time, written once next to the title.

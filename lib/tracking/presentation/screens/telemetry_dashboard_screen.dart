@@ -15,6 +15,7 @@ import '../../../common/presentation/i18n/app_localizations.dart';
 import '../../../common/presentation/view_status.dart';
 import '../../../common/presentation/widgets/layout_widgets.dart';
 import '../../../common/presentation/widgets/pressable_card.dart';
+import '../../../common/presentation/widgets/range_bar.dart';
 import '../../../common/presentation/widgets/remote_state_view.dart';
 import '../../../common/presentation/widgets/state_views.dart';
 import '../../../common/presentation/widgets/status_badge.dart';
@@ -27,7 +28,6 @@ import '../../domain/entities/metric_threshold.dart';
 import '../../domain/entities/monitored_metric.dart';
 import '../../domain/entities/telemetry_window.dart';
 import '../bloc/telemetry_dashboard_bloc.dart';
-import '../widgets/reading_range_bar.dart';
 import '../widgets/telemetry_chart.dart';
 import '../widgets/telemetry_labels.dart';
 
@@ -716,10 +716,21 @@ class _ReadingRow extends StatelessWidget {
     final outOfRange = m.state.isDeviation;
     final tone = m.state.tone;
     final limits = threshold;
-    final scale = limits != null && m.isNumeric ? ReadingRangeScale.of(limits, m.value!) : null;
+    final scale = limits != null && m.isNumeric
+        ? RangeScale.of(
+            normalMin: limits.normalMin,
+            normalMax: limits.normalMax,
+            criticalMin: limits.criticalMin,
+            criticalMax: limits.criticalMax,
+            value: m.value!,
+          )
+        : null;
     final time = m.measuredAt == null ? null : relativeTime(context, m.measuredAt);
     final ownTime = time == sharedTime ? null : time;
+    // Its own node: the card would otherwise merge every row into one label,
+    // and TalkBack would read the whole list at once.
     return Semantics(
+      container: true,
       label: [name, value, if (evaluated) m.state.label(i18n), if (range != null) range, if (ownTime != null) ownTime]
           .join(', '),
       excludeSemantics: true,
@@ -762,10 +773,10 @@ class _ReadingRow extends StatelessWidget {
               ),
               if (scale != null) ...[
                 const SizedBox(height: AppSpacing.sm),
-                ReadingRangeBar(
+                RangeBar(
                   key: ValueKey('telemetry.rangeBar.${m.rawMetric}'),
                   scale: scale,
-                  state: m.state,
+                  markTone: outOfRange ? tone : null,
                 ),
               ],
               if (range != null) ...[

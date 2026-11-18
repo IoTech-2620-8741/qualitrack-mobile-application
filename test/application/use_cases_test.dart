@@ -5,8 +5,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:qualitrack_mobile/batch/application/batch_facade_service.dart';
 import 'package:qualitrack_mobile/batch/domain/entities/batch_traceability.dart';
 import 'package:qualitrack_mobile/command_center/application/get_command_center_summary.dart';
+import 'package:qualitrack_mobile/compliance/application/alert_thresholds.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/alert_origin.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/alert_severity.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/alert_status.dart';
+import 'package:qualitrack_mobile/compliance/domain/entities/deviation_alert.dart';
 import 'package:qualitrack_mobile/compliance/domain/entities/notification_preferences.dart';
 import 'package:qualitrack_mobile/iam/application/iam_facade_service.dart';
 import 'package:qualitrack_mobile/inventory/application/inventory_facade_service.dart';
@@ -130,6 +133,47 @@ void main() {
       final alerts = await complianceFacade(repo).getLaboratoryAlerts(lab, [3, 4]);
 
       expect(alerts.map((a) => a.id), [2, 1]);
+    });
+
+    test('loadAlertThresholds gives every alert the range of its metric, reading each device once', () async {
+      final repo = MockTelemetryRepository();
+      const temperature = MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', normalMin: 15, normalMax: 30);
+      const airQuality = MetricThreshold(metric: MonitoredMetric.airQuality, unit: 'ppm', normalMax: 800);
+      const area = TelemetryTarget(deviceId: 16, environmentId: 3, containerMonitor: false);
+      when(() => repo.getProfile(lab, container)).thenAnswer(
+        (_) async => const EnvironmentalProfile(version: 1, thresholds: [temperature]),
+      );
+      when(() => repo.getProfile(lab, area)).thenAnswer(
+        (_) async => const EnvironmentalProfile(version: 1, thresholds: [airQuality]),
+      );
+      final alerts = [
+        alertFixture(id: 1),
+        alertFixture(id: 2, status: AlertStatus.resolved),
+        const DeviationAlert(
+          id: 3,
+          equipmentId: 16,
+          environmentId: 3,
+          origin: AlertOrigin.environment,
+          parameterName: 'AIR_QUALITY',
+          status: AlertStatus.acknowledged,
+          severity: AlertSeverity.warning,
+        ),
+        // Without an environment there is no device to read.
+        const DeviationAlert(
+          id: 4,
+          equipmentId: 17,
+          parameterName: 'TEMPERATURE',
+          status: AlertStatus.unresolved,
+          severity: AlertSeverity.critical,
+        ),
+      ];
+
+      final thresholds = await loadAlertThresholds(TelemetryApi(TelemetryFacadeService(repository: repo)), lab, alerts);
+
+      expect(thresholds, {1: temperature, 2: temperature, 3: airQuality});
+      verify(() => repo.getProfile(lab, container)).called(1);
+      verify(() => repo.getProfile(lab, area)).called(1);
+      verifyNoMoreInteractions(repo);
     });
 
     test('resolve requires notes before calling the backend', () {

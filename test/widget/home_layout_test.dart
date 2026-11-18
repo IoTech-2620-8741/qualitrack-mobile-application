@@ -14,11 +14,11 @@ import 'package:qualitrack_mobile/command_center/presentation/command_center_vie
 import 'package:qualitrack_mobile/command_center/presentation/screens/command_center_screen.dart';
 import 'package:qualitrack_mobile/command_center/presentation/widgets/home_alert_card.dart';
 import 'package:qualitrack_mobile/command_center/presentation/widgets/proportion_bar.dart';
-import 'package:qualitrack_mobile/command_center/presentation/widgets/range_bar.dart';
 import 'package:qualitrack_mobile/common/infrastructure/storage/secure_key_value_store.dart';
 import 'package:qualitrack_mobile/common/presentation/remote_state.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_colors.dart';
 import 'package:qualitrack_mobile/common/presentation/theme/app_spacing.dart';
+import 'package:qualitrack_mobile/common/presentation/widgets/range_bar.dart';
 import 'package:qualitrack_mobile/common/presentation/widgets/status_badge.dart';
 import 'package:qualitrack_mobile/iam/api/index.dart';
 import 'package:qualitrack_mobile/inventory/api/index.dart';
@@ -114,9 +114,13 @@ CommandCenterViews _views() => CommandCenterViews(
   notificationBell: const SizedBox.square(dimension: 48),
   profileButton: const SizedBox.square(dimension: 48),
   roleLabel: (role, i18n) => 'QA Manager',
-  // An alert card of a fixed height, named after its alert and its device.
-  alertCard: (alert, {deviceName, environmentName, onTap}) =>
-      SizedBox(height: 90, child: Text('alert ${alert.id} · $deviceName')),
+  // An alert card of a fixed height, named after its alert and its device; it
+  // has a key when it got the range of its metric.
+  alertCard: (alert, {deviceName, environmentName, threshold, onTap}) => SizedBox(
+    key: threshold == null ? null : ValueKey('ranged alert ${alert.id}'),
+    height: 90,
+    child: Text('alert ${alert.id} · $deviceName'),
+  ),
   batchStatusBadge: (status) => const Text('Pending'),
 );
 
@@ -643,6 +647,23 @@ void main() {
     expect(find.text('Awaiting QA release'), findsOneWidget);
   });
 
+  testWidgets('the list hands each alert card the range of its metric', (tester) async {
+    const range = MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', normalMin: 15, normalMax: 30);
+    stubSummary(
+      _summary(
+        open: [
+          alertFixture(id: 1, equipmentId: 1),
+          alertFixture(id: 2, equipmentId: 2, severity: AlertSeverity.warning),
+        ],
+        thresholds: {1: range},
+      ),
+    );
+    await pumpHome(tester, const Size(412, 915));
+
+    expect(find.byKey(const ValueKey('ranged alert 1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('ranged alert 2')), findsNothing);
+  });
+
   group('the dashboard', () {
     /// Two critical alerts and a warning, unresolved, and an acknowledged warning.
     List<DeviationAlert> openAlerts() {
@@ -805,18 +826,31 @@ void main() {
       expect(outOfLimit(-40, high: 8), isNull);
     });
 
-    test('rangeBarStops puts the normal range and the value on one scale', () {
-      for (final (normalMin, normalMax, value, expected) in const [
-        (2.0, 8.0, 9.6, (0.1667, 0.6930, 0.8333)),
-        (null, 800.0, 1450.0, (0.0, 0.1667, 0.8333)),
-        (2.0, 8.0, 1.0, (0.2619, 0.8333, 0.1667)),
-      ]) {
-        final stops = rangeBarStops(normalMin: normalMin, normalMax: normalMax, value: value);
-        final reason = '$normalMin–$normalMax, $value';
-        expect(stops.bandStart, closeTo(expected.$1, 0.001), reason: reason);
-        expect(stops.bandEnd, closeTo(expected.$2, 0.001), reason: reason);
-        expect(stops.marker, closeTo(expected.$3, 0.001), reason: reason);
-      }
+    testWidgets('the bar of an alert card has the zones of the profile and a mark in the color of its severity', (
+      tester,
+    ) async {
+      const range = MetricThreshold(
+        metric: MonitoredMetric.temperature,
+        unit: '°C',
+        normalMin: 15,
+        normalMax: 30,
+        criticalMin: 10,
+        criticalMax: 36,
+      );
+      stubSummary(_summary(open: [alertFixture(id: 1)], thresholds: {1: range}));
+      await pumpHome(tester, const Size(412, 915));
+
+      final bar = tester.widget<RangeBar>(find.byType(RangeBar));
+      expect([for (final zone in bar.scale.zones) zone.kind], [
+        RangeZoneKind.critical,
+        RangeZoneKind.warning,
+        RangeZoneKind.normal,
+        RangeZoneKind.warning,
+        RangeZoneKind.critical,
+      ]);
+      // 38.6 °C is past the critical bound of 36 °C.
+      expect(bar.scale.position, greaterThan(bar.scale.zones.last.start));
+      expect(bar.markTone, BadgeTone.critical);
     });
 
     testWidgets('an alert card with a profile draws its normal range and measures the value against it', (

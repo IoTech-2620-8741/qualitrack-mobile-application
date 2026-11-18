@@ -100,6 +100,7 @@ class AlertsScreen extends StatelessWidget {
                           alert: alert,
                           deviceName: data.deviceNames[alert.equipmentId],
                           environmentName: data.environmentNames[alert.environmentId],
+                          threshold: data.thresholds[alert.id],
                           onTap: () async {
                             await context.push('/alerts/${alert.id}');
                             reload();

@@ -993,6 +993,7 @@ class _LatestAlerts extends StatelessWidget {
             alert,
             deviceName: summary.equipmentNames[alert.equipmentId],
             environmentName: summary.environmentNames[alert.environmentId],
+            threshold: summary.alerts.value?.thresholds[alert.id],
             onTap: () => context.push('/alerts/${alert.id}'),
           )
         else if (acknowledged(alert))

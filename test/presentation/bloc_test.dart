@@ -27,6 +27,8 @@ import 'package:qualitrack_mobile/reporting/api/index.dart';
 import 'package:qualitrack_mobile/common/domain/failure.dart';
 import 'package:qualitrack_mobile/common/domain/value_objects.dart';
 import 'package:qualitrack_mobile/common/presentation/view_status.dart';
+import 'package:qualitrack_mobile/tracking/api/index.dart'
+    show EnvironmentalProfile, MetricThreshold, MonitoredMetric, TelemetryApi;
 import 'package:qualitrack_mobile/tracking/application/telemetry_facade_service.dart';
 import 'package:qualitrack_mobile/tracking/domain/entities/connection_status.dart';
 import 'package:qualitrack_mobile/tracking/domain/entities/device_connection.dart';
@@ -195,19 +197,26 @@ void main() {
   group('AlertsBloc', () {
     late MockLaboratoryRepository labRepo;
     late MockEquipmentRepository equipmentRepo;
+    late MockTelemetryRepository telemetryRepo;
     late MockComplianceRepository complianceRepo;
+    // The container monitor of the alert fixtures.
+    const monitor = TelemetryTarget(deviceId: 10, environmentId: 3, containerMonitor: true);
+    const temperature = MetricThreshold(metric: MonitoredMetric.temperature, unit: '°C', normalMin: 15, normalMax: 30);
 
     setUp(() {
       labRepo = MockLaboratoryRepository();
       equipmentRepo = MockEquipmentRepository();
+      telemetryRepo = MockTelemetryRepository();
       complianceRepo = MockComplianceRepository();
       when(() => labRepo.getEnvironments(lab)).thenAnswer((_) async => [storage]);
       when(() => equipmentRepo.getByLaboratory(lab)).thenAnswer((_) async => [equipmentFixture(id: 10)]);
+      when(() => telemetryRepo.getProfile(lab, monitor)).thenAnswer((_) async => null);
     });
 
     AlertsBloc build() => AlertsBloc(
       laboratoryApi: LaboratoryApi(LaboratoryFacadeService(repository: labRepo)),
       equipmentApi: EquipmentApi(EquipmentFacadeService(repository: equipmentRepo)),
+      telemetryApi: TelemetryApi(TelemetryFacadeService(repository: telemetryRepo)),
       complianceService: complianceFacade(complianceRepo),
       laboratoryId: () => lab,
     );
@@ -229,6 +238,39 @@ void main() {
         expect(bloc.state.remote.data?.deviceNames[10], 'Stability Chamber');
         expect(bloc.state.remote.data?.environmentNames[3], 'Cold storage');
         expect(bloc.state.visible.map((a) => a.id), [2]);
+      },
+    );
+
+    blocTest<AlertsBloc, AlertsState>(
+      "gives each alert the range of its metric in its device's profile, read once",
+      build: () {
+        when(() => complianceRepo.getEnvironmentAlerts(lab, 3)).thenAnswer(
+          (_) async => [alertFixture(id: 1), alertFixture(id: 2, status: AlertStatus.resolved)],
+        );
+        when(() => telemetryRepo.getProfile(lab, monitor)).thenAnswer(
+          (_) async => const EnvironmentalProfile(version: 1, thresholds: [temperature]),
+        );
+        return build();
+      },
+      act: (bloc) => bloc.add(const AlertsRequested()),
+      verify: (bloc) {
+        expect(bloc.state.remote.data?.thresholds, {1: temperature, 2: temperature});
+        verify(() => telemetryRepo.getProfile(lab, monitor)).called(1);
+      },
+    );
+
+    blocTest<AlertsBloc, AlertsState>(
+      'the alerts load without ranges when the profile cannot be read',
+      build: () {
+        when(() => complianceRepo.getEnvironmentAlerts(lab, 3)).thenAnswer((_) async => [alertFixture(id: 1)]);
+        when(() => telemetryRepo.getProfile(lab, monitor)).thenThrow(const ServerFailure(statusCode: 500));
+        return build();
+      },
+      act: (bloc) => bloc.add(const AlertsRequested()),
+      verify: (bloc) {
+        expect(bloc.state.remote.status, ViewStatus.success);
+        expect(bloc.state.remote.data?.alerts.map((a) => a.id), [1]);
+        expect(bloc.state.remote.data?.thresholds, isEmpty);
       },
     );
 
