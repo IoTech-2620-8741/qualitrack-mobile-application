@@ -474,6 +474,38 @@ void main() {
       },
     );
 
+    blocTest<TelemetryDashboardBloc, TelemetryState>(
+      'keeps the chosen view when another device is chosen',
+      build: () {
+        when(() => equipmentRepo.getByLaboratory(lab)).thenAnswer(
+          (_) async => [equipmentFixture(id: 10), equipmentFixture(id: 13, name: 'Second chamber')],
+        );
+        // A reading of whichever device is asked for, so both can be charted.
+        when(() => telemetryRepo.getMeasurements(lab, any(), from: any(named: 'from'), to: any(named: 'to'))).thenAnswer(
+          (inv) async => [
+            measurementFixture(
+              deviceId: (inv.positionalArguments[1] as TelemetryTarget).deviceId,
+              value: 6,
+              measuredAt: DateTime.now().toUtc(),
+            ),
+          ],
+        );
+        return build();
+      },
+      act: (bloc) async {
+        bloc.add(const TelemetryStarted(deviceId: 10));
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+        bloc.add(const TelemetryViewSelected(TelemetryView.stream));
+        bloc.add(const TelemetryDeviceSelected(13));
+      },
+      wait: const Duration(milliseconds: 10),
+      verify: (bloc) {
+        expect(bloc.state.selectedDeviceId, 13);
+        expect(bloc.state.view, TelemetryView.stream);
+        expect(bloc.state.shownView, TelemetryView.stream);
+      },
+    );
+
     test('closing the bloc cancels the polling timer', () async {
       final bloc = build()..add(const TelemetryStarted());
       await Future<void>.delayed(const Duration(milliseconds: 30));

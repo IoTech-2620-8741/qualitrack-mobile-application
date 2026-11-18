@@ -156,6 +156,19 @@ final class TelemetryWindowSelected extends TelemetryEvent {
   List<Object?> get props => [window];
 }
 
+final class TelemetryViewSelected extends TelemetryEvent {
+  const TelemetryViewSelected(this.view);
+
+  final TelemetryView view;
+
+  @override
+  List<Object?> get props => [view];
+}
+
+/// What the screen shows of the device's readings: the latest of every metric
+/// against its range, or their stream over time in the chart.
+enum TelemetryView { readings, stream }
+
 final class TelemetryState extends Equatable {
   const TelemetryState({
     this.catalog = const RemoteState(),
@@ -164,6 +177,7 @@ final class TelemetryState extends Equatable {
     this.selectedMetric,
     this.window = TelemetryWindow.oneHour,
     this.polling = false,
+    this.view = TelemetryView.readings,
   });
 
   final RemoteState<DeviceCatalog> catalog;
@@ -172,6 +186,15 @@ final class TelemetryState extends Equatable {
   final MonitoredMetric? selectedMetric;
   final TelemetryWindow window;
   final bool polling;
+
+  /// The view chosen with the switch; it stays when another device is chosen.
+  final TelemetryView view;
+
+  /// Whether the readings of the device can be charted, so the switch is offered.
+  bool get canChart => snapshot.data?.chartMetrics.isNotEmpty ?? false;
+
+  /// The view on screen: the readings when nothing can be charted.
+  TelemetryView get shownView => canChart ? view : TelemetryView.readings;
 
   Equipment? get selectedDevice {
     for (final device in catalog.data?.devices ?? const <Equipment>[]) {
@@ -215,6 +238,7 @@ final class TelemetryState extends Equatable {
     MonitoredMetric? selectedMetric,
     TelemetryWindow? window,
     bool? polling,
+    TelemetryView? view,
   }) => TelemetryState(
     catalog: catalog ?? this.catalog,
     selectedDeviceId: selectedDeviceId ?? this.selectedDeviceId,
@@ -222,10 +246,11 @@ final class TelemetryState extends Equatable {
     selectedMetric: selectedMetric ?? this.selectedMetric,
     window: window ?? this.window,
     polling: polling ?? this.polling,
+    view: view ?? this.view,
   );
 
   @override
-  List<Object?> get props => [catalog, selectedDeviceId, snapshot, selectedMetric, window, polling];
+  List<Object?> get props => [catalog, selectedDeviceId, snapshot, selectedMetric, window, polling, view];
 }
 
 /// Live telemetry with responsible polling: the first load reads the last
@@ -270,6 +295,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
     });
     on<TelemetryMetricSelected>((e, emit) => emit(state.copyWith(selectedMetric: e.metric)));
     on<TelemetryWindowSelected>((e, emit) => emit(state.copyWith(window: e.window)));
+    on<TelemetryViewSelected>((e, emit) => emit(state.copyWith(view: e.view)));
   }
 
   final EquipmentApi _equipmentApi;
@@ -327,6 +353,7 @@ class TelemetryDashboardBloc extends Bloc<TelemetryEvent, TelemetryState> {
         selectedDeviceId: deviceId,
         snapshot: const RemoteState<TelemetrySnapshot>().loading(),
         window: state.window,
+        view: state.view,
       ));
     }
     try {
